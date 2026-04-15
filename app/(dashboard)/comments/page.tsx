@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import type { Prisma } from '@/lib/generated/prisma';
+import type { Prisma } from '@/lib/generated/prisma/client';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { CommentFilters } from '@/components/comments/CommentFilters';
 import { CommentTable } from '@/components/comments/CommentTable';

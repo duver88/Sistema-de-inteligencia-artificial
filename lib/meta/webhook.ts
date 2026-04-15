@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import type { Platform } from '@/lib/generated/prisma';
+import type { Platform } from '@/lib/generated/prisma/client';
 
 if (!process.env.FACEBOOK_CLIENT_SECRET) {
   // Lazily checked at runtime, not module load, so tests can import without env

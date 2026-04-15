@@ -5,7 +5,7 @@ import { generateReply } from '@/lib/ai/responder';
 import { metaClient } from '@/lib/meta/client';
 import { decrypt } from '@/lib/crypto';
 import type { ParsedComment } from '@/lib/meta/webhook';
-import type { CommentAction, Platform, Project, KnowledgeEntry } from '@/lib/generated/prisma';
+import type { CommentAction, Platform, Project, KnowledgeEntry } from '@/lib/generated/prisma/client';
 
 // ── Project Detection ─────────────────────────────────────────────────────────
 

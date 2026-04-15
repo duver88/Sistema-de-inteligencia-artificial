@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import type { Platform } from '@/lib/generated/prisma';
+import type { Platform } from '@/lib/generated/prisma/client';
 
 export interface KnowledgeEntry {
   key: string;

@@ -3,7 +3,7 @@ import { requireTenant } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
 import { encrypt } from '@/lib/crypto';
 import { metaClient } from '@/lib/meta/client';
-import { Platform } from '@/lib/generated/prisma';
+import { Platform } from '@/lib/generated/prisma/client';
 
 // GET — List all connected accounts for the current tenant
 export async function GET() {

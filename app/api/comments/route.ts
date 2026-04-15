@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireTenant } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
-import type { Prisma } from '@/lib/generated/prisma';
+import type { Prisma } from '@/lib/generated/prisma/client';
 
 export async function GET(request: NextRequest) {
   const ctx = await requireTenant();
