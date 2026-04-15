@@ -16,7 +16,7 @@ const META_BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`;
 // Window of posts to scan for new comments (posts published in the last N days)
 const POSTS_LOOKBACK_DAYS = 7;
 // On first poll with no lastPolledAt, treat comments older than this as already seen
-const INITIAL_COMMENT_LOOKBACK_MS = 10 * 60 * 1000; // 10 minutes
+const INITIAL_COMMENT_LOOKBACK_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 interface FeedComment {
   id: string;
