@@ -1,19 +1,18 @@
 /**
  * middleware.ts — Edge-compatible auth guard.
  *
- * Uses the lightweight authConfig (no PrismaAdapter, no Node.js crypto)
- * so this file can safely run in the Edge Runtime. The full NextAuth
- * config (with adapter + token encryption) is in lib/auth.ts and only
- * runs in Node.js server contexts.
+ * We use a plain cookie existence check instead of NextAuth's auth()
+ * because our main config uses session strategy: 'database'. The database
+ * session token is an opaque string, NOT a JWT, so calling NextAuth's auth()
+ * in the Edge Runtime throws "JWTSessionError: Invalid Compact JWE".
+ *
+ * Security model: cookie existence is a fast first gate. Every protected
+ * API route and server component additionally calls requireTenant() which
+ * does the real database-backed session verification.
  */
-import NextAuth from 'next-auth';
-import { authConfig } from './auth.config';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-const { auth } = NextAuth(authConfig);
-
-export default auth((req) => {
-  const isLoggedIn = !!req.auth;
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Public routes — always allow
@@ -22,15 +21,19 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  // Protected routes — redirect to login if not authenticated
-  if (!isLoggedIn) {
+  // Check for a session cookie (database sessions use __Secure- prefix over HTTPS)
+  const sessionCookie =
+    req.cookies.get('__Secure-authjs.session-token') ??
+    req.cookies.get('authjs.session-token');
+
+  if (!sessionCookie) {
     const loginUrl = new URL('/login', req.url);
     loginUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: [
