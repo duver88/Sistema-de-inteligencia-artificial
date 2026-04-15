@@ -65,7 +65,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   características: 'bg-amber-100 text-amber-700',
   ubicación: 'bg-blue-100 text-blue-700',
   contacto: 'bg-violet-100 text-violet-700',
-  financiamiento: 'bg-indigo-100 text-indigo-700',
+  financiamiento: 'bg-cyan-100 text-cyan-700',
 };
 
 export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEditorProps) {
@@ -153,9 +153,10 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
             onClick={() => setShowImporter(v => !v)}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all shadow-sm ${
               showImporter
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-700'
+                ? 'shadow-md'
+                : 'bg-white border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 text-slate-700'
             }`}
+            style={showImporter ? { background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' } : undefined}
           >
             <FileUp className="h-4 w-4" />
             Importar documento
@@ -173,9 +174,9 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
         <div className="flex flex-col items-center justify-center py-24 bg-white border border-slate-200 rounded-2xl shadow-sm">
           <div
             className="h-16 w-16 rounded-2xl flex items-center justify-center mb-5"
-            style={{ background: 'linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%)' }}
+            style={{ background: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)' }}
           >
-            <BookOpen className="h-8 w-8 text-indigo-500" />
+            <BookOpen className="h-8 w-8 text-cyan-500" />
           </div>
           <p className="text-base font-bold text-slate-900 mb-1">Sin conocimiento cargado</p>
           <p className="text-sm text-slate-500 text-center max-w-sm mb-6 leading-relaxed">
@@ -184,7 +185,7 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
           <button
             onClick={() => setShowImporter(true)}
             className="flex items-center gap-2 px-5 py-3 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
           >
             <FileUp className="h-4 w-4" />
             Importar documento
@@ -251,7 +252,8 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
                           <button
                             onClick={() => void saveEdit(entry.id)}
                             disabled={saving}
-                            className="p-1.5 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50"
+                            className="p-1.5 rounded-lg transition-colors disabled:opacity-50"
+                            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
                             title="Guardar"
                           >
                             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
@@ -284,7 +286,7 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => startEdit(entry)}
-                            className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            className="p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
                             title="Editar"
                           >
                             <Edit3 className="h-3.5 w-3.5" />

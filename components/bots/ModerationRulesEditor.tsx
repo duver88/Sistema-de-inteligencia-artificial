@@ -367,9 +367,9 @@ export function ModerationRulesEditor({
         <div className="flex items-center gap-3 mb-4">
           <div
             className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
           >
-            <Brain className="h-4 w-4 text-white" />
+            <Brain className="h-4 w-4" style={{ color: '#0a1628' }} />
           </div>
           <div>
             <h2 className="text-sm font-bold text-slate-900">Nivel 2 — Instrucciones para la IA</h2>
@@ -451,7 +451,7 @@ export function ModerationRulesEditor({
               disabled={!instrDirty || instrStatus === 'saving'}
               className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${
                 instrStatus === 'saving'
-                  ? 'text-white opacity-80 cursor-not-allowed'
+                  ? 'opacity-80 cursor-not-allowed'
                   : instrStatus === 'saved'
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
                   : instrDirty
@@ -460,7 +460,7 @@ export function ModerationRulesEditor({
               }`}
               style={
                 (instrStatus === 'saving' || (instrStatus === 'idle' && instrDirty))
-                  ? { background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }
+                  ? { background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }
                   : undefined
               }
             >
@@ -472,11 +472,11 @@ export function ModerationRulesEditor({
         </div>
 
         {/* Processing order note */}
-        <div className="mt-4 flex items-start gap-3 p-4 rounded-xl bg-indigo-50 border border-indigo-100">
-          <Zap className="h-4 w-4 text-indigo-500 flex-shrink-0 mt-0.5" />
+        <div className="mt-4 flex items-start gap-3 p-4 rounded-xl bg-cyan-50 border border-cyan-100">
+          <Zap className="h-4 w-4 text-cyan-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-semibold text-indigo-900 mb-1">Orden de procesamiento</p>
-            <p className="text-xs text-indigo-700 leading-relaxed">
+            <p className="text-xs font-semibold text-cyan-900 mb-1">Orden de procesamiento</p>
+            <p className="text-xs text-cyan-700 leading-relaxed">
               <strong>1.</strong> Primero se revisan las palabras clave — si hay coincidencia, se actúa inmediatamente sin usar IA.{' '}
               <strong>2.</strong> Si no hay coincidencia, la IA analiza el comentario usando las instrucciones del Nivel 2 junto con las instrucciones personalizadas del bot.
             </p>

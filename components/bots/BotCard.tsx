@@ -51,10 +51,10 @@ export function BotCard({ bot }: BotCardProps) {
   }
 
   return (
-    <div className={`bg-white rounded-2xl border-2 transition-all duration-200 overflow-hidden ${isActive ? 'border-indigo-100 shadow-md shadow-indigo-50' : 'border-slate-100 shadow-sm'}`}>
+    <div className={`bg-white rounded-2xl border-2 transition-all duration-200 overflow-hidden ${isActive ? 'border-cyan-100 shadow-md shadow-cyan-50' : 'border-slate-100 shadow-sm'}`}>
       {/* Colored top bar */}
       <div className={`h-1.5 w-full ${isActive ? '' : 'bg-slate-200'}`}
-        style={isActive ? {background: 'linear-gradient(90deg, #6366f1, #8b5cf6)'} : undefined}
+        style={isActive ? {background: 'linear-gradient(90deg, #00C4D4, #00E5FF)'} : undefined}
       />
 
       <div className="p-5">
@@ -84,7 +84,7 @@ export function BotCard({ bot }: BotCardProps) {
             checked={isActive}
             onCheckedChange={handleToggle}
             disabled={toggling}
-            className="data-[state=checked]:bg-indigo-600 flex-shrink-0"
+            className="data-[state=checked]:bg-cyan-500 flex-shrink-0"
           />
         </div>
 
@@ -117,7 +117,7 @@ export function BotCard({ bot }: BotCardProps) {
           </span>
           <Link
             href={`/bots/${bot.id}`}
-            className="flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors group"
+            className="flex items-center gap-1 text-xs font-bold text-cyan-600 hover:text-cyan-800 transition-colors group"
           >
             Configurar
             <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />

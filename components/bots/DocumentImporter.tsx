@@ -197,8 +197,8 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
           onClick={() => fileInputRef.current?.click()}
           className={`relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 cursor-pointer transition-all duration-200 ${
             dragOver
-              ? 'border-indigo-400 bg-indigo-50'
-              : 'border-slate-200 bg-slate-50 hover:border-indigo-300 hover:bg-indigo-50/50'
+              ? 'border-cyan-400 bg-cyan-50'
+              : 'border-slate-200 bg-slate-50 hover:border-cyan-300 hover:bg-cyan-50/50'
           }`}
         >
           <input
@@ -210,9 +210,9 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
           />
           <div
             className="h-14 w-14 rounded-2xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
           >
-            <Upload className="h-6 w-6 text-white" />
+            <Upload className="h-6 w-6" style={{ color: '#0a1628' }} />
           </div>
           <div className="text-center">
             <p className="text-sm font-semibold text-slate-900">
@@ -248,19 +248,19 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
   // ── PROCESSING ───────────────────────────────────────────────────────────────
   if (phase === 'processing') {
     return (
-      <div className="mb-6 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-indigo-200 bg-indigo-50 p-12">
+      <div className="mb-6 flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-cyan-200 bg-cyan-50 p-12">
         <div className="relative">
           <div
             className="h-14 w-14 rounded-2xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
           >
-            <FileText className="h-6 w-6 text-white" />
+            <FileText className="h-6 w-6" style={{ color: '#0a1628' }} />
           </div>
-          <Loader2 className="absolute -bottom-1 -right-1 h-5 w-5 text-indigo-600 animate-spin bg-white rounded-full" />
+          <Loader2 className="absolute -bottom-1 -right-1 h-5 w-5 text-cyan-600 animate-spin bg-white rounded-full" />
         </div>
         <div className="text-center">
-          <p className="text-sm font-semibold text-indigo-900">Procesando documento con IA…</p>
-          <p className="text-xs text-indigo-600 mt-1">{fileName}</p>
+          <p className="text-sm font-semibold text-cyan-900">Procesando documento con IA…</p>
+          <p className="text-xs text-cyan-600 mt-1">{fileName}</p>
           <p className="text-xs text-slate-500 mt-2">Extrayendo y clasificando el conocimiento del archivo</p>
         </div>
       </div>
@@ -274,7 +274,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
         {/* Header */}
         <div
           className="px-5 py-4 border-b border-slate-100 flex items-center justify-between"
-          style={{ background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)' }}
         >
           <div>
             <p className="text-sm font-bold text-slate-900">
@@ -296,10 +296,10 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
         <div className="px-5 py-2.5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
           <button
             onClick={toggleAll}
-            className="flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-indigo-600 transition-colors"
+            className="flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-cyan-600 transition-colors"
           >
             {entries.every((e) => e.selected) ? (
-              <CheckSquare className="h-4 w-4 text-indigo-600" />
+              <CheckSquare className="h-4 w-4 text-cyan-600" />
             ) : (
               <Square className="h-4 w-4" />
             )}
@@ -350,7 +350,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
                   />
                   <button
                     onClick={() => toggleEdit(idx)}
-                    className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+                    className="text-xs font-semibold text-cyan-600 hover:text-cyan-800 transition-colors"
                   >
                     Listo
                   </button>
@@ -360,7 +360,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
                 <div className="flex items-start gap-3">
                   <button onClick={() => toggleEntry(idx)} className="mt-0.5 flex-shrink-0">
                     {entry.selected ? (
-                      <CheckSquare className="h-4 w-4 text-indigo-600" />
+                      <CheckSquare className="h-4 w-4 text-cyan-600" />
                     ) : (
                       <Square className="h-4 w-4 text-slate-400" />
                     )}
@@ -380,7 +380,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
                   </div>
                   <button
                     onClick={() => toggleEdit(idx)}
-                    className="flex-shrink-0 p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                    className="flex-shrink-0 p-1 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
                     title="Editar"
                   >
                     <Edit3 className="h-3.5 w-3.5" />
@@ -402,8 +402,8 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
           <button
             onClick={() => void handleConfirm()}
             disabled={selectedCount === 0}
-            className="flex items-center gap-2 px-5 py-2 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            className="flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
           >
             Confirmar e importar {selectedCount > 0 ? `(${selectedCount})` : ''}
           </button>
@@ -414,9 +414,9 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
 
   // ── IMPORTING ────────────────────────────────────────────────────────────────
   return (
-    <div className="mb-6 flex flex-col items-center justify-center gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 p-10">
-      <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
-      <p className="text-sm font-semibold text-indigo-900">Guardando entradas…</p>
+    <div className="mb-6 flex flex-col items-center justify-center gap-3 rounded-2xl border border-cyan-200 bg-cyan-50 p-10">
+      <Loader2 className="h-8 w-8 text-cyan-600 animate-spin" />
+      <p className="text-sm font-semibold text-cyan-900">Guardando entradas…</p>
     </div>
   );
 }

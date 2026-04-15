@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Zap, Trash2, Mail, LogOut, Clock, CheckCircle, ShieldCheck } from 'lucide-react';
+import { Trash2, Mail, LogOut, Clock, CheckCircle, ShieldCheck } from 'lucide-react';
+import { LionsCoreIcon } from '@/components/icons/LionsCoreIcon';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export default function DataDeletionPage() {
   return (
     <div
       className="min-h-screen"
-      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)' }}
+      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #0d1f38 50%, #0f172a 100%)' }}
     >
       {/* Header */}
       <header className="border-b border-white/10">
@@ -23,11 +24,12 @@ export default function DataDeletionPage() {
           <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
             <div
               className="h-9 w-9 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+              style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
             >
-              <Zap className="h-4 w-4 text-white" />
+              <LionsCoreIcon size={18} />
             </div>
             <span className="text-white font-bold text-xl">LionsCore</span>
+            <span className="text-xs font-semibold" style={{ color: '#00E5FF' }}>ai</span>
           </Link>
           <span className="text-slate-400 text-sm">Última actualización: {LAST_UPDATED}</span>
         </div>
@@ -37,9 +39,9 @@ export default function DataDeletionPage() {
       <div className="max-w-4xl mx-auto px-6 pt-14 pb-10 text-center">
         <div
           className="inline-flex items-center justify-center h-16 w-16 rounded-2xl mb-6"
-          style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+          style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
         >
-          <Trash2 className="h-8 w-8 text-white" />
+          <Trash2 className="h-8 w-8" style={{ color: '#0a1628' }} />
         </div>
         <h1 className="text-4xl font-black text-white mb-4">Eliminación de Datos</h1>
         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
@@ -52,7 +54,7 @@ export default function DataDeletionPage() {
       <main className="max-w-4xl mx-auto px-6 pb-20 space-y-6">
 
         {/* Qué datos tenemos */}
-        <Section icon={<ShieldCheck className="h-5 w-5 text-indigo-400" />} title="Datos que almacenamos sobre ti">
+        <Section icon={<ShieldCheck className="h-5 w-5 text-cyan-400" />} title="Datos que almacenamos sobre ti">
           <p>LionsCore puede tener almacenados los siguientes datos asociados a tu cuenta:</p>
           <ul className="mt-3 space-y-2">
             <Item>Nombre y foto de perfil de Facebook.</Item>
@@ -65,10 +67,10 @@ export default function DataDeletionPage() {
         </Section>
 
         {/* Opción 1 — Desde la app */}
-        <div className="bg-white/5 border border-indigo-500/30 rounded-2xl p-7 backdrop-blur-sm">
+        <div className="bg-white/5 border border-cyan-500/30 rounded-2xl p-7 backdrop-blur-sm">
           <div className="flex items-center gap-3 mb-5">
-            <div className="h-9 w-9 rounded-xl bg-indigo-500/15 flex items-center justify-center flex-shrink-0">
-              <LogOut className="h-5 w-5 text-indigo-400" />
+            <div className="h-9 w-9 rounded-xl bg-cyan-500/15 flex items-center justify-center flex-shrink-0">
+              <LogOut className="h-5 w-5 text-cyan-400" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Opción 1 — Desconectar tus cuentas desde la app</h2>
@@ -89,7 +91,7 @@ export default function DataDeletionPage() {
               <li key={i} className="flex gap-3 text-slate-300 text-sm">
                 <span
                   className="flex-shrink-0 h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                  style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+                  style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
                 >
                   {i + 1}
                 </span>
@@ -100,8 +102,8 @@ export default function DataDeletionPage() {
           <div className="mt-5">
             <Link
               href="/accounts"
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95"
-              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
             >
               <LogOut className="h-4 w-4" />
               Ir a Cuentas
@@ -112,8 +114,8 @@ export default function DataDeletionPage() {
         {/* Opción 2 — Por email */}
         <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
           <div className="flex items-center gap-3 mb-5">
-            <div className="h-9 w-9 rounded-xl bg-indigo-500/15 flex items-center justify-center flex-shrink-0">
-              <Mail className="h-5 w-5 text-indigo-400" />
+            <div className="h-9 w-9 rounded-xl bg-cyan-500/15 flex items-center justify-center flex-shrink-0">
+              <Mail className="h-5 w-5 text-cyan-400" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Opción 2 — Solicitar eliminación completa por correo</h2>
@@ -128,7 +130,7 @@ export default function DataDeletionPage() {
           <div className="bg-slate-900/60 rounded-xl p-5 space-y-3 text-sm font-mono">
             <div>
               <span className="text-slate-500">Para: </span>
-              <a href={`mailto:${CONTACT_EMAIL}`} className="text-indigo-400 hover:text-indigo-300">
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-cyan-400 hover:text-cyan-300">
                 {CONTACT_EMAIL}
               </a>
             </div>
@@ -144,8 +146,8 @@ export default function DataDeletionPage() {
 
           <a
             href={`mailto:${CONTACT_EMAIL}?subject=Solicitud%20de%20eliminaci%C3%B3n%20de%20datos%20%E2%80%94%20LionsCore&body=Hola%2C%0A%0ASolicito%20la%20eliminaci%C3%B3n%20completa%20de%20mis%20datos%20en%20LionsCore.%0A%0ANombre%3A%20%0ACorreo%2FID%20de%20Facebook%3A%20%0A%0AGracias.`}
-            className="inline-flex items-center gap-2 mt-5 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95"
-            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            className="inline-flex items-center gap-2 mt-5 px-4 py-2.5 text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95"
+            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
           >
             <Mail className="h-4 w-4" />
             Enviar solicitud por correo
@@ -153,7 +155,7 @@ export default function DataDeletionPage() {
         </div>
 
         {/* Plazos */}
-        <Section icon={<Clock className="h-5 w-5 text-indigo-400" />} title="Plazos de respuesta">
+        <Section icon={<Clock className="h-5 w-5 text-cyan-400" />} title="Plazos de respuesta">
           <ul className="space-y-2">
             <Item>Confirmaremos la recepción de tu solicitud en un plazo de <strong className="text-white">48 horas hábiles</strong>.</Item>
             <Item>La eliminación completa de tus datos se realizará en un plazo máximo de <strong className="text-white">7 días hábiles</strong> desde la confirmación.</Item>
@@ -162,7 +164,7 @@ export default function DataDeletionPage() {
         </Section>
 
         {/* Qué se elimina */}
-        <Section icon={<CheckCircle className="h-5 w-5 text-indigo-400" />} title="Qué se elimina al procesar tu solicitud">
+        <Section icon={<CheckCircle className="h-5 w-5 text-cyan-400" />} title="Qué se elimina al procesar tu solicitud">
           <ul className="space-y-2">
             <Item>Tu perfil de usuario y datos de sesión.</Item>
             <Item>Todas las páginas de Facebook e Instagram conectadas y sus tokens de acceso.</Item>
@@ -180,7 +182,7 @@ export default function DataDeletionPage() {
         </Section>
 
         {/* Revocar en Facebook */}
-        <Section icon={<ShieldCheck className="h-5 w-5 text-indigo-400" />} title="Revocar permisos directamente en Facebook">
+        <Section icon={<ShieldCheck className="h-5 w-5 text-cyan-400" />} title="Revocar permisos directamente en Facebook">
           <p>
             También puedes revocar el acceso de LionsCore a tu cuenta de Facebook directamente desde
             la configuración de Meta, sin necesidad de contactarnos:
@@ -192,7 +194,7 @@ export default function DataDeletionPage() {
                 href="https://www.facebook.com/settings?tab=applications"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-indigo-400 hover:text-indigo-300 underline"
+                className="text-cyan-400 hover:text-cyan-300 underline"
               >
                 Facebook → Configuración → Aplicaciones y sitios web
               </a>
@@ -208,8 +210,8 @@ export default function DataDeletionPage() {
         {/* Footer */}
         <div className="pt-4 border-t border-white/10 text-center space-y-3">
           <div className="flex items-center justify-center gap-6 text-sm">
-            <Link href="/privacy" className="text-indigo-400 hover:text-indigo-300 transition-colors">Política de Privacidad</Link>
-            <Link href="/terms" className="text-indigo-400 hover:text-indigo-300 transition-colors">Términos de Servicio</Link>
+            <Link href="/privacy" className="text-cyan-400 hover:text-cyan-300 transition-colors">Política de Privacidad</Link>
+            <Link href="/terms" className="text-cyan-400 hover:text-cyan-300 transition-colors">Términos de Servicio</Link>
           </div>
           <p className="text-slate-500 text-xs">© {new Date().getFullYear()} LionsCore · {DOMAIN}</p>
         </div>
@@ -223,7 +225,7 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
   return (
     <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
       <div className="flex items-center gap-3 mb-4">
-        <div className="h-9 w-9 rounded-xl bg-indigo-500/15 flex items-center justify-center flex-shrink-0">
+        <div className="h-9 w-9 rounded-xl bg-cyan-500/15 flex items-center justify-center flex-shrink-0">
           {icon}
         </div>
         <h2 className="text-lg font-bold text-white">{title}</h2>
@@ -236,7 +238,7 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
 function Item({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex gap-2.5 list-none">
-      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-400 flex-shrink-0" />
+      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
       <span>{children}</span>
     </li>
   );

@@ -111,7 +111,7 @@ function SaveBar({
         }`}
         style={
           (status === 'saving' || (status === 'idle' && dirty))
-            ? { background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }
+            ? { background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }
             : undefined
         }
       >
@@ -204,8 +204,8 @@ export function BotSettings({ bot }: BotSettingsProps) {
       label: 'Respuesta automática con IA',
       description: 'Genera y publica automáticamente respuestas de IA a los comentarios elegibles.',
       icon: <MessageSquare className="h-4 w-4" />,
-      iconBg: 'bg-indigo-100',
-      iconColor: 'text-indigo-600',
+      iconBg: 'bg-cyan-100',
+      iconColor: 'text-cyan-600',
     },
     {
       field: 'deleteNegative',
@@ -228,8 +228,8 @@ export function BotSettings({ bot }: BotSettingsProps) {
       label: 'Moderación potenciada por IA',
       description: 'Usa IA para clasificar comentarios límite más allá de las reglas de palabras clave.',
       icon: <Zap className="h-4 w-4" />,
-      iconBg: 'bg-violet-100',
-      iconColor: 'text-violet-600',
+      iconBg: 'bg-cyan-100',
+      iconColor: 'text-cyan-600',
     },
   ];
 
@@ -248,17 +248,17 @@ export function BotSettings({ bot }: BotSettingsProps) {
               className="max-w-xs"
             />
           </div>
-          <div className="flex items-center justify-between border-2 border-indigo-200 bg-indigo-50 rounded-2xl p-6">
+          <div className="flex items-center justify-between border-2 border-cyan-200 bg-cyan-50 rounded-2xl p-6">
             <div>
-              <p className="text-sm font-semibold text-indigo-900">Interruptor principal</p>
-              <p className="text-xs text-indigo-600 mt-0.5">
+              <p className="text-sm font-semibold text-cyan-900">Interruptor principal</p>
+              <p className="text-xs text-cyan-600 mt-0.5">
                 Cuando está apagado, este bot no procesará ningún comentario.
               </p>
             </div>
             <Switch
               checked={data.isActive}
               onCheckedChange={v => handleToggle('isActive', v)}
-              className="data-[state=checked]:bg-indigo-600"
+              className="data-[state=checked]:bg-cyan-500"
             />
           </div>
           <div className="text-sm text-slate-500 bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
@@ -291,7 +291,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
                 checked={data[toggle.field as keyof Bot] as boolean}
                 onCheckedChange={v => handleToggle(toggle.field, v)}
                 disabled={savingToggle === toggle.field}
-                className="ml-4 flex-shrink-0 data-[state=checked]:bg-indigo-600"
+                className="ml-4 flex-shrink-0 data-[state=checked]:bg-cyan-500"
               />
             </div>
           ))}

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Zap, Shield, Eye, Lock, Trash2, Mail, Users, Database } from 'lucide-react';
+import { Shield, Eye, Lock, Trash2, Mail, Users, Database } from 'lucide-react';
+import { LionsCoreIcon } from '@/components/icons/LionsCoreIcon';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export default function PrivacyPage() {
   return (
     <div
       className="min-h-screen"
-      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)' }}
+      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #0d1f38 50%, #0f172a 100%)' }}
     >
       {/* Header */}
       <header className="border-b border-white/10">
@@ -23,11 +24,12 @@ export default function PrivacyPage() {
           <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
             <div
               className="h-9 w-9 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+              style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
             >
-              <Zap className="h-4 w-4 text-white" />
+              <LionsCoreIcon size={18} />
             </div>
             <span className="text-white font-bold text-xl">LionsCore</span>
+            <span className="text-xs font-semibold" style={{ color: '#00E5FF' }}>ai</span>
           </Link>
           <span className="text-slate-400 text-sm">Última actualización: {LAST_UPDATED}</span>
         </div>
@@ -37,9 +39,9 @@ export default function PrivacyPage() {
       <div className="max-w-4xl mx-auto px-6 pt-14 pb-10 text-center">
         <div
           className="inline-flex items-center justify-center h-16 w-16 rounded-2xl mb-6"
-          style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+          style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
         >
-          <Shield className="h-8 w-8 text-white" />
+          <Shield className="h-8 w-8" style={{ color: '#0a1628' }} />
         </div>
         <h1 className="text-4xl font-black text-white mb-4">Política de Privacidad</h1>
         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
@@ -52,7 +54,7 @@ export default function PrivacyPage() {
       <main className="max-w-4xl mx-auto px-6 pb-20 space-y-6">
 
         {/* Section 1 */}
-        <Section icon={<Database className="h-5 w-5 text-indigo-400" />} title="1. Datos que recolectamos">
+        <Section icon={<Database className="h-5 w-5 text-cyan-400" />} title="1. Datos que recolectamos">
           <p>Al usar LionsCore, recolectamos la siguiente información:</p>
           <ul className="mt-3 space-y-2">
             <Item>
@@ -77,7 +79,7 @@ export default function PrivacyPage() {
         </Section>
 
         {/* Section 2 */}
-        <Section icon={<Eye className="h-5 w-5 text-indigo-400" />} title="2. Para qué usamos tus datos">
+        <Section icon={<Eye className="h-5 w-5 text-cyan-400" />} title="2. Para qué usamos tus datos">
           <p>Utilizamos la información recolectada exclusivamente para:</p>
           <ul className="mt-3 space-y-2">
             <Item>Autenticar tu sesión y mantener tu cuenta activa en la plataforma.</Item>
@@ -93,7 +95,7 @@ export default function PrivacyPage() {
         </Section>
 
         {/* Section 3 */}
-        <Section icon={<Lock className="h-5 w-5 text-indigo-400" />} title="3. Cómo protegemos tus datos">
+        <Section icon={<Lock className="h-5 w-5 text-cyan-400" />} title="3. Cómo protegemos tus datos">
           <ul className="space-y-2">
             <Item>
               <strong>Cifrado en reposo:</strong> todos los tokens de acceso se almacenan cifrados con AES-256-GCM. Nunca se guardan en texto plano en la base de datos.
@@ -114,7 +116,7 @@ export default function PrivacyPage() {
         </Section>
 
         {/* Section 4 */}
-        <Section icon={<Users className="h-5 w-5 text-indigo-400" />} title="4. Compartición de datos con terceros">
+        <Section icon={<Users className="h-5 w-5 text-cyan-400" />} title="4. Compartición de datos con terceros">
           <p>
             <strong className="text-white">No vendemos, alquilamos ni compartimos tus datos personales con terceros</strong> con fines comerciales o publicitarios.
           </p>
@@ -133,7 +135,7 @@ export default function PrivacyPage() {
         </Section>
 
         {/* Section 5 */}
-        <Section icon={<Trash2 className="h-5 w-5 text-indigo-400" />} title="5. Eliminación de tus datos">
+        <Section icon={<Trash2 className="h-5 w-5 text-cyan-400" />} title="5. Eliminación de tus datos">
           <p>Tienes derecho a solicitar la eliminación completa de tus datos en cualquier momento.</p>
           <ul className="mt-3 space-y-2">
             <Item>
@@ -141,7 +143,7 @@ export default function PrivacyPage() {
             </Item>
             <Item>
               <strong>Eliminar tu cuenta:</strong> envía un correo a{' '}
-              <a href={`mailto:${CONTACT_EMAIL}`} className="text-indigo-400 hover:text-indigo-300 underline">
+              <a href={`mailto:${CONTACT_EMAIL}`} className="text-cyan-400 hover:text-cyan-300 underline">
                 {CONTACT_EMAIL}
               </a>{' '}
               con el asunto <em>"Eliminar cuenta LionsCore"</em>. Borraremos todos tus datos (perfil, páginas conectadas, tokens, historial de comentarios y configuración del bot) en un plazo máximo de 7 días hábiles.
@@ -152,7 +154,7 @@ export default function PrivacyPage() {
                 href="https://www.facebook.com/settings?tab=applications"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-indigo-400 hover:text-indigo-300 underline"
+                className="text-cyan-400 hover:text-cyan-300 underline"
               >
                 Configuración → Aplicaciones de Facebook
               </a>.
@@ -161,14 +163,14 @@ export default function PrivacyPage() {
         </Section>
 
         {/* Section 6 */}
-        <Section icon={<Mail className="h-5 w-5 text-indigo-400" />} title="6. Contacto">
+        <Section icon={<Mail className="h-5 w-5 text-cyan-400" />} title="6. Contacto">
           <p>Para cualquier pregunta, solicitud o inquietud sobre esta política de privacidad:</p>
-          <div className="mt-4 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+          <div className="mt-4 p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
             <p className="text-white font-semibold">LionsCore</p>
             <p className="text-slate-400 text-sm mt-1">{DOMAIN}</p>
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              className="inline-flex items-center gap-2 mt-2 text-indigo-400 hover:text-indigo-300 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-2 mt-2 text-cyan-400 hover:text-cyan-300 transition-colors text-sm font-medium"
             >
               <Mail className="h-4 w-4" />
               {CONTACT_EMAIL}
@@ -204,7 +206,7 @@ function Section({
   return (
     <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
       <div className="flex items-center gap-3 mb-4">
-        <div className="h-9 w-9 rounded-xl bg-indigo-500/15 flex items-center justify-center flex-shrink-0">
+        <div className="h-9 w-9 rounded-xl bg-cyan-500/15 flex items-center justify-center flex-shrink-0">
           {icon}
         </div>
         <h2 className="text-lg font-bold text-white">{title}</h2>
@@ -219,7 +221,7 @@ function Section({
 function Item({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex gap-2.5 list-none">
-      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-400 flex-shrink-0" />
+      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
       <span>{children}</span>
     </li>
   );

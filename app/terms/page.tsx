@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Zap, FileText, AlertCircle, CheckCircle, XCircle, RefreshCw, Scale, Mail } from 'lucide-react';
+import { FileText, AlertCircle, CheckCircle, XCircle, RefreshCw, Scale, Mail } from 'lucide-react';
+import { LionsCoreIcon } from '@/components/icons/LionsCoreIcon';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export default function TermsPage() {
   return (
     <div
       className="min-h-screen"
-      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)' }}
+      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #0d1f38 50%, #0f172a 100%)' }}
     >
       {/* Header */}
       <header className="border-b border-white/10">
@@ -23,11 +24,12 @@ export default function TermsPage() {
           <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
             <div
               className="h-9 w-9 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+              style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
             >
-              <Zap className="h-4 w-4 text-white" />
+              <LionsCoreIcon size={18} />
             </div>
             <span className="text-white font-bold text-xl">LionsCore</span>
+            <span className="text-xs font-semibold" style={{ color: '#00E5FF' }}>ai</span>
           </Link>
           <span className="text-slate-400 text-sm">Última actualización: {LAST_UPDATED}</span>
         </div>
@@ -37,9 +39,9 @@ export default function TermsPage() {
       <div className="max-w-4xl mx-auto px-6 pt-14 pb-10 text-center">
         <div
           className="inline-flex items-center justify-center h-16 w-16 rounded-2xl mb-6"
-          style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+          style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
         >
-          <FileText className="h-8 w-8 text-white" />
+          <FileText className="h-8 w-8" style={{ color: '#0a1628' }} />
         </div>
         <h1 className="text-4xl font-black text-white mb-4">Términos de Servicio</h1>
         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
@@ -51,7 +53,7 @@ export default function TermsPage() {
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 pb-20 space-y-6">
 
-        <Section icon={<FileText className="h-5 w-5 text-indigo-400" />} title="1. Aceptación de los términos">
+        <Section icon={<FileText className="h-5 w-5 text-cyan-400" />} title="1. Aceptación de los términos">
           <p>
             Al acceder y usar LionsCore (<strong className="text-white">{DOMAIN}</strong>), aceptas quedar vinculado por estos Términos de Servicio.
             Si no estás de acuerdo con alguno de estos términos, no debes usar la plataforma.
@@ -63,7 +65,7 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section icon={<CheckCircle className="h-5 w-5 text-indigo-400" />} title="2. Descripción del servicio">
+        <Section icon={<CheckCircle className="h-5 w-5 text-cyan-400" />} title="2. Descripción del servicio">
           <p>LionsCore es una plataforma de gestión de comentarios en redes sociales que ofrece:</p>
           <ul className="mt-3 space-y-2">
             <Item>Conexión con páginas de Facebook e Instagram mediante la API oficial de Meta.</Item>
@@ -74,18 +76,18 @@ export default function TermsPage() {
           </ul>
         </Section>
 
-        <Section icon={<AlertCircle className="h-5 w-5 text-indigo-400" />} title="3. Requisitos de uso">
+        <Section icon={<AlertCircle className="h-5 w-5 text-cyan-400" />} title="3. Requisitos de uso">
           <p>Para usar LionsCore debes:</p>
           <ul className="mt-3 space-y-2">
             <Item>Tener al menos 18 años de edad.</Item>
             <Item>Ser administrador de las páginas de Facebook que deseas conectar.</Item>
-            <Item>Cumplir con los <a href="https://www.facebook.com/terms.php" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 underline">Términos de Servicio de Meta</a> y las políticas de la plataforma.</Item>
+            <Item>Cumplir con los <a href="https://www.facebook.com/terms.php" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline">Términos de Servicio de Meta</a> y las políticas de la plataforma.</Item>
             <Item>Usar el servicio únicamente para fines legales y legítimos.</Item>
             <Item>No usar la plataforma para enviar spam, contenido ofensivo o violar los derechos de terceros.</Item>
           </ul>
         </Section>
 
-        <Section icon={<CheckCircle className="h-5 w-5 text-indigo-400" />} title="4. Cuenta y acceso">
+        <Section icon={<CheckCircle className="h-5 w-5 text-cyan-400" />} title="4. Cuenta y acceso">
           <ul className="space-y-2">
             <Item>El acceso a LionsCore se realiza exclusivamente mediante Facebook Login. Eres responsable de mantener la seguridad de tu cuenta de Facebook.</Item>
             <Item>Cada cuenta de Facebook da acceso a un espacio de trabajo (tenant) independiente dentro de LionsCore.</Item>
@@ -94,7 +96,7 @@ export default function TermsPage() {
           </ul>
         </Section>
 
-        <Section icon={<XCircle className="h-5 w-5 text-indigo-400" />} title="5. Uso prohibido">
+        <Section icon={<XCircle className="h-5 w-5 text-cyan-400" />} title="5. Uso prohibido">
           <p>Está estrictamente prohibido:</p>
           <ul className="mt-3 space-y-2">
             <Item>Usar LionsCore para hostigar, amenazar o discriminar a personas.</Item>
@@ -106,7 +108,7 @@ export default function TermsPage() {
           </ul>
         </Section>
 
-        <Section icon={<RefreshCw className="h-5 w-5 text-indigo-400" />} title="6. Disponibilidad del servicio">
+        <Section icon={<RefreshCw className="h-5 w-5 text-cyan-400" />} title="6. Disponibilidad del servicio">
           <p>
             LionsCore se esfuerza por mantener el servicio disponible de forma continua, pero no garantiza
             disponibilidad ininterrumpida. Podemos realizar mantenimientos programados que impliquen
@@ -118,7 +120,7 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section icon={<Scale className="h-5 w-5 text-indigo-400" />} title="7. Limitación de responsabilidad">
+        <Section icon={<Scale className="h-5 w-5 text-cyan-400" />} title="7. Limitación de responsabilidad">
           <ul className="space-y-2">
             <Item>LionsCore no se hace responsable por comentarios respondidos, ocultados o eliminados de forma incorrecta como resultado de la configuración del bot realizada por el usuario.</Item>
             <Item>El usuario es el único responsable de las acciones que configure en sus bots de moderación y de las consecuencias que estas generen en sus páginas.</Item>
@@ -127,7 +129,7 @@ export default function TermsPage() {
           </ul>
         </Section>
 
-        <Section icon={<FileText className="h-5 w-5 text-indigo-400" />} title="8. Propiedad intelectual">
+        <Section icon={<FileText className="h-5 w-5 text-cyan-400" />} title="8. Propiedad intelectual">
           <p>
             Todo el contenido, diseño, código y marca de LionsCore es propiedad de LionsCore y está protegido
             por las leyes de propiedad intelectual aplicables. No se concede ningún derecho sobre estos elementos
@@ -139,14 +141,14 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section icon={<Mail className="h-5 w-5 text-indigo-400" />} title="9. Contacto">
+        <Section icon={<Mail className="h-5 w-5 text-cyan-400" />} title="9. Contacto">
           <p>Para dudas sobre estos términos:</p>
-          <div className="mt-4 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+          <div className="mt-4 p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
             <p className="text-white font-semibold">LionsCore</p>
             <p className="text-slate-400 text-sm mt-1">{DOMAIN}</p>
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              className="inline-flex items-center gap-2 mt-2 text-indigo-400 hover:text-indigo-300 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-2 mt-2 text-cyan-400 hover:text-cyan-300 transition-colors text-sm font-medium"
             >
               <Mail className="h-4 w-4" />
               {CONTACT_EMAIL}
@@ -157,8 +159,8 @@ export default function TermsPage() {
         {/* Footer */}
         <div className="pt-4 border-t border-white/10 text-center space-y-3">
           <div className="flex items-center justify-center gap-6 text-sm">
-            <Link href="/privacy" className="text-indigo-400 hover:text-indigo-300 transition-colors">Política de Privacidad</Link>
-            <Link href="/data-deletion" className="text-indigo-400 hover:text-indigo-300 transition-colors">Eliminación de Datos</Link>
+            <Link href="/privacy" className="text-cyan-400 hover:text-cyan-300 transition-colors">Política de Privacidad</Link>
+            <Link href="/data-deletion" className="text-cyan-400 hover:text-cyan-300 transition-colors">Eliminación de Datos</Link>
           </div>
           <p className="text-slate-500 text-xs">© {new Date().getFullYear()} LionsCore · {DOMAIN}</p>
         </div>
@@ -172,7 +174,7 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
   return (
     <div className="bg-white/5 border border-white/10 rounded-2xl p-7 backdrop-blur-sm">
       <div className="flex items-center gap-3 mb-4">
-        <div className="h-9 w-9 rounded-xl bg-indigo-500/15 flex items-center justify-center flex-shrink-0">
+        <div className="h-9 w-9 rounded-xl bg-cyan-500/15 flex items-center justify-center flex-shrink-0">
           {icon}
         </div>
         <h2 className="text-lg font-bold text-white">{title}</h2>
@@ -185,7 +187,7 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
 function Item({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex gap-2.5 list-none">
-      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-400 flex-shrink-0" />
+      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
       <span>{children}</span>
     </li>
   );

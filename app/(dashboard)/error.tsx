@@ -25,7 +25,8 @@ export default function DashboardError({
       </p>
       <button
         onClick={reset}
-        className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md"
+        className="px-5 py-2.5 text-sm font-bold rounded-xl transition-all shadow-sm hover:shadow-md"
+        style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
       >
         Intentar de nuevo
       </button>

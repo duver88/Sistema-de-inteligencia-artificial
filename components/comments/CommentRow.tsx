@@ -73,7 +73,7 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
     <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
       <div className="px-5 py-4 flex items-start gap-3">
         {/* Avatar placeholder */}
-        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-indigo-700">
+        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-cyan-100 to-cyan-200 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-cyan-700">
           {(comment.authorName ?? '?')[0].toUpperCase()}
         </div>
 
@@ -104,7 +104,7 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
           {canReply && (
             <button
               onClick={() => setExpanded(v => !v)}
-              className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
+              className="p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-colors"
               title="Responder"
             >
               {expanded ? <ChevronUp className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
@@ -138,12 +138,13 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
               value={replyText}
               onChange={e => setReplyText(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') void handleReply(); }}
-              className="flex-1 text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="flex-1 text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
             />
             <button
               onClick={() => void handleReply()}
               disabled={!replyText.trim() || loading === 'reply'}
-              className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white text-sm font-medium rounded-xl transition-all disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl transition-all disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
             >
               {loading === 'reply' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
               Enviar

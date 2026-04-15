@@ -31,8 +31,8 @@ export function ConnectAccountCard({ onConnected: _onConnected }: ConnectAccount
     <button
       onClick={handleConnect}
       disabled={loading}
-      className="inline-flex items-center gap-2 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-      style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+      className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+      style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
     >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" />

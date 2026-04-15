@@ -3,7 +3,8 @@
 import { signIn } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { FacebookIcon } from '@/components/icons/FacebookIcon';
-import { Loader2, Zap } from 'lucide-react';
+import { LionsCoreIcon } from '@/components/icons/LionsCoreIcon';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -26,15 +27,21 @@ export default function LoginPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-6"
-      style={{background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)'}}
+      style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0d1f38 50%, #0a1628 100%)' }}
     >
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="h-11 w-11 rounded-xl flex items-center justify-center" style={{background: 'linear-gradient(135deg, #6366f1, #8b5cf6)'}}>
-            <Zap className="h-5 w-5 text-white" />
+        <div className="flex items-center justify-center gap-2.5 mb-8">
+          <div
+            className="h-11 w-11 rounded-xl flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
+          >
+            <LionsCoreIcon size={22} />
           </div>
-          <span className="text-white font-bold text-2xl">LionsCore</span>
+          <div className="flex items-baseline gap-0.5">
+            <span className="text-white font-bold text-2xl tracking-tight">LionsCore</span>
+            <span className="text-sm font-semibold" style={{ color: '#00E5FF' }}>ai</span>
+          </div>
         </div>
 
         {/* Card */}
@@ -48,7 +55,7 @@ export default function LoginPage() {
             onClick={handleLogin}
             disabled={loading}
             className="w-full flex items-center justify-center gap-3 px-4 py-3.5 text-white font-bold rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:scale-[0.98]"
-            style={{background: 'linear-gradient(135deg, #1877F2, #0d65d9)'}}
+            style={{ background: 'linear-gradient(135deg, #1877F2, #0d65d9)' }}
           >
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <FacebookIcon className="h-5 w-5" />}
             {loading ? 'Conectando…' : 'Continuar con Facebook'}

@@ -65,8 +65,8 @@ export function AccountsClient({ initialAccounts }: { initialAccounts: Account[]
 
       {accounts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 bg-white border border-slate-200 rounded-2xl shadow-sm">
-          <div className="h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-5">
-            <LinkIcon className="h-8 w-8 text-indigo-400" />
+          <div className="h-16 w-16 bg-cyan-50 rounded-2xl flex items-center justify-center mb-5">
+            <LinkIcon className="h-8 w-8 text-cyan-500" />
           </div>
           <h3 className="text-base font-semibold text-slate-900 mb-2">
             Sin cuentas conectadas

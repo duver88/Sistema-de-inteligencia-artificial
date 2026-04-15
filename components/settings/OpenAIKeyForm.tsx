@@ -66,10 +66,10 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       {/* Header with gradient */}
-      <div className="px-6 py-5 border-b border-slate-100" style={{background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)'}}>
+      <div className="px-6 py-5 border-b border-slate-100" style={{background: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)'}}>
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{background: 'linear-gradient(135deg, #6366f1, #8b5cf6)'}}>
-            <KeyRound className="h-5 w-5 text-white" />
+          <div className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{background: 'linear-gradient(135deg, #00C4D4, #00E5FF)'}}>
+            <KeyRound className="h-5 w-5" style={{color: '#0a1628'}} />
           </div>
           <div>
             <h2 className="text-sm font-bold text-slate-900">Clave API de OpenAI</h2>
@@ -156,8 +156,8 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
         <button
           onClick={() => void handleSave()}
           disabled={saving || !apiKey.trim()}
-          className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{background: 'linear-gradient(135deg, #6366f1, #8b5cf6)'}}
+          className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628'}}
         >
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
           {saving ? 'Verificando…' : 'Guardar y verificar'}

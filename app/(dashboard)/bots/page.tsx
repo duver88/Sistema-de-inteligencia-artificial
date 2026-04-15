@@ -50,8 +50,8 @@ export default async function BotsPage() {
 
       {botsWithStats.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 bg-white border border-slate-200 rounded-2xl shadow-sm">
-          <div className="h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-5">
-            <Bot className="h-8 w-8 text-indigo-400" />
+          <div className="h-16 w-16 bg-cyan-50 rounded-2xl flex items-center justify-center mb-5">
+            <Bot className="h-8 w-8 text-cyan-500" />
           </div>
           <h3 className="text-base font-semibold text-slate-900 mb-2">Sin bots aún</h3>
           <p className="text-sm text-slate-500 text-center max-w-xs mb-7">
@@ -59,7 +59,8 @@ export default async function BotsPage() {
           </p>
           <Link
             href="/accounts"
-            className="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow-md"
+            className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow-md"
+            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
           >
             Conectar Cuenta
           </Link>

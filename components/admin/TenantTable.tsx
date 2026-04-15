@@ -19,7 +19,7 @@ interface TenantTableProps {
 const PLAN_CONFIG: Record<string, { label: string; className: string }> = {
   FREE:         { label: 'Gratis',        className: 'bg-slate-100 text-slate-600' },
   STARTER:      { label: 'Inicial',       className: 'bg-blue-50 text-blue-700' },
-  PROFESSIONAL: { label: 'Profesional',   className: 'bg-indigo-50 text-indigo-700' },
+  PROFESSIONAL: { label: 'Profesional',   className: 'bg-cyan-50 text-cyan-700' },
   ENTERPRISE:   { label: 'Empresarial',   className: 'bg-purple-50 text-purple-700' },
 };
 

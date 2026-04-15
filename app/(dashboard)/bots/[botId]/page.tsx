@@ -51,8 +51,8 @@ export default async function BotDetailPage({
           className="flex items-center justify-between bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
         >
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center">
-              <BookOpen className="h-4 w-4 text-indigo-600" />
+            <div className="h-10 w-10 rounded-xl bg-cyan-50 flex items-center justify-center">
+              <BookOpen className="h-4 w-4 text-cyan-600" />
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-900">Base de Conocimiento</p>

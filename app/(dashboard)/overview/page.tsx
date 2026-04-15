@@ -38,15 +38,15 @@ export default async function OverviewPage() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Bots activos */}
-        <div className="rounded-2xl shadow-lg p-6 text-white" style={{background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'}}>
+        <div className="rounded-2xl shadow-lg p-6 text-white" style={{background: 'linear-gradient(135deg, #00C4D4 0%, #00E5FF 100%)'}}>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-indigo-200 text-xs font-semibold uppercase tracking-widest">Bots Activos</p>
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{color: '#0a1628', opacity: 0.7}}>Bots Activos</p>
             <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
               <Settings className="h-4 w-4 text-white" />
             </div>
           </div>
-          <p className="text-4xl font-bold text-white">{activeBots}</p>
-          <p className="text-indigo-200 text-xs mt-1">de {totalBots} en total</p>
+          <p className="text-4xl font-bold" style={{color: '#0a1628'}}>{activeBots}</p>
+          <p className="text-xs mt-1" style={{color: '#0a1628', opacity: 0.6}}>de {totalBots} en total</p>
         </div>
 
         {/* Comentarios hoy */}
@@ -87,15 +87,15 @@ export default async function OverviewPage() {
       </div>
 
       {/* Total procesados banner */}
-      <div className="rounded-2xl p-5 border border-indigo-100 flex items-center gap-4" style={{background: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)'}}>
-        <div className="h-11 w-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{background: 'linear-gradient(135deg, #6366f1, #8b5cf6)'}}>
-          <TrendingUp className="h-5 w-5 text-white" />
+      <div className="rounded-2xl p-5 border flex items-center gap-4" style={{background: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)', borderColor: '#a5f3fc'}}>
+        <div className="h-11 w-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{background: 'linear-gradient(135deg, #00C4D4, #00E5FF)'}}>
+          <TrendingUp className="h-5 w-5" style={{color: '#0a1628'}} />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-indigo-900">
+          <p className="text-sm font-semibold" style={{color: '#0a1628'}}>
             {totalComments.toLocaleString('es-CO')} comentarios procesados en total
           </p>
-          <p className="text-xs text-indigo-600 mt-0.5">
+          <p className="text-xs mt-0.5 text-cyan-700">
             Tu plataforma de moderación sigue trabajando por ti 24/7.
           </p>
         </div>
@@ -107,13 +107,13 @@ export default async function OverviewPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Link
             href="/accounts"
-            className="group bg-white border border-slate-200 rounded-2xl p-5 hover:border-indigo-300 hover:shadow-lg transition-all duration-200"
+            className="group bg-white border border-slate-200 rounded-2xl p-5 hover:border-cyan-300 hover:shadow-lg transition-all duration-200"
           >
             <div className="flex items-center justify-between mb-3">
-              <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
-                <Settings className="h-5 w-5 text-indigo-600" />
+              <div className="h-10 w-10 rounded-xl bg-cyan-50 flex items-center justify-center group-hover:bg-cyan-100 transition-colors">
+                <Settings className="h-5 w-5 text-cyan-600" />
               </div>
-              <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
+              <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
             </div>
             <p className="text-sm font-bold text-slate-900">Conectar Cuenta</p>
             <p className="text-xs text-slate-500 mt-0.5">Páginas de Facebook o Instagram</p>

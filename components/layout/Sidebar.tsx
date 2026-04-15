@@ -10,8 +10,8 @@ import {
   Link as LinkIcon,
   Settings,
   MessageSquare,
-  Zap,
 } from 'lucide-react';
+import { LionsCoreIcon } from '@/components/icons/LionsCoreIcon';
 
 const navigation = [
   { name: 'Resumen', href: '/overview', icon: LayoutDashboard },
@@ -29,13 +29,17 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-64 flex flex-col flex-shrink-0 bg-gradient-to-b from-slate-900 to-slate-800">
+    <div className="w-64 flex flex-col flex-shrink-0" style={{ background: 'linear-gradient(180deg, #0a1628 0%, #0d2038 100%)' }}>
       {/* Logo */}
       <div className="h-16 flex items-center gap-3 px-5 border-b border-white/10">
-        <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{background: 'linear-gradient(135deg, #6366f1, #8b5cf6)'}}>
-          <Zap className="h-4 w-4 text-white" />
+        <div
+          className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
+        >
+          <LionsCoreIcon size={16} />
         </div>
-        <span className="text-white font-bold text-xl">LionsCore</span>
+        <span className="text-white font-bold text-xl tracking-tight">LionsCore</span>
+        <span className="text-xs font-semibold ml-[-6px]" style={{ color: '#00E5FF' }}>ai</span>
       </div>
 
       {/* Main Nav */}
@@ -51,9 +55,10 @@ export function Sidebar() {
               className={cn(
                 'flex items-center gap-3 mx-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-150',
                 isActive
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-400 hover:bg-slate-700/50'
+                  ? 'text-white'
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
               )}
+              style={isActive ? { background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' } : undefined}
             >
               <item.icon className="h-5 w-5 flex-shrink-0" />
               {item.name}
@@ -73,9 +78,10 @@ export function Sidebar() {
               className={cn(
                 'flex items-center gap-3 mx-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-150',
                 isActive
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-slate-400 hover:bg-slate-700/50'
+                  ? 'text-white'
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
               )}
+              style={isActive ? { background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' } : undefined}
             >
               <item.icon className="h-5 w-5 flex-shrink-0" />
               {item.name}
