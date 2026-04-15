@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, Loader2, BookOpen } from 'lucide-react';
+import { Plus, Trash2, Loader2, BookOpen, FileUp } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -24,6 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { DocumentImporter } from '@/components/bots/DocumentImporter';
 
 interface KnowledgeEntry {
   id: string;
@@ -67,6 +68,7 @@ export function KnowledgeBaseEditor({
 }: KnowledgeBaseEditorProps) {
   const [entries, setEntries] = useState(initialEntries);
   const [adding, setAdding] = useState(false);
+  const [showImporter, setShowImporter] = useState(false);
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
   const [newCategory, setNewCategory] = useState('general');
@@ -105,6 +107,18 @@ export function KnowledgeBaseEditor({
     }
   }
 
+  async function handleImported() {
+    // Re-fetch entries after bulk import
+    try {
+      const res = await fetch(`/api/bots/${botId}/knowledge`);
+      const data = await res.json() as { entries: KnowledgeEntry[] };
+      if (res.ok) setEntries(data.entries);
+    } catch {
+      // Silently fail — entries will refresh on next page load
+    }
+    setShowImporter(false);
+  }
+
   async function handleDelete(entryId: string) {
     setDeletingId(entryId);
     try {
@@ -127,14 +141,28 @@ export function KnowledgeBaseEditor({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div />
-        <button
-          onClick={() => setAdding(v => !v)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md"
-        >
-          <Plus className="h-4 w-4" />
-          Agregar Entrada
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setShowImporter(v => !v); setAdding(false); }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-700 text-sm font-semibold rounded-xl transition-all shadow-sm"
+          >
+            <FileUp className="h-4 w-4 text-indigo-600" />
+            Importar documento
+          </button>
+          <button
+            onClick={() => { setAdding(v => !v); setShowImporter(false); }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md"
+          >
+            <Plus className="h-4 w-4" />
+            Agregar Entrada
+          </button>
+        </div>
       </div>
+
+      {/* Document importer */}
+      {showImporter && (
+        <DocumentImporter botId={botId} onImported={() => void handleImported()} />
+      )}
 
       {/* Add form */}
       {adding && (
