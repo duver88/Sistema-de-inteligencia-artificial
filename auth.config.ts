@@ -16,8 +16,9 @@ export const authConfig: NextAuthConfig = {
     Facebook({
       clientId: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-      // Disable PKCE — Facebook does not support it properly
-      checks: ['state'],
+      // Facebook has its own internal CSRF protection — disable NextAuth
+      // checks to avoid "state/pkce could not be parsed" errors.
+      checks: [],
     }),
   ],
   pages: {

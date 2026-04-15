@@ -176,9 +176,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             'pages_show_list,pages_read_engagement,pages_manage_posts,pages_manage_comments,instagram_basic,instagram_manage_comments,business_management,public_profile,email',
         },
       },
-      // Facebook does not support PKCE — use state-only check to avoid
-      // "pkceCodeVerifier value could not be parsed" errors in NextAuth v5
-      checks: ['state'],
+      // Facebook has its own internal CSRF protection and does not work
+      // reliably with NextAuth v5 PKCE or state cookie checks.
+      // Disabling checks avoids "pkceCodeVerifier/state could not be parsed".
+      checks: [],
     }),
   ],
   callbacks: {
