@@ -1,7 +1,4 @@
-import dotenv from 'dotenv';
-// Load .env.local first (production server), then .env as fallback
-dotenv.config({ path: '.env.local' });
-dotenv.config();
+import 'dotenv/config';
 
 import { prisma } from '@/lib/prisma';
 import { decrypt } from '@/lib/crypto';
