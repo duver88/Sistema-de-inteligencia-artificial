@@ -3,20 +3,14 @@
 import { signIn } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { FacebookIcon } from '@/components/icons/FacebookIcon';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Zap } from 'lucide-react';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
-  // Facebook sometimes appends #_=_ to the callback URL which confuses
-  // NextAuth. Strip it from the browser history before anything processes it.
   useEffect(() => {
     if (window.location.hash === '#_=_') {
-      window.history.replaceState(
-        null,
-        '',
-        window.location.href.replace('#_=_', '')
-      );
+      window.history.replaceState(null, '', window.location.href.replace('#_=_', ''));
     }
   }, []);
 
@@ -30,45 +24,74 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 flex items-center justify-center p-4">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-xl p-10 w-full max-w-sm text-center">
-        {/* Logo */}
-        <div className="mb-8">
-          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-500 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-indigo-200">
-            <svg viewBox="0 0 24 24" fill="white" className="h-8 w-8">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
+    <div className="min-h-screen flex" style={{background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)'}}>
+      {/* Left decorative panel */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center">
+            <Zap className="h-5 w-5 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">SocialPulse</h1>
-          <p className="mt-1.5 text-sm text-slate-500">
-            Gestión de comentarios potenciada por IA
-          </p>
+          <span className="text-white font-bold text-xl">SocialPulse</span>
         </div>
-
-        <div className="space-y-4">
-          <p className="text-sm text-slate-600 leading-relaxed">
-            Conecta tu cuenta de Facebook para comenzar. Vincularemos tus páginas
-            y cuentas de Instagram automáticamente.
+        <div>
+          <h2 className="text-4xl font-black text-white leading-tight mb-4">
+            Gestión de comentarios<br />
+            <span className="text-indigo-300">potenciada por IA</span>
+          </h2>
+          <p className="text-indigo-200 text-lg">
+            Modera, responde y analiza comentarios de Facebook e Instagram de forma automática.
           </p>
-
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3.5 bg-[#1877F2] hover:bg-[#166fe5] text-white font-medium rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
-          >
-            {loading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <FacebookIcon className="h-5 w-5" />
-            )}
-            {loading ? 'Conectando…' : 'Continuar con Facebook'}
-          </button>
+          <div className="mt-8 flex flex-col gap-3">
+            {[
+              'Respuestas automáticas con IA',
+              'Moderación inteligente de spam',
+              'Base de conocimiento personalizada',
+            ].map(feat => (
+              <div key={feat} className="flex items-center gap-3">
+                <div className="h-5 w-5 rounded-full bg-indigo-400/30 flex items-center justify-center flex-shrink-0">
+                  <div className="h-2 w-2 rounded-full bg-indigo-300" />
+                </div>
+                <span className="text-indigo-100 text-sm">{feat}</span>
+              </div>
+            ))}
+          </div>
         </div>
+        <p className="text-indigo-400 text-xs">© 2024 SocialPulse. Todos los derechos reservados.</p>
+      </div>
 
-        <p className="mt-7 text-xs text-slate-400 leading-relaxed">
-          Al conectar, autorizas a SocialPulse a gestionar comentarios en tu
-          nombre. Puedes desconectar en cualquier momento.
-        </p>
+      {/* Right: login form */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-sm">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-3 justify-center mb-8">
+            <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <Zap className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-white font-bold text-xl">SocialPulse</span>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-2xl p-8">
+            <h1 className="text-2xl font-black text-slate-900 mb-1">Iniciar sesión</h1>
+            <p className="text-slate-500 text-sm mb-7">
+              Conecta tu cuenta de Facebook para comenzar.
+            </p>
+
+            <button
+              onClick={handleLogin}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3.5 text-white font-bold rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:scale-[0.98]"
+              style={{background: 'linear-gradient(135deg, #1877F2, #0d65d9)'}}
+            >
+              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <FacebookIcon className="h-5 w-5" />}
+              {loading ? 'Conectando…' : 'Continuar con Facebook'}
+            </button>
+
+            <p className="mt-6 text-xs text-slate-400 text-center leading-relaxed">
+              Al conectar, autorizas a SocialPulse a gestionar comentarios en tu nombre.
+              Puedes desconectar en cualquier momento.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

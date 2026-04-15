@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOut, ChevronDown } from 'lucide-react';
+import { LogOut, ChevronDown, Bell } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
@@ -10,57 +10,61 @@ export function TopBar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-end px-6 shadow-sm">
-      <div className="relative">
-        <button
-          onClick={() => setOpen(v => !v)}
-          className="flex items-center gap-2.5 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors px-3 py-1.5 rounded-xl hover:bg-slate-50"
-        >
-          {session?.user?.image ? (
-            <img
-              src={session.user.image}
-              alt={session.user.name ?? 'Usuario'}
-              className="h-8 w-8 rounded-full object-cover ring-2 ring-indigo-100"
-            />
-          ) : (
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center ring-2 ring-indigo-100">
-              <span className="text-white text-xs font-semibold">
-                {(session?.user?.name ?? 'U')[0].toUpperCase()}
-              </span>
-            </div>
-          )}
-          <span className="hidden sm:block max-w-[140px] truncate">
-            {session?.user?.name ?? session?.user?.email ?? 'Usuario'}
-          </span>
-          <ChevronDown className="h-4 w-4 text-slate-400" />
+    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
+      <div />
+      <div className="flex items-center gap-3">
+        {/* Bell icon */}
+        <button className="h-9 w-9 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+          <Bell className="h-4 w-4" />
         </button>
 
-        {open && (
-          <>
-            {/* Backdrop */}
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setOpen(false)}
-            />
-            <div className="absolute right-0 top-11 z-20 w-52 bg-white border border-slate-200 rounded-2xl shadow-xl py-1.5 overflow-hidden">
-              <div className="px-4 py-3 border-b border-slate-100">
-                <p className="text-sm font-semibold text-slate-900 truncate">
-                  {session?.user?.name}
-                </p>
-                <p className="text-xs text-slate-500 truncate mt-0.5">
-                  {session?.user?.email}
-                </p>
+        {/* User menu */}
+        <div className="relative">
+          <button
+            onClick={() => setOpen(v => !v)}
+            className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
+          >
+            {session?.user?.image ? (
+              <img
+                src={session.user.image}
+                alt={session.user.name ?? 'Usuario'}
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{background: 'linear-gradient(135deg, #6366f1, #8b5cf6)'}}>
+                {(session?.user?.name ?? 'U')[0].toUpperCase()}
               </div>
-              <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
-                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                <LogOut className="h-4 w-4 text-slate-400" />
-                Cerrar sesión
-              </button>
+            )}
+            <div className="hidden sm:block text-left">
+              <p className="text-sm font-semibold text-slate-800 leading-tight max-w-[120px] truncate">
+                {session?.user?.name ?? 'Usuario'}
+              </p>
+              <p className="text-xs text-slate-400 leading-tight max-w-[120px] truncate">
+                {session?.user?.email ?? ''}
+              </p>
             </div>
-          </>
-        )}
+            <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+          </button>
+
+          {open && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+              <div className="absolute right-0 top-12 z-20 w-52 bg-white border border-slate-200 rounded-2xl shadow-xl py-1.5 overflow-hidden">
+                <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
+                  <p className="text-sm font-semibold text-slate-900 truncate">{session?.user?.name}</p>
+                  <p className="text-xs text-slate-500 truncate mt-0.5">{session?.user?.email}</p>
+                </div>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Cerrar sesión
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );

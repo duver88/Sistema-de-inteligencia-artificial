@@ -10,11 +10,11 @@ export default function DashboardLayout({
 }) {
   return (
     <SessionWrapper>
-      <div className="flex h-screen bg-slate-50 overflow-hidden">
+      <div className="flex h-screen overflow-hidden" style={{background: '#f1f5f9'}}>
         <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <TopBar />
-          <main className="flex-1 overflow-y-auto p-6">{children}</main>
+          <main className="flex-1 overflow-y-auto p-7">{children}</main>
         </div>
       </div>
       <Toaster richColors position="top-right" />

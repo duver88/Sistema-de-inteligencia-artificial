@@ -100,7 +100,8 @@ export function ConnectAccountCard({ onConnected }: ConnectAccountCardProps) {
     <>
       <button
         onClick={handleOpen}
-        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md"
+        className="inline-flex items-center gap-2 px-4 py-2.5 text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95"
+        style={{background: 'linear-gradient(135deg, #6366f1, #8b5cf6)'}}
       >
         <Plus className="h-4 w-4" />
         Conectar Cuenta
@@ -120,9 +121,7 @@ export function ConnectAccountCard({ onConnected }: ConnectAccountCardProps) {
           ) : pages.length === 0 ? (
             <div className="py-14 text-center">
               <p className="text-sm text-slate-500">No se encontraron páginas de Facebook.</p>
-              <p className="text-xs text-slate-400 mt-1">
-                Asegúrate de administrar al menos una Página de Facebook.
-              </p>
+              <p className="text-xs text-slate-400 mt-1">Asegúrate de administrar al menos una Página.</p>
             </div>
           ) : (
             <div className="space-y-2 max-h-80 overflow-y-auto">
@@ -133,18 +132,14 @@ export function ConnectAccountCard({ onConnected }: ConnectAccountCardProps) {
                 >
                   <div className="flex items-center gap-3">
                     {page.picture?.data?.url ? (
-                      <img
-                        src={page.picture.data.url}
-                        alt={page.name}
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
+                      <img src={page.picture.data.url} alt={page.name} className="h-10 w-10 rounded-full object-cover" />
                     ) : (
                       <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                         <FacebookIcon className="h-4 w-4 text-blue-600" />
                       </div>
                     )}
                     <div>
-                      <p className="text-sm font-medium text-slate-900">{page.name}</p>
+                      <p className="text-sm font-semibold text-slate-900">{page.name}</p>
                       {page.instagram_business_account && (
                         <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                           <InstagramIcon className="h-3 w-3 text-pink-600" />
@@ -156,13 +151,10 @@ export function ConnectAccountCard({ onConnected }: ConnectAccountCardProps) {
                   <button
                     onClick={() => connectPage(page)}
                     disabled={connecting === page.id}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white text-xs font-medium rounded-lg transition-all disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-white text-xs font-bold rounded-lg transition-all disabled:opacity-50 active:scale-95"
+                    style={{background: 'linear-gradient(135deg, #6366f1, #8b5cf6)'}}
                   >
-                    {connecting === page.id ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                    )}
+                    {connecting === page.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
                     Conectar
                   </button>
                 </div>
