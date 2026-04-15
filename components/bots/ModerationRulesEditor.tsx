@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, Trash2, Loader2, ShieldAlert, EyeOff, FlaskConical, RotateCcw, Zap, Brain } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Plus, Trash2, Loader2, ShieldAlert, EyeOff, FlaskConical, RotateCcw, Zap, Brain, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { testPattern } from '@/lib/moderation/keyword-detector';
+
+type SaveStatus = 'idle' | 'saving' | 'saved';
 
 // ── Default keyword sets ───────────────────────────────────────────────────────
 
@@ -215,10 +217,27 @@ export function ModerationRulesEditor({
 }: ModerationRulesEditorProps) {
   const [deleteKeywords, setDeleteKeywords] = useState(initialDeleteKeywords);
   const [spamKeywords, setSpamKeywords] = useState(initialSpamKeywords);
-  const [deleteInstructions, setDeleteInstructions] = useState(initialDeleteInstructions);
-  const [spamInstructions, setSpamInstructions] = useState(initialSpamInstructions);
   const [saving, setSaving] = useState(false);
-  const [savingInstructions, setSavingInstructions] = useState(false);
+
+  // Level 2 — AI instructions draft state
+  const [instrDraft, setInstrDraft] = useState({
+    deleteInstructions: initialDeleteInstructions,
+    spamInstructions: initialSpamInstructions,
+  });
+  const [savedInstr, setSavedInstr] = useState({
+    deleteInstructions: initialDeleteInstructions,
+    spamInstructions: initialSpamInstructions,
+  });
+  const [instrStatus, setInstrStatus] = useState<SaveStatus>('idle');
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const instrDirty =
+    instrDraft.deleteInstructions !== savedInstr.deleteInstructions ||
+    instrDraft.spamInstructions !== savedInstr.spamInstructions;
+
+  useEffect(() => {
+    return () => { if (savedTimerRef.current) clearTimeout(savedTimerRef.current); };
+  }, []);
 
   async function patchKeywords(field: 'deleteKeywords' | 'spamKeywords', value: string[]) {
     setSaving(true);
@@ -236,20 +255,25 @@ export function ModerationRulesEditor({
     }
   }
 
-  async function patchInstructions(field: 'deleteInstructions' | 'spamInstructions', value: string) {
-    setSavingInstructions(true);
+  async function saveInstructions() {
+    if (!instrDirty || instrStatus === 'saving') return;
+    setInstrStatus('saving');
     try {
       const res = await fetch(`/api/bots/${botId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [field]: value }),
+        body: JSON.stringify({
+          deleteInstructions: instrDraft.deleteInstructions,
+          spamInstructions: instrDraft.spamInstructions,
+        }),
       });
       if (!res.ok) throw new Error();
-      toast.success('Instrucciones guardadas');
+      setSavedInstr({ ...instrDraft });
+      setInstrStatus('saved');
+      savedTimerRef.current = setTimeout(() => setInstrStatus('idle'), 2000);
     } catch {
       toast.error('Error al guardar las instrucciones');
-    } finally {
-      setSavingInstructions(false);
+      setInstrStatus('idle');
     }
   }
 
@@ -355,58 +379,96 @@ export function ModerationRulesEditor({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          {/* Section title with dirty indicator */}
+          <div className="flex items-center gap-2 mb-5">
+            <h3 className="text-sm font-bold text-slate-900">Instrucciones para la IA</h3>
+            {instrDirty && instrStatus === 'idle' && (
+              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" title="Cambios sin guardar" />
+            )}
+          </div>
 
-          {/* Delete instructions */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-7 w-7 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
-                <ShieldAlert className="h-3.5 w-3.5 text-red-600" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Delete instructions */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-6 w-6 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <ShieldAlert className="h-3 w-3 text-red-600" />
+                </div>
+                <Label className="text-xs font-bold text-slate-700">Instrucciones para ELIMINAR</Label>
               </div>
-              <h3 className="text-sm font-bold text-slate-900">Instrucciones para ELIMINAR</h3>
+              <p className="text-xs text-slate-500 mb-2 leading-relaxed">
+                Describe en lenguaje natural qué comentarios adicionales debe eliminar la IA.
+              </p>
+              <Textarea
+                value={instrDraft.deleteInstructions}
+                onChange={e => setInstrDraft(d => ({ ...d, deleteInstructions: e.target.value }))}
+                placeholder="Ej: Elimina comentarios que comparen negativamente con la competencia, que mencionen problemas legales o que usen sarcasmo para atacar la marca."
+                rows={5}
+                className="resize-none text-sm leading-relaxed"
+              />
             </div>
-            <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-              Describe en lenguaje natural qué comentarios adicionales debe eliminar la IA, más allá de las palabras clave.
-            </p>
-            <Textarea
-              value={deleteInstructions}
-              onChange={e => setDeleteInstructions(e.target.value)}
-              onBlur={() => void patchInstructions('deleteInstructions', deleteInstructions)}
-              placeholder="Ej: Elimina comentarios que comparen negativamente con la competencia, que mencionen problemas legales o que usen sarcasmo para atacar la marca."
-              rows={5}
-              className="resize-none text-sm leading-relaxed"
-            />
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-xs text-slate-400">Se guarda automáticamente al salir del campo.</p>
-              {savingInstructions && <Loader2 className="h-3.5 w-3.5 text-slate-400 animate-spin" />}
+
+            {/* Spam instructions */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-6 w-6 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <EyeOff className="h-3 w-3 text-amber-600" />
+                </div>
+                <Label className="text-xs font-bold text-slate-700">Instrucciones para OCULTAR (spam)</Label>
+              </div>
+              <p className="text-xs text-slate-500 mb-2 leading-relaxed">
+                Describe qué comentarios adicionales debe ocultar la IA como spam.
+              </p>
+              <Textarea
+                value={instrDraft.spamInstructions}
+                onChange={e => setInstrDraft(d => ({ ...d, spamInstructions: e.target.value }))}
+                placeholder="Ej: Oculta comentarios de cuentas sin foto de perfil que solo ponen emojis, o que mencionen otras constructoras."
+                rows={5}
+                className="resize-none text-sm leading-relaxed"
+              />
             </div>
           </div>
 
-          {/* Spam instructions */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-7 w-7 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
-                <EyeOff className="h-3.5 w-3.5 text-amber-600" />
-              </div>
-              <h3 className="text-sm font-bold text-slate-900">Instrucciones para OCULTAR (spam)</h3>
+          {/* Save bar */}
+          <div className="flex items-center justify-between pt-4 mt-1 border-t border-slate-100">
+            <div className="h-5 flex items-center">
+              {instrStatus === 'idle' && instrDirty && (
+                <span className="flex items-center gap-1.5 text-xs font-medium text-amber-600">
+                  <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                  Cambios sin guardar
+                </span>
+              )}
+              {instrStatus === 'saved' && (
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Guardado
+                </span>
+              )}
             </div>
-            <p className="text-xs text-slate-500 mb-3 leading-relaxed">
-              Describe qué comentarios adicionales debe ocultar la IA como spam.
-            </p>
-            <Textarea
-              value={spamInstructions}
-              onChange={e => setSpamInstructions(e.target.value)}
-              onBlur={() => void patchInstructions('spamInstructions', spamInstructions)}
-              placeholder="Ej: Oculta comentarios de cuentas sin foto de perfil que solo ponen emojis, o que mencionen otras constructoras."
-              rows={5}
-              className="resize-none text-sm leading-relaxed"
-            />
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-xs text-slate-400">Se guarda automáticamente al salir del campo.</p>
-              {savingInstructions && <Loader2 className="h-3.5 w-3.5 text-slate-400 animate-spin" />}
-            </div>
+            <button
+              onClick={() => void saveInstructions()}
+              disabled={!instrDirty || instrStatus === 'saving'}
+              className={`flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${
+                instrStatus === 'saving'
+                  ? 'text-white opacity-80 cursor-not-allowed'
+                  : instrStatus === 'saved'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
+                  : instrDirty
+                  ? 'text-white shadow-md hover:shadow-lg active:scale-95'
+                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+              }`}
+              style={
+                (instrStatus === 'saving' || (instrStatus === 'idle' && instrDirty))
+                  ? { background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }
+                  : undefined
+              }
+            >
+              {instrStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
+              {instrStatus === 'saved' && <CheckCircle2 className="h-4 w-4" />}
+              {instrStatus === 'saving' ? 'Guardando...' : instrStatus === 'saved' ? 'Guardado' : 'Guardar cambios'}
+            </button>
           </div>
-
         </div>
 
         {/* Processing order note */}
