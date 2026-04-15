@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { AccountListItem } from '@/components/accounts/AccountListItem';
 import { ConnectAccountCard } from '@/components/accounts/ConnectAccountCard';
 import { Link as LinkIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Account {
   id: string;
@@ -17,8 +19,33 @@ interface Account {
   isActive: boolean;
 }
 
+const ERROR_MESSAGES: Record<string, string> = {
+  access_denied: 'Acceso denegado. No se conectaron las cuentas.',
+  missing_params: 'Error en el proceso de conexión.',
+  invalid_state: 'Error de seguridad. Inténtalo de nuevo.',
+  token_exchange: 'Error al obtener el token de Facebook.',
+  server_config: 'Error de configuración del servidor.',
+  unexpected: 'Ocurrió un error inesperado. Inténtalo de nuevo.',
+};
+
 export function AccountsClient({ initialAccounts }: { initialAccounts: Account[] }) {
   const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const error = searchParams.get('error');
+
+    if (success === 'true') {
+      toast.success('Cuentas conectadas exitosamente');
+      router.replace('/accounts');
+    } else if (error) {
+      const msg = ERROR_MESSAGES[error] ?? 'Error al conectar la cuenta.';
+      toast.error(msg);
+      router.replace('/accounts');
+    }
+  }, [searchParams, router]);
 
   function handleDisconnect(id: string) {
     setAccounts(prev => prev.filter(a => a.id !== id));
