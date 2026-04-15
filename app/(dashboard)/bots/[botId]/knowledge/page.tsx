@@ -24,18 +24,11 @@ export default async function KnowledgePage({
 
   if (!bot) notFound();
 
-  const [entries, projects] = await Promise.all([
-    prisma.knowledgeEntry.findMany({
-      where: { botId },
-      include: { project: { select: { name: true } } },
-      orderBy: { createdAt: 'asc' },
-    }),
-    prisma.project.findMany({
-      where: { botId },
-      select: { id: true, name: true },
-      orderBy: { createdAt: 'asc' },
-    }),
-  ]);
+  const entries = await prisma.knowledgeEntry.findMany({
+    where: { botId },
+    include: { project: { select: { name: true } } },
+    orderBy: { createdAt: 'asc' },
+  });
 
   return (
     <div>
@@ -55,7 +48,6 @@ export default async function KnowledgePage({
       <KnowledgeBaseEditor
         botId={botId}
         initialEntries={entries}
-        projects={projects}
       />
     </div>
   );

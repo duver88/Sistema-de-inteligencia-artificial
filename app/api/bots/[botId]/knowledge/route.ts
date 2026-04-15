@@ -59,6 +59,40 @@ export async function POST(request: NextRequest, { params }: Params) {
   return NextResponse.json({ entry }, { status: 201 });
 }
 
+// PATCH — Update a knowledge entry
+export async function PATCH(request: NextRequest, { params }: Params) {
+  const ctx = await requireTenant();
+  if (ctx instanceof NextResponse) return ctx;
+
+  const { botId } = await params;
+  const { searchParams } = new URL(request.url);
+  const entryId = searchParams.get('entryId');
+
+  if (!entryId) return NextResponse.json({ error: 'entryId required' }, { status: 400 });
+
+  const bot = await prisma.bot.findFirst({
+    where: { id: botId, tenantId: ctx.tenantId },
+  });
+  if (!bot) return NextResponse.json({ error: 'Bot not found' }, { status: 404 });
+
+  const body = await request.json() as {
+    key?: string;
+    value?: string;
+    category?: string;
+  };
+
+  const entry = await prisma.knowledgeEntry.updateMany({
+    where: { id: entryId, botId },
+    data: {
+      ...(body.key !== undefined && { key: body.key }),
+      ...(body.value !== undefined && { value: body.value }),
+      ...(body.category !== undefined && { category: body.category }),
+    },
+  });
+
+  return NextResponse.json({ success: true, count: entry.count });
+}
+
 // DELETE — Remove a knowledge entry (by ID in query param)
 export async function DELETE(request: NextRequest, { params }: Params) {
   const ctx = await requireTenant();
