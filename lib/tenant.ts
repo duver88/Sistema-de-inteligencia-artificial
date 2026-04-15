@@ -22,7 +22,7 @@ export async function getCurrentTenant(): Promise<TenantContext | null> {
     select: { id: true, tenantId: true, role: true, isSuperAdmin: true },
   });
 
-  if (!user) return null;
+  if (!user || !user.tenantId) return null;
 
   return {
     userId: user.id,
