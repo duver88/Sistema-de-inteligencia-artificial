@@ -13,8 +13,10 @@ const POLL_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
 const META_API_VERSION = 'v25.0';
 const META_BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`;
 
-// How far back to look on the very first poll (no lastPolledAt stored yet)
-const INITIAL_LOOKBACK_MS = 10 * 60 * 1000; // 10 minutes
+// Window of posts to scan for new comments (posts published in the last N days)
+const POSTS_LOOKBACK_DAYS = 7;
+// On first poll with no lastPolledAt, treat comments older than this as already seen
+const INITIAL_COMMENT_LOOKBACK_MS = 10 * 60 * 1000; // 10 minutes
 
 interface FeedComment {
   id: string;
@@ -24,16 +26,16 @@ interface FeedComment {
   parent?: { id: string };
 }
 
-interface FeedPost {
+interface PublishedPost {
   id: string;
-  message?: string;
   created_time: string;
   comments?: { data: FeedComment[] };
 }
 
-interface FeedResponse {
-  data?: FeedPost[];
+interface PostsResponse {
+  data?: PublishedPost[];
   error?: { message: string; code: number; type: string };
+  paging?: { next?: string };
 }
 
 async function pollAccount(account: {
@@ -55,38 +57,41 @@ async function pollAccount(account: {
     return;
   }
 
-  // Use lastPolledAt or INITIAL_LOOKBACK_MS ago for the first poll
-  const sinceMs = account.lastPolledAt
-    ? account.lastPolledAt.getTime()
-    : Date.now() - INITIAL_LOOKBACK_MS;
-  const sinceUnix = Math.floor(sinceMs / 1000);
+  // Timestamp to compare comment created_time against
+  const commentSince = account.lastPolledAt
+    ? account.lastPolledAt
+    : new Date(Date.now() - INITIAL_COMMENT_LOOKBACK_MS);
 
-  const url = new URL(`${META_BASE_URL}/${account.pageId}/feed`);
+  // Fetch posts published in the last POSTS_LOOKBACK_DAYS days
+  // The `since` filter here applies to post publication date
+  const postsSince = Math.floor((Date.now() - POSTS_LOOKBACK_DAYS * 24 * 60 * 60 * 1000) / 1000);
+
+  const url = new URL(`${META_BASE_URL}/${account.pageId}/published_posts`);
   url.searchParams.set(
     'fields',
-    'id,message,created_time,comments{id,message,from,created_time,parent}'
+    'id,created_time,comments{id,message,from,created_time,parent}'
   );
-  url.searchParams.set('since', sinceUnix.toString());
-  url.searchParams.set('limit', '50');
+  url.searchParams.set('since', postsSince.toString());
+  url.searchParams.set('limit', '25');
   url.searchParams.set('access_token', pageToken);
 
-  let feedData: FeedResponse;
+  let postsData: PostsResponse;
   try {
     const res = await fetch(url.toString());
-    feedData = (await res.json()) as FeedResponse;
+    postsData = (await res.json()) as PostsResponse;
   } catch (err) {
     console.error(`[Polling] ${account.pageName}: Error de red:`, err);
     return;
   }
 
-  if (feedData.error) {
+  if (postsData.error) {
     console.error(
-      `[Polling] ${account.pageName}: Error API (${feedData.error.code}): ${feedData.error.message}`
+      `[Polling] ${account.pageName}: Error API (${postsData.error.code}): ${postsData.error.message}`
     );
     return;
   }
 
-  const posts = feedData.data ?? [];
+  const posts = postsData.data ?? [];
   let newCommentsCount = 0;
 
   for (const post of posts) {
@@ -95,6 +100,10 @@ async function pollAccount(account: {
     for (const comment of comments) {
       // Skip replies — top-level comments have no parent
       if (comment.parent) continue;
+
+      // Skip comments older than last poll (filter by comment creation time)
+      const commentTime = new Date(comment.created_time);
+      if (commentTime <= commentSince) continue;
 
       const commentId = comment.id;
 
@@ -133,7 +142,7 @@ async function pollAccount(account: {
     `[Polling] ${account.pageName}: ${newCommentsCount} comentario(s) nuevo(s) encontrado(s)`
   );
 
-  // Update lastPolledAt so next poll only fetches newer comments
+  // Update lastPolledAt so next cycle only processes newer comments
   await prisma.socialAccount.update({
     where: { id: account.id },
     data: { lastPolledAt: new Date() },
