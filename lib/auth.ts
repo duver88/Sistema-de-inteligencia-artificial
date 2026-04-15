@@ -41,7 +41,7 @@ async function resolveOrCreateTenant(
     data: { name: displayName ?? 'My Workspace' },
   });
 
-  await prisma.user.update({
+  await prisma.user.updateMany({
     where: { id: userId },
     data: { tenantId: tenant.id, role: 'OWNER' },
   });
@@ -228,7 +228,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const encryptedToken = encrypt(longLivedToken);
 
           // 3. Store the long-lived token on the user record
-          await prisma.user.update({
+          await prisma.user.updateMany({
             where: { id: userId },
             data: {
               facebookToken: encryptedToken,
