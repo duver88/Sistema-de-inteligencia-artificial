@@ -101,7 +101,7 @@ mkdir -p logs
 ## 7 — Start with PM2
 
 ```bash
-# Start both the web app (port 3001) and the BullMQ worker
+# Start both the web app (port 3002) and the BullMQ worker
 pm2 start ecosystem.config.js
 
 # Persist PM2 processes across reboots
@@ -203,6 +203,6 @@ psql "$DATABASE_URL" -c "SELECT version();"
 # Check Redis
 redis-cli ping
 
-# Check the app is listening on port 3001
-ss -tlnp | grep 3001
+# Check the app is listening on port 3002
+ss -tlnp | grep 3002
 ```

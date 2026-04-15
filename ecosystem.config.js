@@ -13,7 +13,7 @@ module.exports = {
       max_memory_restart: '512M',
       env: {
         NODE_ENV: 'production',
-        PORT: 3001,
+        PORT: 3002,
       },
       // Log rotation
       error_file: './logs/pm2-error.log',
