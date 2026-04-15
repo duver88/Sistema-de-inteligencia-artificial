@@ -74,24 +74,32 @@ export function BotSettings({ bot }: BotSettingsProps) {
       label: 'Respuesta automática con IA',
       description: 'Genera y publica automáticamente respuestas de IA a los comentarios elegibles.',
       icon: <MessageSquare className="h-4 w-4" />,
+      iconBg: 'bg-indigo-100',
+      iconColor: 'text-indigo-600',
     },
     {
       field: 'deleteNegative',
       label: 'Eliminar comentarios negativos',
       description: 'Elimina los comentarios que coincidan con reglas de palabras clave ofensivas o negativas.',
       icon: <Trash2 className="h-4 w-4" />,
+      iconBg: 'bg-red-100',
+      iconColor: 'text-red-600',
     },
     {
       field: 'hideSpam',
       label: 'Ocultar comentarios spam',
       description: 'Oculta los comentarios que coincidan con reglas de palabras clave de spam.',
       icon: <EyeOff className="h-4 w-4" />,
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-amber-600',
     },
     {
       field: 'aiEnabled',
       label: 'Moderación potenciada por IA',
       description: 'Usa IA para clasificar comentarios límite más allá de las reglas de palabras clave.',
       icon: <Zap className="h-4 w-4" />,
+      iconBg: 'bg-violet-100',
+      iconColor: 'text-violet-600',
     },
   ];
 
@@ -109,10 +117,10 @@ export function BotSettings({ bot }: BotSettingsProps) {
               className="max-w-xs"
             />
           </div>
-          <div className="flex items-center justify-between py-3 border-t border-slate-100">
+          <div className="flex items-center justify-between border-2 border-indigo-200 bg-indigo-50 rounded-2xl p-6">
             <div>
-              <p className="text-sm font-medium text-slate-900">Interruptor principal</p>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-sm font-semibold text-indigo-900">Interruptor principal</p>
+              <p className="text-xs text-indigo-600 mt-0.5">
                 Cuando está apagado, este bot no procesará ningún comentario.
               </p>
             </div>
@@ -131,20 +139,20 @@ export function BotSettings({ bot }: BotSettingsProps) {
       </div>
 
       {/* Automation Toggles */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-2">Automatización</h2>
-        <div>
+      <div>
+        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Automatización</h2>
+        <div className="space-y-3">
           {toggles.map((toggle) => (
             <div
               key={toggle.field}
-              className="flex items-start justify-between py-4 border-b border-slate-100 last:border-0"
+              className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-start justify-between"
             >
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 h-9 w-9 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                <div className={`mt-0.5 h-9 w-9 flex items-center justify-center rounded-xl flex-shrink-0 ${toggle.iconBg} ${toggle.iconColor}`}>
                   {toggle.icon}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">{toggle.label}</p>
+                  <p className="text-sm font-semibold text-slate-900">{toggle.label}</p>
                   <p className="text-xs text-slate-500 mt-0.5 max-w-sm">
                     {toggle.description}
                   </p>

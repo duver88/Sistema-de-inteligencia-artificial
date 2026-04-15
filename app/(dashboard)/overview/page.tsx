@@ -38,51 +38,51 @@ export default async function OverviewPage() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Bots activos */}
-        <div className="rounded-2xl p-5 text-white" style={{background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'}}>
+        <div className="rounded-2xl shadow-lg p-6 text-white" style={{background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'}}>
           <div className="flex items-center justify-between mb-4">
             <p className="text-indigo-200 text-xs font-semibold uppercase tracking-widest">Bots Activos</p>
             <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
               <Settings className="h-4 w-4 text-white" />
             </div>
           </div>
-          <p className="text-4xl font-black">{activeBots}</p>
+          <p className="text-4xl font-bold text-white">{activeBots}</p>
           <p className="text-indigo-200 text-xs mt-1">de {totalBots} en total</p>
         </div>
 
         {/* Comentarios hoy */}
-        <div className="rounded-2xl p-5 bg-white border border-slate-200 shadow-sm">
+        <div className="rounded-2xl shadow-lg p-6 text-white" style={{background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'}}>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest">Comentarios</p>
-            <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
-              <MessageSquare className="h-4 w-4 text-blue-600" />
+            <p className="text-blue-200 text-xs font-semibold uppercase tracking-widest">Comentarios</p>
+            <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
+              <MessageSquare className="h-4 w-4 text-white" />
             </div>
           </div>
-          <p className="text-4xl font-black text-slate-900">{commentsToday}</p>
-          <p className="text-slate-400 text-xs mt-1">recibidos hoy</p>
+          <p className="text-4xl font-bold text-white">{commentsToday}</p>
+          <p className="text-blue-200 text-xs mt-1">recibidos hoy</p>
         </div>
 
         {/* Respondidos */}
-        <div className="rounded-2xl p-5 text-white" style={{background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'}}>
+        <div className="rounded-2xl shadow-lg p-6 text-white" style={{background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'}}>
           <div className="flex items-center justify-between mb-4">
             <p className="text-emerald-200 text-xs font-semibold uppercase tracking-widest">Respondidos</p>
             <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
               <Zap className="h-4 w-4 text-white" />
             </div>
           </div>
-          <p className="text-4xl font-black">{repliesToday}</p>
+          <p className="text-4xl font-bold text-white">{repliesToday}</p>
           <p className="text-emerald-200 text-xs mt-1">por IA hoy</p>
         </div>
 
         {/* Eliminados */}
-        <div className="rounded-2xl p-5 bg-white border border-slate-200 shadow-sm">
+        <div className="rounded-2xl shadow-lg p-6 text-white" style={{background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'}}>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest">Eliminados</p>
-            <div className="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center">
-              <Trash2 className="h-4 w-4 text-red-500" />
+            <p className="text-red-200 text-xs font-semibold uppercase tracking-widest">Eliminados</p>
+            <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
+              <Trash2 className="h-4 w-4 text-white" />
             </div>
           </div>
-          <p className="text-4xl font-black text-slate-900">{deletedToday}</p>
-          <p className="text-slate-400 text-xs mt-1">moderados hoy</p>
+          <p className="text-4xl font-bold text-white">{deletedToday}</p>
+          <p className="text-red-200 text-xs mt-1">moderados hoy</p>
         </div>
       </div>
 

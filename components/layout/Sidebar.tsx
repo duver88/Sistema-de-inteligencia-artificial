@@ -29,17 +29,17 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-64 flex flex-col flex-shrink-0" style={{background: 'linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%)'}}>
+    <div className="w-64 flex flex-col flex-shrink-0 bg-gradient-to-b from-slate-900 to-slate-800">
       {/* Logo */}
       <div className="h-16 flex items-center gap-3 px-5 border-b border-white/10">
         <div className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{background: 'linear-gradient(135deg, #6366f1, #8b5cf6)'}}>
           <Zap className="h-4 w-4 text-white" />
         </div>
-        <span className="text-white font-bold text-lg tracking-tight">SocialPulse</span>
+        <span className="text-white font-bold text-xl">LionsCore</span>
       </div>
 
       {/* Main Nav */}
-      <nav className="flex-1 px-3 py-5 space-y-0.5">
+      <nav className="flex-1 py-5 space-y-0.5">
         {navigation.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + '/');
@@ -49,24 +49,21 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
+                'flex items-center gap-3 mx-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-150',
                 isActive
-                  ? 'bg-white text-indigo-700 shadow-lg'
-                  : 'text-indigo-200 hover:text-white hover:bg-white/10'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-slate-400 hover:bg-slate-700/50'
               )}
             >
-              <item.icon className={cn('h-5 w-5 flex-shrink-0', isActive ? 'text-indigo-600' : '')} />
+              <item.icon className="h-5 w-5 flex-shrink-0" />
               {item.name}
-              {isActive && (
-                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-indigo-500" />
-              )}
             </Link>
           );
         })}
       </nav>
 
       {/* Bottom Nav */}
-      <div className="px-3 py-4 border-t border-white/10 space-y-0.5">
+      <div className="py-4 border-t border-white/10 space-y-0.5">
         {bottomNavigation.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -74,10 +71,10 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
+                'flex items-center gap-3 mx-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-150',
                 isActive
-                  ? 'bg-white text-indigo-700 shadow-lg'
-                  : 'text-indigo-200 hover:text-white hover:bg-white/10'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-slate-400 hover:bg-slate-700/50'
               )}
             >
               <item.icon className="h-5 w-5 flex-shrink-0" />
