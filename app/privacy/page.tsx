@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const LAST_UPDATED = '15 de abril de 2026';
-const CONTACT_EMAIL = 'duver20ac@gmail.com';
+const CONTACT_EMAIL = 'hernesto.ariza@lionsagencia.com';
 const DOMAIN = 'sia.lionscore.ai';
 
 export default function PrivacyPage() {
