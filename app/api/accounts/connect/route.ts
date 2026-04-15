@@ -32,11 +32,8 @@ export async function GET() {
 
   const scope = [
     'pages_show_list',
-    'pages_manage_comments',
     'pages_read_engagement',
-    'instagram_basic',
-    'instagram_manage_comments',
-    'business_management',
+    'pages_manage_metadata',
   ].join(',');
 
   const authUrl = new URL('https://www.facebook.com/dialog/oauth');
