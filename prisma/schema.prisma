@@ -125,7 +125,8 @@ model SocialAccount {
   igAccounts           SocialAccount[] @relation("LinkedAccounts")
 
   bots               Bot[]
-  webhookSubscribed  Boolean @default(false)
+  webhookSubscribed  Boolean   @default(false)
+  lastPolledAt       DateTime? // Updated after each successful polling cycle
 
   @@unique([platform, pageId])
 }
