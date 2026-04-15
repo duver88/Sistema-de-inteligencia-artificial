@@ -5,7 +5,7 @@ Plataforma SaaS para gestionar comentarios de Facebook e Instagram con IA.
 Cada cliente conecta sus páginas y configura un bot que responde, elimina y oculta comentarios automáticamente.
 
 ## URLs y repositorio
-- Producción: https://sia.duberney.online
+- Producción: https://sia.lionscore.ai
 - Repositorio: https://github.com/duver88/Sistema-de-inteligencia-artificial
 - Servidor: 185.225.233.46 puerto 22
 
@@ -14,7 +14,7 @@ Cada cliente conecta sus páginas y configura un bot que responde, elimina y ocu
 - PostgreSQL: base de datos lionscore_comments
 - Redis: cola de trabajos BullMQ
 - PM2: lionscore-comments (puerto 3002) + lionscore-worker
-- Nginx + SSL Let's Encrypt en sia.duberney.online
+- Nginx + SSL Let's Encrypt en sia.lionscore.ai
 
 ## Meta Apps
 - **Login + Páginas**: LionsCore Pages (App ID: 1693982431760040) — Facebook Login for Business incluido
@@ -38,7 +38,7 @@ Cada cliente conecta sus páginas y configura un bot que responde, elimina y ocu
 ⏳ Prueba real end-to-end con comentario real de Facebook/Instagram
 
 ## Próximos pasos en orden
-1. Configurar webhook de Meta apuntando a https://sia.duberney.online/api/webhooks/meta
+1. Configurar webhook de Meta apuntando a https://sia.lionscore.ai/api/webhooks/meta
 2. Solicitar revisión de Meta para permisos de páginas
 3. Que Duberney configure su OpenAI API key en Settings
 4. Activar el bot de UrbaMares y hacer prueba real

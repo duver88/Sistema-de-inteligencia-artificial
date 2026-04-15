@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get('state');
   const errorParam = searchParams.get('error');
 
-  const appUrl = process.env.NEXTAUTH_URL ?? 'https://sia.duberney.online';
+  const appUrl = process.env.NEXTAUTH_URL ?? 'https://sia.lionscore.ai';
 
   // User denied access
   if (errorParam) {
