@@ -153,7 +153,7 @@ async function subscribePageToWebhooks(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      subscribed_fields: ['feed', 'mention', 'comments'],
+      subscribed_fields: ['feed', 'mention'],
       access_token: pageAccessToken,
     }),
   });
