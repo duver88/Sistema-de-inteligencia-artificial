@@ -16,11 +16,12 @@ Cada cliente conecta sus páginas y configura un bot que responde, elimina y ocu
 - PM2: lionscore-comments (puerto 3002) + lionscore-worker
 - Nginx + SSL Let's Encrypt en sia.duberney.online
 
-## Meta App
-- Nombre: LionsCore Commets
-- App ID: 26800551292903051
-- Permisos activos: email, public_profile
-- Permisos pendientes de aprobación de Meta: pages_manage_comments, pages_show_list, instagram_manage_comments, instagram_basic
+## Meta Apps
+- **Login + Páginas**: LionsCore Pages (App ID: 1693982431760040) — Facebook Login for Business incluido
+  - Usa: FACEBOOK_CLIENT_ID (login OAuth) + FACEBOOK_PAGES_APP_ID (conectar páginas)
+  - Ambas variables apuntan al mismo App ID
+- ~~LionsCore Commets (App ID: 26800551292903051)~~ — reemplazada, ya no se usa
+- Permisos activos: email, public_profile, pages_show_list, pages_manage_comments, instagram_basic, instagram_manage_comments, business_management
 
 ## Estado de funcionalidades
 ✅ Login con Facebook OAuth funcionando
