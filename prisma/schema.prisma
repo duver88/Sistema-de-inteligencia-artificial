@@ -42,8 +42,10 @@ model User {
   email    String?  @unique
   image    String?
   role     UserRole @default(MEMBER)
-  tenantId String
-  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  // Nullable so PrismaAdapter can create the user on first OAuth login
+  // before the signIn callback assigns a tenant.
+  tenantId String?
+  tenant   Tenant?  @relation(fields: [tenantId], references: [id])
 
   // Facebook OAuth data
   facebookId    String?   @unique

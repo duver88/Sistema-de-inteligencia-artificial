@@ -190,7 +190,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       });
       if (dbUser) {
         session.user.id = dbUser.id;
-        session.user.tenantId = dbUser.tenantId;
+        session.user.tenantId = dbUser.tenantId ?? '';
         session.user.role = dbUser.role;
         session.user.isSuperAdmin = dbUser.isSuperAdmin;
       }
