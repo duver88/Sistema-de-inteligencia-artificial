@@ -173,7 +173,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       authorization: {
         params: {
           scope: process.env.FACEBOOK_SCOPES ||
-            'pages_show_list,pages_read_engagement,pages_manage_comments,instagram_basic,instagram_manage_comments',
+            'pages_show_list,pages_read_engagement,instagram_basic,instagram_manage_comments',
         },
       },
       // Facebook has its own internal CSRF protection and does not work
