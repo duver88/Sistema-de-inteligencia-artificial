@@ -16,7 +16,7 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Public routes — always allow
-  const publicRoutes = ['/login', '/api/auth', '/api/webhooks/meta'];
+  const publicRoutes = ['/login', '/api/auth', '/api/webhooks/meta', '/privacy', '/terms', '/data-deletion'];
   if (publicRoutes.some(route => pathname.startsWith(route))) {
     return NextResponse.next();
   }
