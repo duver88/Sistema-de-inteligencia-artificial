@@ -1,12 +1,24 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FacebookIcon } from '@/components/icons/FacebookIcon';
 import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+
+  // Facebook sometimes appends #_=_ to the callback URL which confuses
+  // NextAuth. Strip it from the browser history before anything processes it.
+  useEffect(() => {
+    if (window.location.hash === '#_=_') {
+      window.history.replaceState(
+        null,
+        '',
+        window.location.href.replace('#_=_', '')
+      );
+    }
+  }, []);
 
   async function handleLogin() {
     setLoading(true);

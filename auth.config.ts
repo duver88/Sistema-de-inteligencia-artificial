@@ -16,6 +16,8 @@ export const authConfig: NextAuthConfig = {
     Facebook({
       clientId: process.env.FACEBOOK_CLIENT_ID,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+      // Disable PKCE — Facebook does not support it properly
+      checks: ['state'],
     }),
   ],
   pages: {

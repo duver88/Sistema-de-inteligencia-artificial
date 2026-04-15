@@ -182,6 +182,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // Facebook appends #_=_ to the redirect URL — strip it so NextAuth
+      // doesn't pass the fragment to the session/signIn callbacks.
+      url = url.replace('#_=_', '');
+      // Standard NextAuth redirect logic: allow relative URLs and same-origin
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
     async session({ session, user }) {
       // Attach user ID and tenantId to the session
       const dbUser = await prisma.user.findUnique({
