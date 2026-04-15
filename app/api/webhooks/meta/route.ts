@@ -72,8 +72,8 @@ async function processWebhookAsync(rawBody: Buffer): Promise<void> {
         'process-comment',
         { botId: bot.id, comment },
         {
-          // Use commentId as deduplication key within a short window
-          jobId: `${comment.platform}:${comment.commentId}`,
+          // Use underscore separator — BullMQ does not allow colons in custom jobIds
+          jobId: `${comment.platform}_${comment.commentId}`,
         }
       );
     }

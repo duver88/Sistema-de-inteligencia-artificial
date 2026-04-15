@@ -129,8 +129,8 @@ async function pollAccount(account: {
         'process-comment',
         { botId: bot.id, comment: parsed },
         {
-          // Same jobId format as webhook handler — prevents duplicates in queue
-          jobId: `FACEBOOK:${commentId}`,
+          // Use underscore separator — BullMQ does not allow colons in custom jobIds
+          jobId: `FACEBOOK_${commentId}`,
         }
       );
 
