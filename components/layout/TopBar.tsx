@@ -31,7 +31,7 @@ export function TopBar() {
                 className="h-8 w-8 rounded-full object-cover"
               />
             ) : (
-              <div className="h-8 w-8 rounded-full flex items-center justify-center text-[#0a1628] text-xs font-bold" style={{background: 'linear-gradient(135deg, #00C4D4, #00E5FF)'}}>
+              <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{background: 'linear-gradient(135deg, #0bbfb8, #12fdee)', color: '#021130'}}>
                 {(session?.user?.name ?? 'U')[0].toUpperCase()}
               </div>
             )}

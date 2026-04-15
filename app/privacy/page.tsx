@@ -16,20 +16,17 @@ export default function PrivacyPage() {
   return (
     <div
       className="min-h-screen"
-      style={{ background: 'linear-gradient(135deg, #0f172a 0%, #0d1f38 50%, #0f172a 100%)' }}
+      style={{ background: 'linear-gradient(135deg, #021130 0%, #032040 50%, #021130 100%)' }}
     >
       {/* Header */}
       <header className="border-b border-white/10">
         <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <div
-              className="h-9 w-9 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
-            >
-              <LionsCoreIcon size={18} />
+            <LionsCoreIcon size={30} />
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-white font-bold text-xl">Lionscore</span>
+              <span className="text-sm font-semibold" style={{ color: '#12fdee' }}>ai</span>
             </div>
-            <span className="text-white font-bold text-xl">LionsCore</span>
-            <span className="text-xs font-semibold" style={{ color: '#00E5FF' }}>ai</span>
           </Link>
           <span className="text-slate-400 text-sm">Última actualización: {LAST_UPDATED}</span>
         </div>

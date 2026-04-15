@@ -27,20 +27,15 @@ export default function LoginPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-6"
-      style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0d1f38 50%, #0a1628 100%)' }}
+      style={{ background: '#021130' }}
     >
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2.5 mb-8">
-          <div
-            className="h-11 w-11 rounded-xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
-          >
-            <LionsCoreIcon size={22} />
-          </div>
-          <div className="flex items-baseline gap-0.5">
-            <span className="text-white font-bold text-2xl tracking-tight">LionsCore</span>
-            <span className="text-sm font-semibold" style={{ color: '#00E5FF' }}>ai</span>
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <LionsCoreIcon size={44} />
+          <div className="flex items-baseline gap-1">
+            <span className="text-white font-bold text-3xl tracking-tight">Lionscore</span>
+            <span className="text-lg font-semibold" style={{ color: '#12fdee' }}>ai</span>
           </div>
         </div>
 
@@ -62,7 +57,7 @@ export default function LoginPage() {
           </button>
 
           <p className="mt-6 text-xs text-slate-400 text-center leading-relaxed">
-            Al conectar, autorizas a LionsCore a gestionar comentarios en tu nombre.
+            Al conectar, autorizas a Lionscore a gestionar comentarios en tu nombre.
             Puedes desconectar en cualquier momento.
           </p>
         </div>
