@@ -34,19 +34,19 @@ export function CommentFilters({ bots }: CommentFiltersProps) {
       } else {
         params.delete(key);
       }
-      params.delete('page'); // Reset to page 1 on filter change
+      params.delete('page');
       router.push(`${pathname}?${params.toString()}`);
     },
     [router, pathname, searchParams]
   );
 
   return (
-    <div className="flex flex-wrap gap-3 mb-4">
+    <div className="flex flex-wrap gap-3 mb-5">
       {/* Search */}
       <div className="relative flex-1 min-w-48">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <Input
-          placeholder="Search comments…"
+          placeholder="Buscar comentarios…"
           defaultValue={searchParams.get('search') ?? undefined}
           onChange={e => updateParam('search', e.target.value)}
           className="pl-9 text-sm"
@@ -59,10 +59,10 @@ export function CommentFilters({ bots }: CommentFiltersProps) {
         onValueChange={v => updateParam('botId', v ?? '')}
       >
         <SelectTrigger className="w-44 text-sm">
-          <SelectValue placeholder="All bots" />
+          <SelectValue placeholder="Todos los bots" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All bots</SelectItem>
+          <SelectItem value="">Todos los bots</SelectItem>
           {bots.map(b => (
             <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
           ))}
@@ -74,17 +74,17 @@ export function CommentFilters({ bots }: CommentFiltersProps) {
         value={searchParams.get('action') ?? ''}
         onValueChange={v => updateParam('action', v ?? '')}
       >
-        <SelectTrigger className="w-44 text-sm">
-          <SelectValue placeholder="All actions" />
+        <SelectTrigger className="w-48 text-sm">
+          <SelectValue placeholder="Todas las acciones" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All actions</SelectItem>
-          <SelectItem value="REPLIED">Replied</SelectItem>
-          <SelectItem value="DELETED">Deleted</SelectItem>
-          <SelectItem value="HIDDEN">Hidden</SelectItem>
-          <SelectItem value="IGNORED">Ignored</SelectItem>
-          <SelectItem value="MANUAL_REPLY">Manual Reply</SelectItem>
-          <SelectItem value="MANUAL_DELETE">Manual Delete</SelectItem>
+          <SelectItem value="">Todas las acciones</SelectItem>
+          <SelectItem value="REPLIED">Respondido</SelectItem>
+          <SelectItem value="DELETED">Eliminado</SelectItem>
+          <SelectItem value="HIDDEN">Oculto</SelectItem>
+          <SelectItem value="IGNORED">Ignorado</SelectItem>
+          <SelectItem value="MANUAL_REPLY">Resp. Manual</SelectItem>
+          <SelectItem value="MANUAL_DELETE">Elim. Manual</SelectItem>
           <SelectItem value="ERROR">Error</SelectItem>
         </SelectContent>
       </Select>
@@ -94,11 +94,11 @@ export function CommentFilters({ bots }: CommentFiltersProps) {
         value={searchParams.get('platform') ?? ''}
         onValueChange={v => updateParam('platform', v ?? '')}
       >
-        <SelectTrigger className="w-36 text-sm">
-          <SelectValue placeholder="All platforms" />
+        <SelectTrigger className="w-40 text-sm">
+          <SelectValue placeholder="Todas las plataformas" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All platforms</SelectItem>
+          <SelectItem value="">Todas las plataformas</SelectItem>
           <SelectItem value="FACEBOOK">Facebook</SelectItem>
           <SelectItem value="INSTAGRAM">Instagram</SelectItem>
         </SelectContent>

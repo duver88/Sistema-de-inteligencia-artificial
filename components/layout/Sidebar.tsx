@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
-  History,
   Bot,
   Shield,
   Link as LinkIcon,
@@ -15,11 +14,11 @@ import {
 import { SocialPulseLogo } from '@/components/icons/SocialPulseLogo';
 
 const navigation = [
-  { name: 'Overview', href: '/overview', icon: LayoutDashboard },
-  { name: 'Accounts', href: '/accounts', icon: LinkIcon },
+  { name: 'Resumen', href: '/overview', icon: LayoutDashboard },
+  { name: 'Cuentas', href: '/accounts', icon: LinkIcon },
   { name: 'Bots', href: '/bots', icon: Bot },
-  { name: 'Comments', href: '/comments', icon: MessageSquare },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Comentarios', href: '/comments', icon: MessageSquare },
+  { name: 'Configuración', href: '/settings', icon: Settings },
 ];
 
 const bottomNavigation = [
@@ -30,14 +29,14 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-64 bg-slate-900 flex flex-col flex-shrink-0">
+    <div className="w-64 bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col flex-shrink-0 shadow-xl">
       {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-800">
+      <div className="h-16 flex items-center px-6 border-b border-slate-700/50">
         <SocialPulseLogo />
       </div>
 
       {/* Main Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-5 space-y-1">
         {navigation.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + '/');
@@ -47,10 +46,10 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
                 isActive
-                  ? 'bg-slate-800 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-900/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/60'
               )}
             >
               <item.icon className="h-4 w-4 flex-shrink-0" />
@@ -61,7 +60,7 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom Nav */}
-      <div className="px-3 py-4 border-t border-slate-800 space-y-1">
+      <div className="px-3 py-4 border-t border-slate-700/50 space-y-1">
         {bottomNavigation.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -69,10 +68,10 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
                 isActive
-                  ? 'bg-slate-800 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-900/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/60'
               )}
             >
               <item.icon className="h-4 w-4 flex-shrink-0" />

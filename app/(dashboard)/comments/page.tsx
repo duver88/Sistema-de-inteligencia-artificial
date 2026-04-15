@@ -74,8 +74,8 @@ export default async function CommentsPage({
   return (
     <div>
       <PageHeader
-        title="Comment History"
-        description={`${total.toLocaleString()} total comments processed`}
+        title="Historial de Comentarios"
+        description={`${total.toLocaleString('es-CO')} comentarios procesados en total`}
       />
       <Suspense>
         <CommentFilters bots={bots} />

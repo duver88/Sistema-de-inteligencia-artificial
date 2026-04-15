@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 import {
   CheckCircle2, XCircle, Loader2, Eye, EyeOff, Trash2, KeyRound,
 } from 'lucide-react';
@@ -43,13 +44,13 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
         body: JSON.stringify({ apiKey: apiKey.trim() }),
       });
       const data = await res.json() as { error?: string; configured?: boolean; setAt?: string };
-      if (!res.ok) throw new Error(data.error ?? 'Unknown error');
+      if (!res.ok) throw new Error(data.error ?? 'Error desconocido');
       setConfigured(true);
       setSetAt(data.setAt ?? new Date().toISOString());
       setApiKey('');
-      toast.success('API key saved and verified');
+      toast.success('Clave API guardada y verificada');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to save API key');
+      toast.error(err instanceof Error ? err.message : 'Error al guardar la clave API');
     } finally {
       setSaving(false);
     }
@@ -62,39 +63,39 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
       if (!res.ok) throw new Error();
       setConfigured(false);
       setSetAt(null);
-      toast.success('API key removed');
+      toast.success('Clave API eliminada');
     } catch {
-      toast.error('Failed to remove API key');
+      toast.error('Error al eliminar la clave API');
     } finally {
       setDeleting(false);
     }
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
       <div className="flex items-start gap-3 mb-6">
-        <div className="h-9 w-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-          <KeyRound className="h-4 w-4 text-emerald-600" />
+        <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+          <KeyRound className="h-5 w-5 text-emerald-600" />
         </div>
         <div>
-          <h2 className="text-sm font-semibold text-slate-900">OpenAI API Key</h2>
+          <h2 className="text-sm font-semibold text-slate-900">Clave API de OpenAI</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Required for AI comment classification and reply generation (gpt-4o-mini).
-            Stored encrypted with AES-256-GCM.
+            Requerida para clasificación de comentarios y generación de respuestas con IA (gpt-4o-mini).
+            Almacenada cifrada con AES-256-GCM.
           </p>
         </div>
       </div>
 
       {/* Status badge */}
-      <div className="flex items-center gap-2 mb-5 p-3 rounded-lg bg-slate-50 border border-slate-200">
+      <div className="flex items-center gap-3 mb-5 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
         {configured ? (
           <>
             <CheckCircle2 className="h-4 w-4 text-emerald-600 flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-slate-900">Configured</p>
+              <p className="text-sm font-medium text-slate-900">Configurada</p>
               {setAt && (
                 <p className="text-xs text-slate-500">
-                  Set {formatDistanceToNow(new Date(setAt), { addSuffix: true })}
+                  Guardada {formatDistanceToNow(new Date(setAt), { addSuffix: true, locale: es })}
                 </p>
               )}
             </div>
@@ -104,23 +105,23 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
                 className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
               >
                 {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-                Remove
+                Eliminar
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Remove API key?</AlertDialogTitle>
+                  <AlertDialogTitle>¿Eliminar clave API?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    All bots will stop using AI features until a new key is configured.
-                    Comments will be logged as IGNORED.
+                    Todos los bots dejarán de usar funciones de IA hasta que se configure una nueva clave.
+                    Los comentarios se registrarán como IGNORADOS.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() => void handleDelete()}
                     className="bg-red-600 hover:bg-red-700 text-white"
                   >
-                    Remove
+                    Eliminar
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -129,16 +130,16 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
         ) : (
           <>
             <XCircle className="h-4 w-4 text-slate-400 flex-shrink-0" />
-            <p className="text-sm text-slate-500">Not configured — AI features are disabled</p>
+            <p className="text-sm text-slate-500">Sin configurar — Las funciones de IA están desactivadas</p>
           </>
         )}
       </div>
 
       {/* Input form */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div>
           <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
-            {configured ? 'Replace API key' : 'Enter API key'}
+            {configured ? 'Reemplazar clave API' : 'Ingresar clave API'}
           </Label>
           <div className="relative">
             <Input
@@ -159,18 +160,18 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
               {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            The key is validated against OpenAI before being saved. It is never stored in plain text.
+          <p className="text-xs text-slate-400 mt-1.5">
+            La clave se valida contra OpenAI antes de guardarse. Nunca se almacena en texto plano.
           </p>
         </div>
 
         <button
           onClick={() => void handleSave()}
           disabled={saving || !apiKey.trim()}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md disabled:opacity-50"
         >
           {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          {saving ? 'Verifying…' : 'Save and verify'}
+          {saving ? 'Verificando…' : 'Guardar y verificar'}
         </button>
       </div>
     </div>

@@ -35,32 +35,32 @@ export function BotCard({ bot }: BotCardProps) {
   async function handleToggle(value: boolean) {
     setToggling(true);
     const previous = isActive;
-    setIsActive(value); // Optimistic update
+    setIsActive(value);
     try {
       const res = await fetch(`/api/bots/${bot.id}/toggle`, { method: 'POST' });
       if (!res.ok) throw new Error();
-      toast.success(`Bot ${value ? 'activated' : 'paused'}`);
+      toast.success(`Bot ${value ? 'activado' : 'pausado'}`);
     } catch {
-      setIsActive(previous); // Revert on error
-      toast.error('Failed to toggle bot. Please try again.');
+      setIsActive(previous);
+      toast.error('Error al cambiar el estado del bot. Inténtalo de nuevo.');
     } finally {
       setToggling(false);
     }
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-5">
         <div className="flex items-center gap-3">
           {bot.account.pictureUrl ? (
             <img
               src={bot.account.pictureUrl}
               alt={bot.account.pageName}
-              className="h-10 w-10 rounded-full object-cover"
+              className="h-11 w-11 rounded-full object-cover ring-2 ring-slate-100"
             />
           ) : (
-            <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center">
+            <div className="h-11 w-11 rounded-full bg-slate-100 flex items-center justify-center">
               <PlatformIcon className={`h-5 w-5 ${platformColor}`} />
             </div>
           )}
@@ -83,18 +83,18 @@ export function BotCard({ bot }: BotCardProps) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="text-center py-2 bg-slate-50 rounded-lg">
-          <p className="text-lg font-semibold text-slate-900">{bot.stats.commentsToday}</p>
-          <p className="text-xs text-slate-500">Comments</p>
+      <div className="grid grid-cols-3 gap-2 mb-5">
+        <div className="text-center py-2.5 bg-slate-50 rounded-xl">
+          <p className="text-xl font-bold text-slate-900">{bot.stats.commentsToday}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Comentarios</p>
         </div>
-        <div className="text-center py-2 bg-emerald-50 rounded-lg">
-          <p className="text-lg font-semibold text-emerald-700">{bot.stats.repliesToday}</p>
-          <p className="text-xs text-emerald-600">Replied</p>
+        <div className="text-center py-2.5 bg-emerald-50 rounded-xl">
+          <p className="text-xl font-bold text-emerald-700">{bot.stats.repliesToday}</p>
+          <p className="text-xs text-emerald-600 mt-0.5">Respondidos</p>
         </div>
-        <div className="text-center py-2 bg-red-50 rounded-lg">
-          <p className="text-lg font-semibold text-red-700">{bot.stats.deletedToday}</p>
-          <p className="text-xs text-red-600">Deleted</p>
+        <div className="text-center py-2.5 bg-red-50 rounded-xl">
+          <p className="text-xl font-bold text-red-700">{bot.stats.deletedToday}</p>
+          <p className="text-xs text-red-600 mt-0.5">Eliminados</p>
         </div>
       </div>
 
@@ -103,8 +103,8 @@ export function BotCard({ bot }: BotCardProps) {
         <span
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
             isActive
-              ? 'bg-emerald-50 text-emerald-700'
-              : 'bg-slate-100 text-slate-600'
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              : 'bg-slate-100 text-slate-600 border border-slate-200'
           }`}
         >
           <span
@@ -112,13 +112,13 @@ export function BotCard({ bot }: BotCardProps) {
               isActive ? 'bg-emerald-500' : 'bg-slate-400'
             }`}
           />
-          {isActive ? 'Active' : 'Paused'}
+          {isActive ? 'Activo' : 'Pausado'}
         </span>
         <Link
           href={`/bots/${bot.id}`}
-          className="text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+          className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1"
         >
-          Configure →
+          Configurar →
         </Link>
       </div>
     </div>

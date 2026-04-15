@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { BotCard } from '@/components/bots/BotCard';
-import { Settings } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function BotsPage() {
@@ -45,23 +45,23 @@ export default async function BotsPage() {
     <div>
       <PageHeader
         title="Bots"
-        description="Manage your AI comment bots for each connected account."
+        description="Gestiona tus bots de comentarios con IA para cada cuenta conectada."
       />
 
       {botsWithStats.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="h-14 w-14 bg-slate-100 rounded-xl flex items-center justify-center mb-4">
-            <Settings className="h-7 w-7 text-slate-400" />
+        <div className="flex flex-col items-center justify-center py-24 bg-white border border-slate-200 rounded-2xl shadow-sm">
+          <div className="h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-5">
+            <Bot className="h-8 w-8 text-indigo-400" />
           </div>
-          <h3 className="text-base font-semibold text-slate-900 mb-1">No bots yet</h3>
-          <p className="text-sm text-slate-500 text-center max-w-xs mb-6">
-            Connect a Facebook Page or Instagram account to automatically create a bot.
+          <h3 className="text-base font-semibold text-slate-900 mb-2">Sin bots aún</h3>
+          <p className="text-sm text-slate-500 text-center max-w-xs mb-7">
+            Conecta una página de Facebook o cuenta de Instagram para crear automáticamente un bot.
           </p>
           <Link
             href="/accounts"
-            className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors"
+            className="bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow-md"
           >
-            Connect Account
+            Conectar Cuenta
           </Link>
         </div>
       ) : (

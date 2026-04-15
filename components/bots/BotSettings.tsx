@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  MessageSquare, Trash2, EyeOff, Zap, CheckCircle2, Loader2,
+  MessageSquare, Trash2, EyeOff, Zap, Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -53,7 +53,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
       });
       if (!res.ok) throw new Error();
     } catch {
-      toast.error('Failed to save. Please try again.');
+      toast.error('Error al guardar. Inténtalo de nuevo.');
     } finally {
       setSaving(null);
     }
@@ -71,49 +71,49 @@ export function BotSettings({ bot }: BotSettingsProps) {
   const toggles = [
     {
       field: 'autoReply',
-      label: 'Auto-reply with AI',
-      description: 'Automatically generate and post AI replies to eligible comments.',
+      label: 'Respuesta automática con IA',
+      description: 'Genera y publica automáticamente respuestas de IA a los comentarios elegibles.',
       icon: <MessageSquare className="h-4 w-4" />,
     },
     {
       field: 'deleteNegative',
-      label: 'Delete negative comments',
-      description: 'Delete comments that match offensive or negative keyword rules.',
+      label: 'Eliminar comentarios negativos',
+      description: 'Elimina los comentarios que coincidan con reglas de palabras clave ofensivas o negativas.',
       icon: <Trash2 className="h-4 w-4" />,
     },
     {
       field: 'hideSpam',
-      label: 'Hide spam comments',
-      description: 'Hide comments that match spam keyword rules.',
+      label: 'Ocultar comentarios spam',
+      description: 'Oculta los comentarios que coincidan con reglas de palabras clave de spam.',
       icon: <EyeOff className="h-4 w-4" />,
     },
     {
       field: 'aiEnabled',
-      label: 'AI-powered moderation',
-      description: 'Use Claude AI to classify borderline comments beyond keyword rules.',
+      label: 'Moderación potenciada por IA',
+      description: 'Usa IA para clasificar comentarios límite más allá de las reglas de palabras clave.',
       icon: <Zap className="h-4 w-4" />,
     },
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* General */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-        <h2 className="text-base font-semibold text-slate-900 mb-4">General</h2>
-        <div className="space-y-4">
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-5">General</h2>
+        <div className="space-y-5">
           <div>
-            <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Bot name</Label>
+            <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Nombre del bot</Label>
             <Input
               defaultValue={data.name}
               onBlur={(e) => handleTextBlur('name', e.target.value)}
               className="max-w-xs"
             />
           </div>
-          <div className="flex items-center justify-between py-2">
+          <div className="flex items-center justify-between py-3 border-t border-slate-100">
             <div>
-              <p className="text-sm font-medium text-slate-900">Master switch</p>
+              <p className="text-sm font-medium text-slate-900">Interruptor principal</p>
               <p className="text-xs text-slate-500 mt-0.5">
-                When off, this bot will not process any comments.
+                Cuando está apagado, este bot no procesará ningún comentario.
               </p>
             </div>
             <Switch
@@ -122,17 +122,17 @@ export function BotSettings({ bot }: BotSettingsProps) {
               className="data-[state=checked]:bg-indigo-600"
             />
           </div>
-          <div className="text-sm text-slate-500 bg-slate-50 rounded-lg px-3 py-2">
-            Connected to{' '}
+          <div className="text-sm text-slate-500 bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
+            Conectado a{' '}
             <span className="font-medium text-slate-700">{data.account.pageName}</span>{' '}
-            ({data.account.platform.toLowerCase()})
+            ({data.account.platform === 'FACEBOOK' ? 'Facebook' : data.account.platform === 'INSTAGRAM' ? 'Instagram' : data.account.platform.toLowerCase()})
           </div>
         </div>
       </div>
 
       {/* Automation Toggles */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-        <h2 className="text-base font-semibold text-slate-900 mb-2">Automation</h2>
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-2">Automatización</h2>
         <div>
           {toggles.map((toggle) => (
             <div
@@ -140,7 +140,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
               className="flex items-start justify-between py-4 border-b border-slate-100 last:border-0"
             >
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 h-8 w-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                <div className="mt-0.5 h-9 w-9 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600">
                   {toggle.icon}
                 </div>
                 <div>
@@ -162,13 +162,13 @@ export function BotSettings({ bot }: BotSettingsProps) {
       </div>
 
       {/* AI Configuration */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-        <h2 className="text-base font-semibold text-slate-900 mb-4">AI Configuration</h2>
-        <div className="space-y-4">
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-5">Configuración de IA</h2>
+        <div className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
-                Reply tone
+                Tono de respuesta
               </Label>
               <Select
                 defaultValue={data.replyTone}
@@ -182,7 +182,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="friendly">Friendly</SelectItem>
+                  <SelectItem value="friendly">Amigable</SelectItem>
                   <SelectItem value="formal">Formal</SelectItem>
                   <SelectItem value="casual">Casual</SelectItem>
                 </SelectContent>
@@ -191,7 +191,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
 
             <div>
               <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
-                Language
+                Idioma
               </Label>
               <Select
                 defaultValue={data.language}
@@ -205,9 +205,9 @@ export function BotSettings({ bot }: BotSettingsProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="es">Spanish</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="pt">Portuguese</SelectItem>
+                  <SelectItem value="es">Español</SelectItem>
+                  <SelectItem value="en">Inglés</SelectItem>
+                  <SelectItem value="pt">Portugués</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -215,7 +215,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
 
           <div>
             <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
-              Max reply length (characters)
+              Longitud máxima de respuesta (caracteres)
             </Label>
             <Input
               type="number"
@@ -229,17 +229,17 @@ export function BotSettings({ bot }: BotSettingsProps) {
 
           <div>
             <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
-              Custom instructions
+              Instrucciones personalizadas
             </Label>
             <Textarea
               defaultValue={data.systemInstructions ?? ''}
               onBlur={e => handleTextBlur('systemInstructions', e.target.value)}
-              placeholder="e.g. Never reveal delivery dates. Always redirect financing questions to WhatsApp."
+              placeholder="Ej: Nunca revelar fechas de entrega. Siempre redirigir preguntas de financiación a WhatsApp."
               rows={4}
               className="resize-none"
             />
-            <p className="text-xs text-slate-400 mt-1">
-              These instructions are injected directly into the AI prompt.
+            <p className="text-xs text-slate-400 mt-1.5">
+              Estas instrucciones se inyectan directamente en el prompt de la IA.
             </p>
           </div>
         </div>

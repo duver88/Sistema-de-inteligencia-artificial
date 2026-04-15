@@ -37,12 +37,12 @@ export default async function RulesPage({
           className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
-          Back to bot
+          Volver al bot
         </Link>
       </div>
       <PageHeader
-        title="Moderation Rules"
-        description={`Delete and spam keyword patterns for ${bot.name}`}
+        title="Reglas de Moderación"
+        description={`Patrones de palabras clave para eliminar y spam en ${bot.name}`}
       />
       <ModerationRulesEditor
         botId={botId}

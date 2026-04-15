@@ -45,12 +45,12 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
 
   if (comments.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <div className="h-12 w-12 bg-slate-100 rounded-xl flex items-center justify-center mb-3">
-          <MessageCircle className="h-6 w-6 text-slate-400" />
+      <div className="flex flex-col items-center justify-center py-24 bg-white border border-slate-200 rounded-2xl shadow-sm">
+        <div className="h-14 w-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+          <MessageCircle className="h-7 w-7 text-slate-400" />
         </div>
-        <p className="text-sm font-semibold text-slate-900 mb-1">No comments found</p>
-        <p className="text-xs text-slate-500">Try adjusting your filters.</p>
+        <p className="text-sm font-semibold text-slate-900 mb-1">Sin comentarios</p>
+        <p className="text-xs text-slate-500">Intenta ajustar los filtros.</p>
       </div>
     );
   }
@@ -73,20 +73,20 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
           {currentPage > 1 && (
             <Link
               href={buildPageUrl(currentPage - 1)}
-              className="px-3 py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
             >
-              Previous
+              Anterior
             </Link>
           )}
-          <span className="text-sm text-slate-500">
-            Page {currentPage} of {totalPages}
+          <span className="text-sm text-slate-500 px-2">
+            Página {currentPage} de {totalPages}
           </span>
           {currentPage < totalPages && (
             <Link
               href={buildPageUrl(currentPage + 1)}
-              className="px-3 py-1.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
             >
-              Next
+              Siguiente
             </Link>
           )}
         </div>

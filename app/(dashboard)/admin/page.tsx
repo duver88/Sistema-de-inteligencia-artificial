@@ -28,23 +28,23 @@ export default async function AdminPage() {
   return (
     <div>
       <PageHeader
-        title="Admin Panel"
-        description="Super-admin view of all tenants on the platform."
+        title="Panel de Administración"
+        description="Vista de súper-administrador de todos los tenants en la plataforma."
       />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">Tenants</p>
-          <p className="text-2xl font-bold text-slate-900">{tenants.length}</p>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-2">Tenants</p>
+          <p className="text-3xl font-bold text-slate-900">{tenants.length}</p>
         </div>
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">Total Users</p>
-          <p className="text-2xl font-bold text-slate-900">{totalUsers}</p>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-2">Total Usuarios</p>
+          <p className="text-3xl font-bold text-slate-900">{totalUsers}</p>
         </div>
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">Total Bots</p>
-          <p className="text-2xl font-bold text-slate-900">{totalBots}</p>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-2">Total Bots</p>
+          <p className="text-3xl font-bold text-slate-900">{totalBots}</p>
         </div>
       </div>
 

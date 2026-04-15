@@ -45,7 +45,20 @@ interface KnowledgeBaseEditorProps {
   projects: Project[];
 }
 
-const CATEGORIES = ['pricing', 'features', 'location', 'contact', 'financing', 'general'];
+const CATEGORIES = ['precios', 'características', 'ubicación', 'contacto', 'financiamiento', 'general'];
+const CATEGORY_LABELS: Record<string, string> = {
+  precios: 'Precios',
+  características: 'Características',
+  ubicación: 'Ubicación',
+  contacto: 'Contacto',
+  financiamiento: 'Financiamiento',
+  general: 'General',
+  pricing: 'Precios',
+  features: 'Características',
+  location: 'Ubicación',
+  contact: 'Contacto',
+  financing: 'Financiamiento',
+};
 
 export function KnowledgeBaseEditor({
   botId,
@@ -63,7 +76,7 @@ export function KnowledgeBaseEditor({
 
   async function handleAdd() {
     if (!newKey.trim() || !newValue.trim()) {
-      toast.error('Key and value are required');
+      toast.error('La clave y el valor son requeridos');
       return;
     }
     setSaving(true);
@@ -84,9 +97,9 @@ export function KnowledgeBaseEditor({
       setNewKey('');
       setNewValue('');
       setAdding(false);
-      toast.success('Entry added');
+      toast.success('Entrada agregada');
     } catch {
-      toast.error('Failed to add entry');
+      toast.error('Error al agregar la entrada');
     } finally {
       setSaving(false);
     }
@@ -101,9 +114,9 @@ export function KnowledgeBaseEditor({
       );
       if (!res.ok) throw new Error();
       setEntries(prev => prev.filter(e => e.id !== entryId));
-      toast.success('Entry deleted');
+      toast.success('Entrada eliminada');
     } catch {
-      toast.error('Failed to delete entry');
+      toast.error('Error al eliminar la entrada');
     } finally {
       setDeletingId(null);
     }
@@ -116,43 +129,43 @@ export function KnowledgeBaseEditor({
         <div />
         <button
           onClick={() => setAdding(v => !v)}
-          className="flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md"
         >
           <Plus className="h-4 w-4" />
-          Add Entry
+          Agregar Entrada
         </button>
       </div>
 
       {/* Add form */}
       {adding && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4 space-y-3">
+        <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-5 mb-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-sm font-medium text-slate-700 mb-1 block">Key</Label>
+              <Label className="text-sm font-medium text-slate-700 mb-1 block">Clave</Label>
               <Input
-                placeholder="e.g. Precio desde"
+                placeholder="Ej: Precio desde"
                 value={newKey}
                 onChange={e => setNewKey(e.target.value)}
               />
             </div>
             <div>
-              <Label className="text-sm font-medium text-slate-700 mb-1 block">Category</Label>
+              <Label className="text-sm font-medium text-slate-700 mb-1 block">Categoría</Label>
               <Select value={newCategory} onValueChange={v => { if (v) setNewCategory(v); }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map(c => (
-                    <SelectItem key={c} value={c} className="capitalize">{c}</SelectItem>
+                    <SelectItem key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div>
-            <Label className="text-sm font-medium text-slate-700 mb-1 block">Value</Label>
+            <Label className="text-sm font-medium text-slate-700 mb-1 block">Valor</Label>
             <Textarea
-              placeholder="e.g. $180,000,000 COP"
+              placeholder="Ej: $180,000,000 COP"
               value={newValue}
               onChange={e => setNewValue(e.target.value)}
               rows={2}
@@ -161,13 +174,13 @@ export function KnowledgeBaseEditor({
           </div>
           {projects.length > 0 && (
             <div>
-              <Label className="text-sm font-medium text-slate-700 mb-1 block">Project (optional)</Label>
+              <Label className="text-sm font-medium text-slate-700 mb-1 block">Proyecto (opcional)</Label>
               <Select value={newProjectId} onValueChange={v => setNewProjectId(v ?? '')}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Global (all projects)" />
+                  <SelectValue placeholder="Global (todos los proyectos)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Global (all projects)</SelectItem>
+                  <SelectItem value="">Global (todos los proyectos)</SelectItem>
                   {projects.map(p => (
                     <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                   ))}
@@ -179,16 +192,16 @@ export function KnowledgeBaseEditor({
             <button
               onClick={handleAdd}
               disabled={saving}
-              className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white text-sm font-medium rounded-xl transition-all disabled:opacity-50"
             >
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-              Save
+              Guardar
             </button>
             <button
               onClick={() => setAdding(false)}
-              className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
             >
-              Cancel
+              Cancelar
             </button>
           </div>
         </div>
@@ -196,25 +209,25 @@ export function KnowledgeBaseEditor({
 
       {/* Entries table */}
       {entries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="h-12 w-12 bg-slate-100 rounded-xl flex items-center justify-center mb-3">
-            <BookOpen className="h-6 w-6 text-slate-400" />
+        <div className="flex flex-col items-center justify-center py-20 bg-white border border-slate-200 rounded-2xl shadow-sm">
+          <div className="h-14 w-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
+            <BookOpen className="h-7 w-7 text-slate-400" />
           </div>
-          <p className="text-sm font-semibold text-slate-900 mb-1">No entries yet</p>
+          <p className="text-sm font-semibold text-slate-900 mb-1">Sin entradas aún</p>
           <p className="text-xs text-slate-500 text-center max-w-xs">
-            Add knowledge entries so the AI can answer questions accurately.
+            Agrega entradas de conocimiento para que la IA pueda responder preguntas con precisión.
           </p>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">Key</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">Value</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">Category</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">Project</th>
-                <th className="px-4 py-3" />
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Clave</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Valor</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Categoría</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Proyecto</th>
+                <th className="px-5 py-3.5" />
               </tr>
             </thead>
             <tbody>
@@ -223,21 +236,21 @@ export function KnowledgeBaseEditor({
                   key={entry.id}
                   className={`border-b border-slate-100 last:border-0 ${i % 2 === 0 ? '' : 'bg-slate-50/50'}`}
                 >
-                  <td className="px-4 py-3 font-medium text-slate-900">{entry.key}</td>
-                  <td className="px-4 py-3 text-slate-600 max-w-xs">
+                  <td className="px-5 py-3.5 font-medium text-slate-900">{entry.key}</td>
+                  <td className="px-5 py-3.5 text-slate-600 max-w-xs">
                     <span className="line-clamp-2">{entry.value}</span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-5 py-3.5">
                     {entry.category && (
-                      <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-600 capitalize">
-                        {entry.category}
+                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                        {CATEGORY_LABELS[entry.category] ?? entry.category}
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-500">
+                  <td className="px-5 py-3.5 text-xs text-slate-500">
                     {entry.project?.name ?? 'Global'}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-5 py-3.5 text-right">
                     <AlertDialog>
                       <AlertDialogTrigger
                         disabled={deletingId === entry.id}
@@ -251,18 +264,18 @@ export function KnowledgeBaseEditor({
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Delete this entry?</AlertDialogTitle>
+                          <AlertDialogTitle>¿Eliminar esta entrada?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            The AI will no longer have access to this information when generating replies.
+                            La IA ya no tendrá acceso a esta información al generar respuestas.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => handleDelete(entry.id)}
                             className="bg-red-600 hover:bg-red-700 text-white"
                           >
-                            Delete
+                            Eliminar
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

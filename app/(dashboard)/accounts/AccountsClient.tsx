@@ -25,50 +25,49 @@ export function AccountsClient({ initialAccounts }: { initialAccounts: Account[]
   }
 
   function handleConnected() {
-    // Reload the page to show new accounts
     window.location.reload();
   }
 
   return (
     <div>
       <PageHeader
-        title="Connected Accounts"
-        description="Manage your Facebook Pages and Instagram accounts."
+        title="Cuentas Conectadas"
+        description="Gestiona tus páginas de Facebook y cuentas de Instagram."
         action={<ConnectAccountCard onConnected={handleConnected} />}
       />
 
       {accounts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="h-14 w-14 bg-slate-100 rounded-xl flex items-center justify-center mb-4">
-            <LinkIcon className="h-7 w-7 text-slate-400" />
+        <div className="flex flex-col items-center justify-center py-24 bg-white border border-slate-200 rounded-2xl shadow-sm">
+          <div className="h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-5">
+            <LinkIcon className="h-8 w-8 text-indigo-400" />
           </div>
-          <h3 className="text-base font-semibold text-slate-900 mb-1">
-            No accounts connected
+          <h3 className="text-base font-semibold text-slate-900 mb-2">
+            Sin cuentas conectadas
           </h3>
-          <p className="text-sm text-slate-500 text-center max-w-xs mb-6">
-            Connect your Facebook Pages and Instagram accounts to start managing
-            comments with AI.
+          <p className="text-sm text-slate-500 text-center max-w-xs mb-7">
+            Conecta tus páginas de Facebook e Instagram para comenzar a gestionar
+            comentarios con IA.
           </p>
           <ConnectAccountCard onConnected={handleConnected} />
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                  Account
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Cuenta
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                  Platform
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Plataforma
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                  Connected
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Conectada
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wide">
-                  Status
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Estado
                 </th>
-                <th className="px-4 py-3" />
+                <th className="px-5 py-3.5" />
               </tr>
             </thead>
             <tbody>

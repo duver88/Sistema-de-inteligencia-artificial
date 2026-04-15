@@ -39,10 +39,10 @@ export function ConnectAccountCard({ onConnected }: ConnectAccountCardProps) {
     try {
       const res = await fetch('/api/meta/pages');
       const data = await res.json() as { pages?: Page[]; error?: string };
-      if (!res.ok) throw new Error(data.error ?? 'Failed to load pages');
+      if (!res.ok) throw new Error(data.error ?? 'Error al cargar páginas');
       setPages(data.pages ?? []);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to load pages');
+      toast.error(err instanceof Error ? err.message : 'Error al cargar páginas');
       setOpen(false);
     } finally {
       setLoading(false);
@@ -68,9 +68,8 @@ export function ConnectAccountCard({ onConnected }: ConnectAccountCardProps) {
           platform: 'FACEBOOK',
         }),
       });
-      if (!res.ok) throw new Error('Failed to connect page');
+      if (!res.ok) throw new Error('Error al conectar la página');
 
-      // Also connect linked Instagram account if present
       if (page.instagram_business_account) {
         const ig = page.instagram_business_account;
         await fetch('/api/accounts', {
@@ -87,11 +86,11 @@ export function ConnectAccountCard({ onConnected }: ConnectAccountCardProps) {
         });
       }
 
-      toast.success(`${page.name} connected successfully`);
+      toast.success(`${page.name} conectada exitosamente`);
       onConnected();
       setOpen(false);
     } catch {
-      toast.error('Failed to connect page. Please try again.');
+      toast.error('Error al conectar la página. Inténtalo de nuevo.');
     } finally {
       setConnecting(null);
     }
@@ -101,28 +100,28 @@ export function ConnectAccountCard({ onConnected }: ConnectAccountCardProps) {
     <>
       <button
         onClick={handleOpen}
-        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition-colors"
+        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white text-sm font-medium rounded-xl transition-all shadow-sm hover:shadow-md"
       >
         <Plus className="h-4 w-4" />
-        Connect Account
+        Conectar Cuenta
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Connect a Facebook Page</DialogTitle>
+            <DialogTitle>Conectar una Página de Facebook</DialogTitle>
           </DialogHeader>
 
           {loading ? (
-            <div className="py-12 flex flex-col items-center gap-3">
+            <div className="py-14 flex flex-col items-center gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-              <p className="text-sm text-slate-500">Loading your pages…</p>
+              <p className="text-sm text-slate-500">Cargando tus páginas…</p>
             </div>
           ) : pages.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-sm text-slate-500">No Facebook Pages found.</p>
+            <div className="py-14 text-center">
+              <p className="text-sm text-slate-500">No se encontraron páginas de Facebook.</p>
               <p className="text-xs text-slate-400 mt-1">
-                Make sure you manage at least one Facebook Page.
+                Asegúrate de administrar al menos una Página de Facebook.
               </p>
             </div>
           ) : (
@@ -130,17 +129,17 @@ export function ConnectAccountCard({ onConnected }: ConnectAccountCardProps) {
               {pages.map(page => (
                 <div
                   key={page.id}
-                  className="flex items-center justify-between p-3 border border-slate-200 rounded-xl hover:bg-slate-50"
+                  className="flex items-center justify-between p-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     {page.picture?.data?.url ? (
                       <img
                         src={page.picture.data.url}
                         alt={page.name}
-                        className="h-9 w-9 rounded-full object-cover"
+                        className="h-10 w-10 rounded-full object-cover"
                       />
                     ) : (
-                      <div className="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                         <FacebookIcon className="h-4 w-4 text-blue-600" />
                       </div>
                     )}
@@ -157,14 +156,14 @@ export function ConnectAccountCard({ onConnected }: ConnectAccountCardProps) {
                   <button
                     onClick={() => connectPage(page)}
                     disabled={connecting === page.id}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white text-xs font-medium rounded-lg transition-all disabled:opacity-50"
                   >
                     {connecting === page.id ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     )}
-                    Connect
+                    Conectar
                   </button>
                 </div>
               ))}

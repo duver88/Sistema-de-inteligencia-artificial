@@ -45,12 +45,12 @@ export default async function KnowledgePage({
           className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
-          Back to bot
+          Volver al bot
         </Link>
       </div>
       <PageHeader
-        title="Knowledge Base"
-        description={`Facts and Q&A entries for ${bot.name}`}
+        title="Base de Conocimiento"
+        description={`Hechos y preguntas frecuentes para ${bot.name}`}
       />
       <KnowledgeBaseEditor
         botId={botId}
