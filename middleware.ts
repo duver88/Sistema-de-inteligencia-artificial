@@ -1,5 +1,16 @@
-import { auth } from '@/lib/auth';
+/**
+ * middleware.ts — Edge-compatible auth guard.
+ *
+ * Uses the lightweight authConfig (no PrismaAdapter, no Node.js crypto)
+ * so this file can safely run in the Edge Runtime. The full NextAuth
+ * config (with adapter + token encryption) is in lib/auth.ts and only
+ * runs in Node.js server contexts.
+ */
+import NextAuth from 'next-auth';
+import { authConfig } from './auth.config';
 import { NextResponse } from 'next/server';
+
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
