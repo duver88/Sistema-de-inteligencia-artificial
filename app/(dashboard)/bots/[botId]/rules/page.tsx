@@ -24,6 +24,8 @@ export default async function RulesPage({
       name: true,
       deleteKeywords: true,
       spamKeywords: true,
+      deleteInstructions: true,
+      spamInstructions: true,
     },
   });
 
@@ -42,12 +44,14 @@ export default async function RulesPage({
       </div>
       <PageHeader
         title="Reglas de Moderación"
-        description={`Patrones de palabras clave para eliminar y spam en ${bot.name}`}
+        description={`Dos niveles de moderación para ${bot.name}: palabras clave (rápido) + IA (inteligente)`}
       />
       <ModerationRulesEditor
         botId={botId}
         initialDeleteKeywords={bot.deleteKeywords as string[]}
         initialSpamKeywords={bot.spamKeywords as string[]}
+        initialDeleteInstructions={bot.deleteInstructions ?? ''}
+        initialSpamInstructions={bot.spamInstructions ?? ''}
       />
     </div>
   );

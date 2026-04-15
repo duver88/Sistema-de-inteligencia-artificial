@@ -1,17 +1,40 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, Loader2, ShieldAlert, EyeOff, FlaskConical } from 'lucide-react';
+import { Plus, Trash2, Loader2, ShieldAlert, EyeOff, FlaskConical, RotateCcw, Zap, Brain } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { testPattern } from '@/lib/moderation/keyword-detector';
+
+// ── Default keyword sets ───────────────────────────────────────────────────────
+
+const DEFAULT_DELETE_KEYWORDS = [
+  'estafa', 'estafadores?', 'ladrón|ladrones', 'roban|robando|robaron',
+  'corruptos?', 'mentirosos?', 'fraude', 'timadores?', 'engañan|engañaron',
+  'maldita', 'mierda', 'puta|puto', 'hijue', 'imbécil|imbecil',
+  'idiota', 'pendejo', 'cárcel|carcel', 'denuncia', 'demanda legal',
+];
+
+const DEFAULT_SPAM_KEYWORDS = [
+  'gana dinero', 'trabaja desde casa', 'inversión segura',
+  'crypto|bitcoin|ethereum', 'sígame|follow me', 'link en bio|link in bio',
+  '\\+\\d{7,}', 'telegram\\.me|t\\.me', 'ventas directas', 'multinivel|mlm',
+  'suscríbete|subscribe',
+];
+
+// ── Props ──────────────────────────────────────────────────────────────────────
 
 interface ModerationRulesEditorProps {
   botId: string;
   initialDeleteKeywords: string[];
   initialSpamKeywords: string[];
+  initialDeleteInstructions: string;
+  initialSpamInstructions: string;
 }
+
+// ── PatternList sub-component ──────────────────────────────────────────────────
 
 function PatternList({
   title,
@@ -19,8 +42,10 @@ function PatternList({
   icon,
   color,
   patterns,
+  defaults,
   onAdd,
   onRemove,
+  onLoadDefaults,
   saving,
 }: {
   title: string;
@@ -28,33 +53,51 @@ function PatternList({
   icon: React.ReactNode;
   color: 'red' | 'amber';
   patterns: string[];
+  defaults: string[];
   onAdd: (p: string) => Promise<void>;
   onRemove: (p: string) => Promise<void>;
+  onLoadDefaults: () => Promise<void>;
   saving: boolean;
 }) {
   const [input, setInput] = useState('');
   const [testText, setTestText] = useState('');
   const [showTester, setShowTester] = useState(false);
+  const [loadingDefaults, setLoadingDefaults] = useState(false);
 
   const bgColor = color === 'red' ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200';
   const iconBg = color === 'red' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600';
   const badgeBg = color === 'red' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700';
 
-  const matchedPatterns = testText
-    ? patterns.filter(p => testPattern(p, testText))
-    : [];
+  const matchedPatterns = testText ? patterns.filter(p => testPattern(p, testText)) : [];
+  const missingDefaults = defaults.filter(d => !patterns.includes(d));
 
   async function handleAdd() {
     const trimmed = input.trim();
     if (!trimmed) return;
-    try {
-      new RegExp(trimmed, 'i');
-    } catch {
+    try { new RegExp(trimmed, 'i'); } catch {
       toast.error('Patrón regex inválido');
+      return;
+    }
+    if (patterns.includes(trimmed)) {
+      toast.error('Este patrón ya existe');
       return;
     }
     await onAdd(trimmed);
     setInput('');
+  }
+
+  async function handleLoadDefaults() {
+    if (missingDefaults.length === 0) {
+      toast.info('Ya tienes todos los patrones predeterminados');
+      return;
+    }
+    setLoadingDefaults(true);
+    try {
+      await onLoadDefaults();
+      toast.success(`${missingDefaults.length} patrón${missingDefaults.length !== 1 ? 'es' : ''} predeterminado${missingDefaults.length !== 1 ? 's' : ''} cargado${missingDefaults.length !== 1 ? 's' : ''}`);
+    } finally {
+      setLoadingDefaults(false);
+    }
   }
 
   return (
@@ -65,23 +108,34 @@ function PatternList({
             {icon}
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+            <h3 className="text-sm font-bold text-slate-900">{title}</h3>
             <p className="text-xs text-slate-500 mt-0.5">{description}</p>
           </div>
         </div>
-        <button
-          onClick={() => setShowTester(v => !v)}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-xl transition-colors ${showTester ? `${bgColor} border` : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-        >
-          <FlaskConical className="h-3.5 w-3.5" />
-          Probar
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => void handleLoadDefaults()}
+            disabled={loadingDefaults || missingDefaults.length === 0}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-40"
+            title={missingDefaults.length > 0 ? `Agregar ${missingDefaults.length} patrones predeterminados` : 'Ya están todos los predeterminados'}
+          >
+            {loadingDefaults ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+            Defaults {missingDefaults.length > 0 && `(+${missingDefaults.length})`}
+          </button>
+          <button
+            onClick={() => setShowTester(v => !v)}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl transition-colors ${showTester ? `${bgColor} border` : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+          >
+            <FlaskConical className="h-3.5 w-3.5" />
+            Probar
+          </button>
+        </div>
       </div>
 
       {/* Pattern tester */}
       {showTester && (
         <div className={`border rounded-xl p-3.5 mb-4 ${bgColor}`}>
-          <Label className="text-xs font-medium text-slate-600 mb-1.5 block">
+          <Label className="text-xs font-semibold text-slate-600 mb-1.5 block">
             Texto de comentario de prueba
           </Label>
           <Input
@@ -93,40 +147,40 @@ function PatternList({
           {testText && (
             <p className="mt-2 text-xs">
               {matchedPatterns.length > 0 ? (
-                <span className="text-red-700 font-medium">
-                  Coincidencias: {matchedPatterns.map(p => `"${p}"`).join(', ')}
+                <span className="text-red-700 font-semibold">
+                  Coincide con: {matchedPatterns.map(p => `"${p}"`).join(', ')}
                 </span>
               ) : (
-                <span className="text-green-700 font-medium">Sin coincidencias — el comentario pasaría.</span>
+                <span className="text-emerald-700 font-semibold">Sin coincidencias — el comentario pasaría al nivel IA.</span>
               )}
             </p>
           )}
         </div>
       )}
 
-      {/* Add pattern */}
+      {/* Add pattern input */}
       <div className="flex gap-2 mb-4">
         <Input
-          placeholder="Ej: muy caro o regex como put[ao]"
+          placeholder="Ej: muy caro  o regex como put[ao]"
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') void handleAdd(); }}
-          className="text-sm"
+          className="text-sm font-mono"
         />
         <button
           onClick={() => void handleAdd()}
           disabled={saving || !input.trim()}
-          className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50 flex-shrink-0"
+          className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 flex-shrink-0"
         >
           {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
           Agregar
         </button>
       </div>
 
-      {/* Pattern list */}
+      {/* Pattern chips */}
       {patterns.length === 0 ? (
-        <p className="text-xs text-slate-400 text-center py-4">
-          Sin patrones aún. Agrega uno arriba.
+        <p className="text-xs text-slate-400 text-center py-4 border border-dashed border-slate-200 rounded-xl">
+          Sin patrones aún — usa "Defaults" para cargar los predeterminados.
         </p>
       ) : (
         <div className="flex flex-wrap gap-2">
@@ -150,16 +204,23 @@ function PatternList({
   );
 }
 
+// ── Main component ─────────────────────────────────────────────────────────────
+
 export function ModerationRulesEditor({
   botId,
   initialDeleteKeywords,
   initialSpamKeywords,
+  initialDeleteInstructions,
+  initialSpamInstructions,
 }: ModerationRulesEditorProps) {
   const [deleteKeywords, setDeleteKeywords] = useState(initialDeleteKeywords);
   const [spamKeywords, setSpamKeywords] = useState(initialSpamKeywords);
+  const [deleteInstructions, setDeleteInstructions] = useState(initialDeleteInstructions);
+  const [spamInstructions, setSpamInstructions] = useState(initialSpamInstructions);
   const [saving, setSaving] = useState(false);
+  const [savingInstructions, setSavingInstructions] = useState(false);
 
-  async function patch(field: 'deleteKeywords' | 'spamKeywords', value: string[]) {
+  async function patchKeywords(field: 'deleteKeywords' | 'spamKeywords', value: string[]) {
     setSaving(true);
     try {
       const res = await fetch(`/api/bots/${botId}`, {
@@ -175,56 +236,192 @@ export function ModerationRulesEditor({
     }
   }
 
+  async function patchInstructions(field: 'deleteInstructions' | 'spamInstructions', value: string) {
+    setSavingInstructions(true);
+    try {
+      const res = await fetch(`/api/bots/${botId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success('Instrucciones guardadas');
+    } catch {
+      toast.error('Error al guardar las instrucciones');
+    } finally {
+      setSavingInstructions(false);
+    }
+  }
+
   async function addDelete(pattern: string) {
     const next = [...deleteKeywords, pattern];
     setDeleteKeywords(next);
-    await patch('deleteKeywords', next);
+    await patchKeywords('deleteKeywords', next);
     toast.success('Patrón agregado');
   }
 
   async function removeDelete(pattern: string) {
     const next = deleteKeywords.filter(p => p !== pattern);
     setDeleteKeywords(next);
-    await patch('deleteKeywords', next);
+    await patchKeywords('deleteKeywords', next);
     toast.success('Patrón eliminado');
+  }
+
+  async function loadDeleteDefaults() {
+    const missing = DEFAULT_DELETE_KEYWORDS.filter(d => !deleteKeywords.includes(d));
+    const next = [...deleteKeywords, ...missing];
+    setDeleteKeywords(next);
+    await patchKeywords('deleteKeywords', next);
   }
 
   async function addSpam(pattern: string) {
     const next = [...spamKeywords, pattern];
     setSpamKeywords(next);
-    await patch('spamKeywords', next);
+    await patchKeywords('spamKeywords', next);
     toast.success('Patrón agregado');
   }
 
   async function removeSpam(pattern: string) {
     const next = spamKeywords.filter(p => p !== pattern);
     setSpamKeywords(next);
-    await patch('spamKeywords', next);
+    await patchKeywords('spamKeywords', next);
     toast.success('Patrón eliminado');
   }
 
+  async function loadSpamDefaults() {
+    const missing = DEFAULT_SPAM_KEYWORDS.filter(d => !spamKeywords.includes(d));
+    const next = [...spamKeywords, ...missing];
+    setSpamKeywords(next);
+    await patchKeywords('spamKeywords', next);
+  }
+
   return (
-    <div className="space-y-4">
-      <PatternList
-        title="Palabras Clave para Eliminar"
-        description="Los comentarios que coincidan con estos patrones serán eliminados permanentemente."
-        icon={<ShieldAlert className="h-4 w-4" />}
-        color="red"
-        patterns={deleteKeywords}
-        onAdd={addDelete}
-        onRemove={removeDelete}
-        saving={saving}
-      />
-      <PatternList
-        title="Palabras Clave de Spam"
-        description="Los comentarios que coincidan con estos patrones serán ocultados (no eliminados)."
-        icon={<EyeOff className="h-4 w-4" />}
-        color="amber"
-        patterns={spamKeywords}
-        onAdd={addSpam}
-        onRemove={removeSpam}
-        saving={saving}
-      />
+    <div className="space-y-8">
+
+      {/* ── NIVEL 1 ── */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-8 w-8 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0">
+            <Zap className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-slate-900">Nivel 1 — Palabras clave</h2>
+            <p className="text-xs text-slate-500">Rápido, sin IA. Actúa inmediatamente cuando hay coincidencia.</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <PatternList
+            title="Eliminar comentarios"
+            description="Comentarios que coincidan serán eliminados permanentemente."
+            icon={<ShieldAlert className="h-4 w-4" />}
+            color="red"
+            patterns={deleteKeywords}
+            defaults={DEFAULT_DELETE_KEYWORDS}
+            onAdd={addDelete}
+            onRemove={removeDelete}
+            onLoadDefaults={loadDeleteDefaults}
+            saving={saving}
+          />
+          <PatternList
+            title="Ocultar spam"
+            description="Comentarios que coincidan serán ocultados (no eliminados)."
+            icon={<EyeOff className="h-4 w-4" />}
+            color="amber"
+            patterns={spamKeywords}
+            defaults={DEFAULT_SPAM_KEYWORDS}
+            onAdd={addSpam}
+            onRemove={removeSpam}
+            onLoadDefaults={loadSpamDefaults}
+            saving={saving}
+          />
+        </div>
+      </div>
+
+      {/* ── NIVEL 2 ── */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <div
+            className="h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+          >
+            <Brain className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-slate-900">Nivel 2 — Instrucciones para la IA</h2>
+            <p className="text-xs text-slate-500">
+              Se aplica solo si el comentario no coincidió con ninguna palabra clave. La IA usará estas instrucciones para decidir.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          {/* Delete instructions */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-7 w-7 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
+                <ShieldAlert className="h-3.5 w-3.5 text-red-600" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900">Instrucciones para ELIMINAR</h3>
+            </div>
+            <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+              Describe en lenguaje natural qué comentarios adicionales debe eliminar la IA, más allá de las palabras clave.
+            </p>
+            <Textarea
+              value={deleteInstructions}
+              onChange={e => setDeleteInstructions(e.target.value)}
+              onBlur={() => void patchInstructions('deleteInstructions', deleteInstructions)}
+              placeholder="Ej: Elimina comentarios que comparen negativamente con la competencia, que mencionen problemas legales o que usen sarcasmo para atacar la marca."
+              rows={5}
+              className="resize-none text-sm leading-relaxed"
+            />
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-slate-400">Se guarda automáticamente al salir del campo.</p>
+              {savingInstructions && <Loader2 className="h-3.5 w-3.5 text-slate-400 animate-spin" />}
+            </div>
+          </div>
+
+          {/* Spam instructions */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-7 w-7 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <EyeOff className="h-3.5 w-3.5 text-amber-600" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900">Instrucciones para OCULTAR (spam)</h3>
+            </div>
+            <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+              Describe qué comentarios adicionales debe ocultar la IA como spam.
+            </p>
+            <Textarea
+              value={spamInstructions}
+              onChange={e => setSpamInstructions(e.target.value)}
+              onBlur={() => void patchInstructions('spamInstructions', spamInstructions)}
+              placeholder="Ej: Oculta comentarios de cuentas sin foto de perfil que solo ponen emojis, o que mencionen otras constructoras."
+              rows={5}
+              className="resize-none text-sm leading-relaxed"
+            />
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-slate-400">Se guarda automáticamente al salir del campo.</p>
+              {savingInstructions && <Loader2 className="h-3.5 w-3.5 text-slate-400 animate-spin" />}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Processing order note */}
+        <div className="mt-4 flex items-start gap-3 p-4 rounded-xl bg-indigo-50 border border-indigo-100">
+          <Zap className="h-4 w-4 text-indigo-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-semibold text-indigo-900 mb-1">Orden de procesamiento</p>
+            <p className="text-xs text-indigo-700 leading-relaxed">
+              <strong>1.</strong> Primero se revisan las palabras clave — si hay coincidencia, se actúa inmediatamente sin usar IA.{' '}
+              <strong>2.</strong> Si no hay coincidencia, la IA analiza el comentario usando las instrucciones del Nivel 2 junto con las instrucciones personalizadas del bot.
+            </p>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }

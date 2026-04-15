@@ -52,6 +52,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     systemInstructions: string;
     deleteKeywords: string[];
     spamKeywords: string[];
+    deleteInstructions: string;
+    spamInstructions: string;
   }>;
 
   // openaiApiKey is managed exclusively via /api/settings/openai — never via bot PATCH

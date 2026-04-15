@@ -189,7 +189,14 @@ export async function processComment(
 
     // ── STEP 3: AI Classification ─────────────────────────────────────────────
     if (bot.aiEnabled) {
-      const classification = await classifyComment(comment.commentText, openaiApiKey!);
+      const classification = await classifyComment(
+        comment.commentText,
+        openaiApiKey!,
+        {
+          deleteInstructions: bot.deleteInstructions,
+          spamInstructions: bot.spamInstructions,
+        }
+      );
 
       if (classification === 'DELETE') {
         await metaClient.deleteComment(comment.commentId, pageToken);

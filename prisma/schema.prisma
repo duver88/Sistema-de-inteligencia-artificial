@@ -167,6 +167,10 @@ model Bot {
   deleteKeywords Json @default("[]") // string[] of regex patterns to auto-delete
   spamKeywords   Json @default("[]") // string[] of regex patterns to auto-hide
 
+  // AI-powered moderation instructions (natural language, complements keyword rules)
+  deleteInstructions String? @db.Text // Natural-language instructions for when to DELETE
+  spamInstructions   String? @db.Text // Natural-language instructions for when to HIDE
+
   // Projects (for multi-project pages like UrbaMares)
   projects Project[]
 
