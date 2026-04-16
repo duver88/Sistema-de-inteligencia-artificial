@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
             pageToken: encryptedIgToken,
             pictureUrl: ig.profile_picture_url,
             isActive: true,
-            linkedFacebookPageId: page.id,
+            linkedFacebookPageId: fbAccount.id,
           },
           create: {
             tenantId: ctx.tenantId,
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
             pageName: ig.name,
             pageToken: encryptedIgToken,
             pictureUrl: ig.profile_picture_url,
-            linkedFacebookPageId: page.id,
+            linkedFacebookPageId: fbAccount.id,
           },
         });
 

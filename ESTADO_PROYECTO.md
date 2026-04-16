@@ -1,83 +1,122 @@
-# Estado del Proyecto LionsCore Comments
+# LionsCore Comments - Estado del Proyecto
 
-## Qué es
-Plataforma SaaS para gestionar comentarios de Facebook e Instagram con IA.
-Cada cliente conecta sus páginas y configura un bot que responde, elimina y oculta comentarios automáticamente.
+## Descripción
+Plataforma SaaS de gestión de comentarios con IA para Facebook e Instagram.
+Permite a negocios conectar sus páginas y automatizar respuestas y moderación
+de comentarios usando inteligencia artificial.
 
-## Dominio
+## URLs
 - Producción: https://sia.lionscore.ai
-- Antiguo: https://sia.duberney.online (sigue activo)
 - Servidor: 185.225.233.46
-- Repositorio: https://github.com/duver88/Sistema-de-inteligencia-artificial
+- Repo: https://github.com/duver88/Sistema-de-inteligencia-artificial
 
-## Stack técnico
-- Next.js 14 + TypeScript + Tailwind + shadcn/ui
-- PostgreSQL: base de datos lionscore_comments
-- Redis: cola de trabajos BullMQ
-- Nginx + SSL Let's Encrypt en sia.lionscore.ai
+## Stack Técnico
+- Next.js 14 (App Router)
+- Prisma + PostgreSQL
+- BullMQ + Redis (queue de comentarios)
+- NextAuth (autenticación Facebook OAuth)
+- PM2 (gestión de procesos)
+- Nginx + Let's Encrypt (reverse proxy + SSL)
 
 ## Procesos PM2
-- `lionscore-comments` → App Next.js (puerto 3002)
-- `lionscore-worker` → Procesa comentarios de la cola BullMQ
+- lionscore-comments → App Next.js (puerto 3002)
+- lionscore-worker → Worker BullMQ que procesa comentarios
 
-## Meta App
+## Variables de entorno requeridas (.env.local)
+- NEXTAUTH_URL → URL pública de la app
+- NEXTAUTH_SECRET → Secret para NextAuth
+- FACEBOOK_APP_ID → App ID de Meta
+- FACEBOOK_CLIENT_ID → mismo que FACEBOOK_APP_ID
+- FACEBOOK_APP_SECRET → App Secret de Meta (usado por NextAuth)
+- FACEBOOK_CLIENT_SECRET → mismo que FACEBOOK_APP_SECRET
+- FACEBOOK_SCOPES → Scopes de Facebook OAuth (login Y conexión de páginas)
+- FACEBOOK_PAGES_APP_ID → App ID para el flujo de conexión de páginas (mismo valor que FACEBOOK_APP_ID)
+- FACEBOOK_PAGES_APP_SECRET → App Secret para el flujo de conexión de páginas (mismo valor que FACEBOOK_APP_SECRET)
+- FACEBOOK_PAGES_REDIRECT_URI → URL callback de cuentas ({NEXTAUTH_URL}/api/accounts/callback)
+- META_WEBHOOK_VERIFY_TOKEN → Token de verificación del webhook
+- ENCRYPTION_KEY → Clave AES-256-GCM para cifrar tokens de páginas
+- POLLING_ENABLED=false → El polling fue eliminado, siempre false
+- DATABASE_URL → URL de PostgreSQL
+- REDIS_URL → URL de Redis
+
+## App Meta (LionsCore Pages)
 - App ID: 1693982431760040
-- App Name: LionsCore Pages
-- Estado: **Development mode** (pendiente aprobación de Meta)
-- ~~LionsCore Comments (App ID: 268005512929030)~~ — reemplazada, ya no se usa
+- Estado: Development mode — pendiente aprobación de Meta
+- Webhook URL: https://sia.lionscore.ai/api/webhooks/meta
+- Webhook Token: META_WEBHOOK_VERIFY_TOKEN del .env
+- Webhook campo suscrito: feed
+- Modo: Development (webhooks NO llegan en este modo)
 
-## Scopes Facebook actuales (.env.local)
-```
-pages_show_list,pages_read_engagement,pages_manage_metadata,pages_read_user_content,business_management
-```
+## OAuth Redirect URIs registradas en Meta
+- {NEXTAUTH_URL}/api/auth/callback/facebook
+- {NEXTAUTH_URL}/api/accounts/callback
+- {NEXTAUTH_URL}/api/accounts/connect/callback
 
-## Cuentas conectadas
-| Página | Page ID |
-|--------|---------|
-| UrbaMares | 224830611012407 |
-| Ciudad San Juan | 533578629828960 |
-| Soluciones Tecnicas | 131750173356395 |
-| Fundamb | 101722275720846 |
+## Páginas públicas (no requieren login)
+- /privacy → Política de privacidad
+- /terms → Términos de servicio
+- /data-deletion → Eliminación de datos
 
-## Webhooks
-- URL: https://sia.lionscore.ai/api/webhooks/meta
-- Token: lionscore-webhook-2024
-- Campo suscrito: feed
-- Estado: Verificado pero **no recibe eventos reales** (app en Development mode)
-- Nota: En Development mode Meta NO entrega webhooks reales ni siquiera para admins
+## Arquitectura Multi-tenant
+- Cada usuario tiene su propio tenant aislado
+- Las cuentas de Facebook/Instagram son por usuario
+- Los bots y comentarios son por tenant
+- El webhook recibe eventos de todas las páginas y los enruta por pageId
 
-## Estado Meta App Review
-| Permiso | Estado |
-|---------|--------|
-| pages_show_list | Agregado |
-| pages_read_engagement | Agregado |
-| pages_read_user_content | Agregado |
-| pages_manage_metadata | Agregado a revisión |
-| pages_manage_engagement | Agregado a revisión |
-| business_management | Agregado |
+## Flujo de comentarios (producción)
+1. Usuario comenta en página de Facebook conectada
+2. Meta envía evento POST a /api/webhooks/meta
+3. Webhook verifica firma HMAC-SHA256
+4. Encola comentario en BullMQ
+5. Worker procesa con IA (Claude API)
+6. Bot responde, ignora o elimina según configuración
 
-- Llamadas de prueba API ejecutadas (2026-04-16) → esperando 24h para que aparezcan en Meta
-- Videos por grabar → **Pendiente con OBS**
+## Flujo de comentarios (development mode)
+- Meta NO entrega webhooks en development mode
+- El polling fue implementado temporalmente y luego eliminado
+- En development los comentarios no llegan automáticamente
+- Solución: aprobar la app y pasar a Live mode
 
-## Pendiente
-1. Grabar videos con OBS para cada permiso
-2. Completar formulario de revisión (Uso permitido, Tratamiento de datos, Instrucciones para revisores)
-3. Enviar a revisión de Meta
-4. Esperar aprobación (5-7 días hábiles)
-5. Pasar app a Live mode
-6. Activar webhooks (ya configurados y verificados)
-7. Vincular cuenta de Instagram Business a UrbaMares en Meta Business Suite (para llamadas IG API)
+## Estado App Review Meta
+- Permisos solicitados:
+  * pages_show_list ✅ descripción completada
+  * pages_read_engagement ✅ descripción completada
+  * pages_read_user_content ✅ descripción completada
+  * pages_manage_metadata ✅ descripción completada
+  * pages_manage_engagement ✅ descripción completada
+  * business_management ✅ descripción completada
+  * public_profile ✅ descripción completada
+- Llamadas de prueba API: ✅ ejecutadas vía Graph API Explorer
+- Videos demostrativos: ⏳ pendiente grabar con OBS
+- Tratamiento de datos: ⏳ pendiente completar
+- Instrucciones para revisores: ⏳ pendiente completar
+- Estado final: No enviado aún
 
-## Estado de funcionalidades
-- Login con Facebook OAuth: funcionando
-- Dashboard completo en español: funcionando
-- Cuentas conectadas (4 páginas): funcionando
-- Base de conocimiento con importación por IA: funcionando
-- Reglas de moderación: keywords + instrucciones IA: funcionando
-- Pipeline: keywords → clasificador IA → respuesta IA: funcionando
-- Worker BullMQ procesando comentarios: funcionando
-- Webhooks Meta: verificados pero sin eventos reales (Development mode — pendiente aprobación)
-- Instagram Business: sin cuenta vinculada en UrbaMares
+## Pendiente antes de enviar a revisión
+1. Esperar 24h para que llamadas de prueba aparezcan en verde en Meta
+2. Grabar videos con OBS mostrando flujo completo de la app
+3. Subir videos a cada permiso en el formulario de revisión
+4. Completar sección "Tratamiento de datos"
+5. Completar sección "Instrucciones para revisores"
+6. Enviar a revisión de Meta
+
+## Pendiente post-aprobación Meta
+1. Pasar app a Live mode en Meta Developer Console
+2. Actualizar FACEBOOK_SCOPES agregando pages_manage_engagement
+3. Pedir a usuarios que reconecten sus páginas para obtener nuevos tokens
+4. Verificar que webhooks reciben comentarios en tiempo real
+5. Activar respuestas automáticas de IA en los bots
+6. Probar eliminación de comentarios spam
+7. Agregar Instagram: instagram_basic, instagram_manage_comments
+8. Configurar dominio final si se cambia
+
+## Notas importantes
+- En Development mode Meta NO entrega webhooks reales bajo ninguna circunstancia
+- El polling fue implementado y eliminado — NO reimplementar en producción
+- POLLING_ENABLED debe mantenerse en false siempre
+- Cuando Meta apruebe → Live mode → webhooks funcionan automáticamente
+- La app es multi-tenant: cada usuario ve solo sus propias páginas y bots
+- Los page tokens se cifran con AES-256-GCM antes de guardar en BD
 
 ## Comandos útiles en el servidor
 ```bash
@@ -94,8 +133,6 @@ git pull origin main && npm run build && pm2 restart lionscore-comments && pm2 r
 cd /var/www/lionscore-comments && git pull origin main && npm run build && pm2 restart lionscore-comments && pm2 restart lionscore-worker
 ```
 
-## Notas importantes
-- No tocar otras apps del servidor: `/var/www/restaurante`, `/var/www/smitp`
-- Base de datos: `postgresql://lionscore:LionsCore2024!Secure@localhost:5432/lionscore_comments`
-- Redis: `redis://localhost:6379`
-- App corre en puerto 3002 con PM2
+## No tocar en el servidor
+- /var/www/restaurante — otra app
+- /var/www/smitp — otra app

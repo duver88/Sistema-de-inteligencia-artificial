@@ -30,11 +30,7 @@ export async function GET() {
     path: '/',
   });
 
-  const scope = [
-    'pages_show_list',
-    'pages_read_engagement',
-    'pages_manage_metadata',
-  ].join(',');
+  const scope = process.env.FACEBOOK_SCOPES ?? 'pages_show_list,pages_read_engagement,pages_manage_metadata';
 
   const authUrl = new URL('https://www.facebook.com/dialog/oauth');
   authUrl.searchParams.set('client_id', appId);
