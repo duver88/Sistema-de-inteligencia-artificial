@@ -68,7 +68,7 @@ de comentarios usando inteligencia artificial.
 2. Meta envía evento POST a /api/webhooks/meta
 3. Webhook verifica firma HMAC-SHA256
 4. Encola comentario en BullMQ
-5. Worker procesa con IA (Claude API)
+5. Worker procesa con IA (OpenAI gpt-4o-mini, key por-tenant)
 6. Bot responde, ignora o elimina según configuración
 
 ## Flujo de comentarios (development mode)

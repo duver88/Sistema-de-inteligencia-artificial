@@ -156,7 +156,7 @@ model Bot {
   aiEnabled      Boolean @default(true) // Use AI for classification + reply
 
   // AI configuration
-  aiModel      String @default("claude-sonnet-4-20250514")
+  aiModel      String @default("gpt-4o-mini")
   replyMaxChars Int    @default(250)
   replyTone    String @default("friendly") // friendly | formal | casual
   language     String @default("es")
