@@ -12,6 +12,7 @@ export const commentWorker = new Worker<CommentJobData>(
   'comment-processing',
   async (job) => {
     const { botId, comment } = job.data;
+    console.log(`[Worker] 📨 Job recibido de la cola: jobId=${job.id} · commentId=${comment.commentId}`);
     await processComment(botId, comment);
   },
   {

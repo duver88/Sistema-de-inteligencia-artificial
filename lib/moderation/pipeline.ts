@@ -67,8 +67,12 @@ async function logComment(params: LogParams): Promise<void> {
           : undefined,
       },
     });
+    console.log(
+      `[Pipeline] 💾 Guardado en DB: commentId=${params.comment.commentId} · action=${params.action} · ` +
+      `${params.processingMs}ms${params.errorMessage ? ` · motivo="${params.errorMessage}"` : ''} → visible en /comments`
+    );
   } catch (err) {
-    console.error('[Pipeline] Failed to log comment:', err);
+    console.error(`[Pipeline] ❌ Falló al guardar commentId=${params.comment.commentId} en DB:`, err);
   }
 }
 
@@ -89,6 +93,8 @@ export async function processComment(
   let aiReplyId: string | undefined;
   let projectDetected: string | undefined;
   let errorMessage: string | undefined;
+
+  console.log(`[Pipeline] ▶️ Procesando commentId=${comment.commentId} (botId=${botId}, plataforma=${comment.platform})`);
 
   // Load bot config with related data (including tenant for API key)
   const bot = await prisma.bot.findUnique({
