@@ -25,11 +25,10 @@ export function TopBar() {
             onClick={() => setOpen(v => !v)}
             className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
           >
-            {session?.user?.image && !imgError ? (
+            {session?.user && !imgError ? (
               <img
-                src={session.user.image}
+                src="/api/me/avatar"
                 alt={session.user.name ?? 'User'}
-                referrerPolicy="no-referrer"
                 onError={() => setImgError(true)}
                 className="h-8 w-8 rounded-full object-cover"
               />
