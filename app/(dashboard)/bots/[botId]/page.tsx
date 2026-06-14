@@ -41,7 +41,7 @@ export default async function BotDetailPage({
     <div>
       <PageHeader
         title={bot.name}
-        description={`Configurando bot para ${bot.account.pageName}`}
+        description={`Configuring bot for ${bot.account.pageName}`}
       />
 
       {/* Quick nav to sub-sections */}
@@ -55,8 +55,8 @@ export default async function BotDetailPage({
               <BookOpen className="h-4 w-4 text-cyan-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">Base de Conocimiento</p>
-              <p className="text-xs text-slate-500">Gestionar hechos y preguntas frecuentes</p>
+              <p className="text-sm font-semibold text-slate-900">Knowledge Base</p>
+              <p className="text-xs text-slate-500">Manage facts and frequently asked questions</p>
             </div>
           </div>
           <ChevronRight className="h-4 w-4 text-slate-400" />
@@ -71,8 +71,8 @@ export default async function BotDetailPage({
               <Sliders className="h-4 w-4 text-red-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">Reglas de Moderación</p>
-              <p className="text-xs text-slate-500">Patrones de palabras clave para eliminar y spam</p>
+              <p className="text-sm font-semibold text-slate-900">Moderation Rules</p>
+              <p className="text-xs text-slate-500">Keyword patterns for deletion and spam</p>
             </div>
           </div>
           <ChevronRight className="h-4 w-4 text-slate-400" />

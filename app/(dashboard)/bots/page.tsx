@@ -45,7 +45,7 @@ export default async function BotsPage() {
     <div>
       <PageHeader
         title="Bots"
-        description="Gestiona tus bots de comentarios con IA para cada cuenta conectada."
+        description="Manage your AI comment bots for each connected account."
       />
 
       {botsWithStats.length === 0 ? (
@@ -53,16 +53,16 @@ export default async function BotsPage() {
           <div className="h-16 w-16 bg-cyan-50 rounded-2xl flex items-center justify-center mb-5">
             <Bot className="h-8 w-8 text-cyan-500" />
           </div>
-          <h3 className="text-base font-semibold text-slate-900 mb-2">Sin bots aún</h3>
+          <h3 className="text-base font-semibold text-slate-900 mb-2">No bots yet</h3>
           <p className="text-sm text-slate-500 text-center max-w-xs mb-7">
-            Conecta una página de Facebook o cuenta de Instagram para crear automáticamente un bot.
+            Connect a Facebook page or Instagram account to automatically create a bot.
           </p>
           <Link
             href="/accounts"
             className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow-md"
             style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
           >
-            Conectar Cuenta
+            Connect Account
           </Link>
         </div>
       ) : (

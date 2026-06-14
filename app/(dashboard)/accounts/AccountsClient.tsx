@@ -17,15 +17,16 @@ interface Account {
   connectedAt: string;
   tokenExpiresAt: string | null;
   isActive: boolean;
+  webhookSubscribed: boolean;
 }
 
 const ERROR_MESSAGES: Record<string, string> = {
-  access_denied: 'Acceso denegado. No se conectaron las cuentas.',
-  missing_params: 'Error en el proceso de conexión.',
-  invalid_state: 'Error de seguridad. Inténtalo de nuevo.',
-  token_exchange: 'Error al obtener el token de Facebook.',
-  server_config: 'Error de configuración del servidor.',
-  unexpected: 'Ocurrió un error inesperado. Inténtalo de nuevo.',
+  access_denied: 'Access denied. No accounts were connected.',
+  missing_params: 'There was an error during the connection process.',
+  invalid_state: 'Security error. Please try again.',
+  token_exchange: 'Failed to retrieve the Facebook token.',
+  server_config: 'Server configuration error.',
+  unexpected: 'An unexpected error occurred. Please try again.',
 };
 
 export function AccountsClient({ initialAccounts }: { initialAccounts: Account[] }) {
@@ -38,10 +39,10 @@ export function AccountsClient({ initialAccounts }: { initialAccounts: Account[]
     const error = searchParams.get('error');
 
     if (success === 'true') {
-      toast.success('Cuentas conectadas exitosamente');
+      toast.success('Account connected successfully. Webhook subscribed.');
       router.replace('/accounts');
     } else if (error) {
-      const msg = ERROR_MESSAGES[error] ?? 'Error al conectar la cuenta.';
+      const msg = ERROR_MESSAGES[error] ?? 'Failed to connect the account.';
       toast.error(msg);
       router.replace('/accounts');
     }
@@ -58,8 +59,8 @@ export function AccountsClient({ initialAccounts }: { initialAccounts: Account[]
   return (
     <div>
       <PageHeader
-        title="Cuentas Conectadas"
-        description="Gestiona tus páginas de Facebook y cuentas de Instagram."
+        title="Connected Accounts"
+        description="Manage your Facebook pages and Instagram accounts."
         action={<ConnectAccountCard onConnected={handleConnected} />}
       />
 
@@ -69,11 +70,11 @@ export function AccountsClient({ initialAccounts }: { initialAccounts: Account[]
             <LinkIcon className="h-8 w-8 text-cyan-500" />
           </div>
           <h3 className="text-base font-semibold text-slate-900 mb-2">
-            Sin cuentas conectadas
+            No connected accounts
           </h3>
           <p className="text-sm text-slate-500 text-center max-w-xs mb-7">
-            Conecta tus páginas de Facebook e Instagram para comenzar a gestionar
-            comentarios con IA.
+            Connect your Facebook and Instagram pages to start managing
+            comments with AI.
           </p>
           <ConnectAccountCard onConnected={handleConnected} />
         </div>
@@ -83,16 +84,16 @@ export function AccountsClient({ initialAccounts }: { initialAccounts: Account[]
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                  Cuenta
+                  Account
                 </th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                  Plataforma
+                  Platform
                 </th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                  Conectada
+                  Connected
                 </th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                  Estado
+                  Status
                 </th>
                 <th className="px-5 py-3.5" />
               </tr>

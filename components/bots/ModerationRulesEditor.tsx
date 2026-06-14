@@ -77,11 +77,11 @@ function PatternList({
     const trimmed = input.trim();
     if (!trimmed) return;
     try { new RegExp(trimmed, 'i'); } catch {
-      toast.error('Patrón regex inválido');
+      toast.error('Invalid regex pattern');
       return;
     }
     if (patterns.includes(trimmed)) {
-      toast.error('Este patrón ya existe');
+      toast.error('This pattern already exists');
       return;
     }
     await onAdd(trimmed);
@@ -90,13 +90,13 @@ function PatternList({
 
   async function handleLoadDefaults() {
     if (missingDefaults.length === 0) {
-      toast.info('Ya tienes todos los patrones predeterminados');
+      toast.info('You already have all the default patterns');
       return;
     }
     setLoadingDefaults(true);
     try {
       await onLoadDefaults();
-      toast.success(`${missingDefaults.length} patrón${missingDefaults.length !== 1 ? 'es' : ''} predeterminado${missingDefaults.length !== 1 ? 's' : ''} cargado${missingDefaults.length !== 1 ? 's' : ''}`);
+      toast.success(`${missingDefaults.length} default pattern${missingDefaults.length !== 1 ? 's' : ''} loaded`);
     } finally {
       setLoadingDefaults(false);
     }
@@ -119,7 +119,7 @@ function PatternList({
             onClick={() => void handleLoadDefaults()}
             disabled={loadingDefaults || missingDefaults.length === 0}
             className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-40"
-            title={missingDefaults.length > 0 ? `Agregar ${missingDefaults.length} patrones predeterminados` : 'Ya están todos los predeterminados'}
+            title={missingDefaults.length > 0 ? `Add ${missingDefaults.length} default patterns` : 'All defaults are already loaded'}
           >
             {loadingDefaults ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
             Defaults {missingDefaults.length > 0 && `(+${missingDefaults.length})`}
@@ -129,7 +129,7 @@ function PatternList({
             className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl transition-colors ${showTester ? `${bgColor} border` : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
           >
             <FlaskConical className="h-3.5 w-3.5" />
-            Probar
+            Test
           </button>
         </div>
       </div>
@@ -138,10 +138,10 @@ function PatternList({
       {showTester && (
         <div className={`border rounded-xl p-3.5 mb-4 ${bgColor}`}>
           <Label className="text-xs font-semibold text-slate-600 mb-1.5 block">
-            Texto de comentario de prueba
+            Test comment text
           </Label>
           <Input
-            placeholder="Pega un comentario para probar contra tus patrones…"
+            placeholder="Paste a comment to test against your patterns…"
             value={testText}
             onChange={e => setTestText(e.target.value)}
             className="text-sm bg-white"
@@ -150,10 +150,10 @@ function PatternList({
             <p className="mt-2 text-xs">
               {matchedPatterns.length > 0 ? (
                 <span className="text-red-700 font-semibold">
-                  Coincide con: {matchedPatterns.map(p => `"${p}"`).join(', ')}
+                  Matches: {matchedPatterns.map(p => `"${p}"`).join(', ')}
                 </span>
               ) : (
-                <span className="text-emerald-700 font-semibold">Sin coincidencias — el comentario pasaría al nivel IA.</span>
+                <span className="text-emerald-700 font-semibold">No matches — the comment would pass to the AI level.</span>
               )}
             </p>
           )}
@@ -163,7 +163,7 @@ function PatternList({
       {/* Add pattern input */}
       <div className="flex gap-2 mb-4">
         <Input
-          placeholder="Ej: muy caro  o regex como put[ao]"
+          placeholder="e.g. too expensive  or regex like put[ao]"
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') void handleAdd(); }}
@@ -175,14 +175,14 @@ function PatternList({
           className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 flex-shrink-0"
         >
           {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-          Agregar
+          Add
         </button>
       </div>
 
       {/* Pattern chips */}
       {patterns.length === 0 ? (
         <p className="text-xs text-slate-400 text-center py-4 border border-dashed border-slate-200 rounded-xl">
-          Sin patrones aún — usa "Defaults" para cargar los predeterminados.
+          No patterns yet — use "Defaults" to load the default patterns.
         </p>
       ) : (
         <div className="flex flex-wrap gap-2">
@@ -249,7 +249,7 @@ export function ModerationRulesEditor({
       });
       if (!res.ok) throw new Error();
     } catch {
-      toast.error('Error al guardar los cambios');
+      toast.error('Failed to save changes');
     } finally {
       setSaving(false);
     }
@@ -272,7 +272,7 @@ export function ModerationRulesEditor({
       setInstrStatus('saved');
       savedTimerRef.current = setTimeout(() => setInstrStatus('idle'), 2000);
     } catch {
-      toast.error('Error al guardar las instrucciones');
+      toast.error('Failed to save the instructions');
       setInstrStatus('idle');
     }
   }
@@ -281,14 +281,14 @@ export function ModerationRulesEditor({
     const next = [...deleteKeywords, pattern];
     setDeleteKeywords(next);
     await patchKeywords('deleteKeywords', next);
-    toast.success('Patrón agregado');
+    toast.success('Pattern added');
   }
 
   async function removeDelete(pattern: string) {
     const next = deleteKeywords.filter(p => p !== pattern);
     setDeleteKeywords(next);
     await patchKeywords('deleteKeywords', next);
-    toast.success('Patrón eliminado');
+    toast.success('Pattern removed');
   }
 
   async function loadDeleteDefaults() {
@@ -302,14 +302,14 @@ export function ModerationRulesEditor({
     const next = [...spamKeywords, pattern];
     setSpamKeywords(next);
     await patchKeywords('spamKeywords', next);
-    toast.success('Patrón agregado');
+    toast.success('Pattern added');
   }
 
   async function removeSpam(pattern: string) {
     const next = spamKeywords.filter(p => p !== pattern);
     setSpamKeywords(next);
     await patchKeywords('spamKeywords', next);
-    toast.success('Patrón eliminado');
+    toast.success('Pattern removed');
   }
 
   async function loadSpamDefaults() {
@@ -329,15 +329,15 @@ export function ModerationRulesEditor({
             <Zap className="h-4 w-4 text-white" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-slate-900">Nivel 1 — Palabras clave</h2>
-            <p className="text-xs text-slate-500">Rápido, sin IA. Actúa inmediatamente cuando hay coincidencia.</p>
+            <h2 className="text-sm font-bold text-slate-900">Level 1 — Keywords</h2>
+            <p className="text-xs text-slate-500">Fast, no AI. Acts immediately when there is a match.</p>
           </div>
         </div>
 
         <div className="space-y-4">
           <PatternList
-            title="Eliminar comentarios"
-            description="Comentarios que coincidan serán eliminados permanentemente."
+            title="Delete comments"
+            description="Matching comments will be permanently deleted."
             icon={<ShieldAlert className="h-4 w-4" />}
             color="red"
             patterns={deleteKeywords}
@@ -348,8 +348,8 @@ export function ModerationRulesEditor({
             saving={saving}
           />
           <PatternList
-            title="Ocultar spam"
-            description="Comentarios que coincidan serán ocultados (no eliminados)."
+            title="Hide spam"
+            description="Matching comments will be hidden (not deleted)."
             icon={<EyeOff className="h-4 w-4" />}
             color="amber"
             patterns={spamKeywords}
@@ -372,9 +372,9 @@ export function ModerationRulesEditor({
             <Brain className="h-4 w-4" style={{ color: '#0a1628' }} />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-slate-900">Nivel 2 — Instrucciones para la IA</h2>
+            <h2 className="text-sm font-bold text-slate-900">Level 2 — AI instructions</h2>
             <p className="text-xs text-slate-500">
-              Se aplica solo si el comentario no coincidió con ninguna palabra clave. La IA usará estas instrucciones para decidir.
+              Applied only if the comment did not match any keyword. The AI will use these instructions to decide.
             </p>
           </div>
         </div>
@@ -382,9 +382,9 @@ export function ModerationRulesEditor({
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
           {/* Section title with dirty indicator */}
           <div className="flex items-center gap-2 mb-5">
-            <h3 className="text-sm font-bold text-slate-900">Instrucciones para la IA</h3>
+            <h3 className="text-sm font-bold text-slate-900">AI instructions</h3>
             {instrDirty && instrStatus === 'idle' && (
-              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" title="Cambios sin guardar" />
+              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" title="Unsaved changes" />
             )}
           </div>
 
@@ -395,15 +395,15 @@ export function ModerationRulesEditor({
                 <div className="h-6 w-6 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
                   <ShieldAlert className="h-3 w-3 text-red-600" />
                 </div>
-                <Label className="text-xs font-bold text-slate-700">Instrucciones para ELIMINAR</Label>
+                <Label className="text-xs font-bold text-slate-700">DELETE instructions</Label>
               </div>
               <p className="text-xs text-slate-500 mb-2 leading-relaxed">
-                Describe en lenguaje natural qué comentarios adicionales debe eliminar la IA.
+                Describe in natural language which additional comments the AI should delete.
               </p>
               <Textarea
                 value={instrDraft.deleteInstructions}
                 onChange={e => setInstrDraft(d => ({ ...d, deleteInstructions: e.target.value }))}
-                placeholder="Ej: Elimina comentarios que comparen negativamente con la competencia, que mencionen problemas legales o que usen sarcasmo para atacar la marca."
+                placeholder="e.g. Delete comments that compare negatively to competitors, that mention legal issues, or that use sarcasm to attack the brand."
                 rows={5}
                 className="resize-none text-sm leading-relaxed"
               />
@@ -415,15 +415,15 @@ export function ModerationRulesEditor({
                 <div className="h-6 w-6 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
                   <EyeOff className="h-3 w-3 text-amber-600" />
                 </div>
-                <Label className="text-xs font-bold text-slate-700">Instrucciones para OCULTAR (spam)</Label>
+                <Label className="text-xs font-bold text-slate-700">HIDE instructions (spam)</Label>
               </div>
               <p className="text-xs text-slate-500 mb-2 leading-relaxed">
-                Describe qué comentarios adicionales debe ocultar la IA como spam.
+                Describe which additional comments the AI should hide as spam.
               </p>
               <Textarea
                 value={instrDraft.spamInstructions}
                 onChange={e => setInstrDraft(d => ({ ...d, spamInstructions: e.target.value }))}
-                placeholder="Ej: Oculta comentarios de cuentas sin foto de perfil que solo ponen emojis, o que mencionen otras constructoras."
+                placeholder="e.g. Hide comments from accounts with no profile photo that only post emojis, or that mention other construction companies."
                 rows={5}
                 className="resize-none text-sm leading-relaxed"
               />
@@ -436,13 +436,13 @@ export function ModerationRulesEditor({
               {instrStatus === 'idle' && instrDirty && (
                 <span className="flex items-center gap-1.5 text-xs font-medium text-amber-600">
                   <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                  Cambios sin guardar
+                  Unsaved changes
                 </span>
               )}
               {instrStatus === 'saved' && (
                 <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
                   <CheckCircle2 className="h-3.5 w-3.5" />
-                  Guardado
+                  Saved
                 </span>
               )}
             </div>
@@ -466,7 +466,7 @@ export function ModerationRulesEditor({
             >
               {instrStatus === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
               {instrStatus === 'saved' && <CheckCircle2 className="h-4 w-4" />}
-              {instrStatus === 'saving' ? 'Guardando...' : instrStatus === 'saved' ? 'Guardado' : 'Guardar cambios'}
+              {instrStatus === 'saving' ? 'Saving...' : instrStatus === 'saved' ? 'Saved' : 'Save changes'}
             </button>
           </div>
         </div>
@@ -475,10 +475,10 @@ export function ModerationRulesEditor({
         <div className="mt-4 flex items-start gap-3 p-4 rounded-xl bg-cyan-50 border border-cyan-100">
           <Zap className="h-4 w-4 text-cyan-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-semibold text-cyan-900 mb-1">Orden de procesamiento</p>
+            <p className="text-xs font-semibold text-cyan-900 mb-1">Processing order</p>
             <p className="text-xs text-cyan-700 leading-relaxed">
-              <strong>1.</strong> Primero se revisan las palabras clave — si hay coincidencia, se actúa inmediatamente sin usar IA.{' '}
-              <strong>2.</strong> Si no hay coincidencia, la IA analiza el comentario usando las instrucciones del Nivel 2 junto con las instrucciones personalizadas del bot.
+              <strong>1.</strong> Keywords are checked first — if there is a match, action is taken immediately without using AI.{' '}
+              <strong>2.</strong> If there is no match, the AI analyzes the comment using the Level 2 instructions together with the bot's custom instructions.
             </p>
           </div>
         </div>

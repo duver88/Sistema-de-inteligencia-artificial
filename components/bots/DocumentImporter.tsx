@@ -27,10 +27,10 @@ interface DocumentImporterProps {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  pricing: 'Precios',
-  location: 'Ubicación',
-  contact: 'Contacto',
-  features: 'Características',
+  pricing: 'Pricing',
+  location: 'Location',
+  contact: 'Contact',
+  features: 'Features',
   general: 'General',
 };
 
@@ -64,11 +64,11 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
     async (file: File) => {
       const ext = '.' + (file.name.split('.').pop() ?? '').toLowerCase();
       if (!ACCEPTED_EXTENSIONS.includes(ext)) {
-        toast.error('Formato no soportado. Usa PDF, Word, Excel, TXT o CSV.');
+        toast.error('Unsupported format. Use PDF, Word, Excel, TXT or CSV.');
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
-        toast.error('El archivo excede el límite de 10MB');
+        toast.error('File exceeds the 10MB limit');
         return;
       }
 
@@ -84,10 +84,10 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
           body: formData,
         });
         const data = await res.json() as { entries?: ExtractedEntry[]; error?: string };
-        if (!res.ok) throw new Error(data.error ?? 'Error desconocido');
+        if (!res.ok) throw new Error(data.error ?? 'Unknown error');
 
         if (!data.entries || data.entries.length === 0) {
-          toast.warning('No se encontraron datos útiles en el documento');
+          toast.warning('No useful data was found in the document');
           setPhase('idle');
           return;
         }
@@ -101,7 +101,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
         );
         setPhase('review');
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Error al procesar el documento');
+        toast.error(err instanceof Error ? err.message : 'Failed to process the document');
         setPhase('idle');
       }
     },
@@ -147,7 +147,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
   async function handleConfirm() {
     const selected = entries.filter((e) => e.selected);
     if (selected.length === 0) {
-      toast.error('Selecciona al menos una entrada para importar');
+      toast.error('Select at least one entry to import');
       return;
     }
 
@@ -171,7 +171,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
       }
     }
 
-    toast.success(`${imported} entrada${imported !== 1 ? 's' : ''} importada${imported !== 1 ? 's' : ''} correctamente`);
+    toast.success(`${imported} ${imported !== 1 ? 'entries' : 'entry'} imported successfully`);
     setPhase('idle');
     setEntries([]);
     setFileName('');
@@ -216,10 +216,10 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
           </div>
           <div className="text-center">
             <p className="text-sm font-semibold text-slate-900">
-              Arrastra tu documento aquí o haz clic para seleccionar
+              Drag your document here or click to select
             </p>
             <p className="text-xs text-slate-500 mt-1">
-              PDF, Word (DOCX), Excel (XLSX), CSV, TXT · Máximo 10MB
+              PDF, Word (DOCX), Excel (XLSX), CSV, TXT · Max 10MB
             </p>
           </div>
           <div className="flex items-center gap-4 mt-1">
@@ -238,7 +238,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
         <div className="mt-3 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 border border-slate-200">
           <Cloud className="h-4 w-4 text-slate-400 flex-shrink-0" />
           <p className="text-xs text-slate-500">
-            <span className="font-semibold text-slate-600">Google Drive</span> estará disponible próximamente.
+            <span className="font-semibold text-slate-600">Google Drive</span> will be available soon.
           </p>
         </div>
       </div>
@@ -259,9 +259,9 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
           <Loader2 className="absolute -bottom-1 -right-1 h-5 w-5 text-cyan-600 animate-spin bg-white rounded-full" />
         </div>
         <div className="text-center">
-          <p className="text-sm font-semibold text-cyan-900">Procesando documento con IA…</p>
+          <p className="text-sm font-semibold text-cyan-900">Processing document with AI…</p>
           <p className="text-xs text-cyan-600 mt-1">{fileName}</p>
-          <p className="text-xs text-slate-500 mt-2">Extrayendo y clasificando el conocimiento del archivo</p>
+          <p className="text-xs text-slate-500 mt-2">Extracting and classifying the knowledge from the file</p>
         </div>
       </div>
     );
@@ -278,10 +278,10 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
         >
           <div>
             <p className="text-sm font-bold text-slate-900">
-              {entries.length} entrada{entries.length !== 1 ? 's' : ''} extraída{entries.length !== 1 ? 's' : ''} de IA
+              {entries.length} {entries.length !== 1 ? 'entries' : 'entry'} extracted by AI
             </p>
             <p className="text-xs text-slate-500 mt-0.5">
-              Revisa y edita antes de importar · {fileName}
+              Review and edit before importing · {fileName}
             </p>
           </div>
           <button
@@ -303,10 +303,10 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
             ) : (
               <Square className="h-4 w-4" />
             )}
-            {entries.every((e) => e.selected) ? 'Deseleccionar todo' : 'Seleccionar todo'}
+            {entries.every((e) => e.selected) ? 'Deselect all' : 'Select all'}
           </button>
           <span className="text-xs text-slate-500">
-            {selectedCount} de {entries.length} seleccionadas
+            {selectedCount} of {entries.length} selected
           </span>
         </div>
 
@@ -325,7 +325,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
                       value={entry.key}
                       onChange={(e) => updateEntry(idx, 'key', e.target.value)}
                       className="text-xs h-8"
-                      placeholder="Clave"
+                      placeholder="Key"
                     />
                     <Select
                       value={entry.category}
@@ -346,13 +346,13 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
                     onChange={(e) => updateEntry(idx, 'value', e.target.value)}
                     className="text-xs resize-none"
                     rows={2}
-                    placeholder="Valor"
+                    placeholder="Value"
                   />
                   <button
                     onClick={() => toggleEdit(idx)}
                     className="text-xs font-semibold text-cyan-600 hover:text-cyan-800 transition-colors"
                   >
-                    Listo
+                    Done
                   </button>
                 </div>
               ) : (
@@ -381,7 +381,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
                   <button
                     onClick={() => toggleEdit(idx)}
                     className="flex-shrink-0 p-1 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
-                    title="Editar"
+                    title="Edit"
                   >
                     <Edit3 className="h-3.5 w-3.5" />
                   </button>
@@ -397,7 +397,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
             onClick={handleCancel}
             className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
           >
-            Cancelar
+            Cancel
           </button>
           <button
             onClick={() => void handleConfirm()}
@@ -405,7 +405,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
             className="flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
           >
-            Confirmar e importar {selectedCount > 0 ? `(${selectedCount})` : ''}
+            Confirm and import {selectedCount > 0 ? `(${selectedCount})` : ''}
           </button>
         </div>
       </div>
@@ -416,7 +416,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
   return (
     <div className="mb-6 flex flex-col items-center justify-center gap-3 rounded-2xl border border-cyan-200 bg-cyan-50 p-10">
       <Loader2 className="h-8 w-8 text-cyan-600 animate-spin" />
-      <p className="text-sm font-semibold text-cyan-900">Guardando entradas…</p>
+      <p className="text-sm font-semibold text-cyan-900">Saving entries…</p>
     </div>
   );
 }

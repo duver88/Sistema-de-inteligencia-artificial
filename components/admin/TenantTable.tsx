@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 
 interface Tenant {
   id: string;
@@ -17,16 +17,16 @@ interface TenantTableProps {
 }
 
 const PLAN_CONFIG: Record<string, { label: string; className: string }> = {
-  FREE:         { label: 'Gratis',        className: 'bg-slate-100 text-slate-600' },
-  STARTER:      { label: 'Inicial',       className: 'bg-blue-50 text-blue-700' },
-  PROFESSIONAL: { label: 'Profesional',   className: 'bg-cyan-50 text-cyan-700' },
-  ENTERPRISE:   { label: 'Empresarial',   className: 'bg-purple-50 text-purple-700' },
+  FREE:         { label: 'Free',          className: 'bg-slate-100 text-slate-600' },
+  STARTER:      { label: 'Starter',       className: 'bg-blue-50 text-blue-700' },
+  PROFESSIONAL: { label: 'Professional',  className: 'bg-cyan-50 text-cyan-700' },
+  ENTERPRISE:   { label: 'Enterprise',    className: 'bg-purple-50 text-purple-700' },
 };
 
 export function TenantTable({ tenants }: TenantTableProps) {
   if (tenants.length === 0) {
     return (
-      <p className="text-center py-12 text-sm text-slate-500">No se encontraron tenants.</p>
+      <p className="text-center py-12 text-sm text-slate-500">No tenants found.</p>
     );
   }
 
@@ -37,15 +37,15 @@ export function TenantTable({ tenants }: TenantTableProps) {
           <tr className="border-b border-slate-200 bg-slate-50">
             <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Tenant</th>
             <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Plan</th>
-            <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Usuarios</th>
+            <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Users</th>
             <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Bots</th>
-            <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Registrado</th>
+            <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Registered</th>
           </tr>
         </thead>
         <tbody>
           {tenants.map((tenant, i) => {
             const plan = PLAN_CONFIG[tenant.plan] ?? PLAN_CONFIG.FREE;
-            const timeAgo = formatDistanceToNow(new Date(tenant.createdAt), { addSuffix: true, locale: es });
+            const timeAgo = formatDistanceToNow(new Date(tenant.createdAt), { addSuffix: true, locale: enUS });
             return (
               <tr
                 key={tenant.id}

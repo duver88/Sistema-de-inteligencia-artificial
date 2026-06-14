@@ -17,12 +17,12 @@ export function ConnectAccountCard({ onConnected: _onConnected }: ConnectAccount
       const res = await fetch('/api/accounts/connect');
       const data = await res.json() as { authUrl?: string; error?: string };
       if (!res.ok || !data.authUrl) {
-        throw new Error(data.error ?? 'Error al iniciar la conexión');
+        throw new Error(data.error ?? 'Failed to start the connection');
       }
       // Redirect to Facebook OAuth
       window.location.href = data.authUrl;
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Error al conectar cuenta');
+      toast.error(err instanceof Error ? err.message : 'Failed to connect account');
       setLoading(false);
     }
   }
@@ -39,7 +39,7 @@ export function ConnectAccountCard({ onConnected: _onConnected }: ConnectAccount
       ) : (
         <Plus className="h-4 w-4" />
       )}
-      {loading ? 'Redirigiendo…' : 'Conectar Cuenta'}
+      {loading ? 'Redirecting…' : 'Connect Account'}
     </button>
   );
 }

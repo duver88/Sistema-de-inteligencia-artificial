@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { CheckCircle2, XCircle, Loader2, Eye, EyeOff, Trash2, KeyRound } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,13 +36,13 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
         body: JSON.stringify({ apiKey: apiKey.trim() }),
       });
       const data = await res.json() as { error?: string; configured?: boolean; setAt?: string };
-      if (!res.ok) throw new Error(data.error ?? 'Error desconocido');
+      if (!res.ok) throw new Error(data.error ?? 'Unknown error');
       setConfigured(true);
       setSetAt(data.setAt ?? new Date().toISOString());
       setApiKey('');
-      toast.success('Clave API guardada y verificada');
+      toast.success('API key saved and verified');
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Error al guardar la clave API');
+      toast.error(err instanceof Error ? err.message : 'Failed to save API key');
     } finally {
       setSaving(false);
     }
@@ -55,9 +55,9 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
       if (!res.ok) throw new Error();
       setConfigured(false);
       setSetAt(null);
-      toast.success('Clave API eliminada');
+      toast.success('API key deleted');
     } catch {
-      toast.error('Error al eliminar la clave API');
+      toast.error('Failed to delete API key');
     } finally {
       setDeleting(false);
     }
@@ -72,9 +72,9 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
             <KeyRound className="h-5 w-5" style={{color: '#0a1628'}} />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-slate-900">Clave API de OpenAI</h2>
+            <h2 className="text-sm font-bold text-slate-900">OpenAI API Key</h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Requerida para clasificación con IA (gpt-4o-mini). Cifrada con AES-256-GCM.
+              Required for AI classification (gpt-4o-mini). Encrypted with AES-256-GCM.
             </p>
           </div>
         </div>
@@ -87,10 +87,10 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
             <>
               <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-sm font-bold text-emerald-800">Configurada</p>
+                <p className="text-sm font-bold text-emerald-800">Configured</p>
                 {setAt && (
                   <p className="text-xs text-emerald-600 mt-0.5">
-                    Guardada {formatDistanceToNow(new Date(setAt), { addSuffix: true, locale: es })}
+                    Saved {formatDistanceToNow(new Date(setAt), { addSuffix: true, locale: enUS })}
                   </p>
                 )}
               </div>
@@ -100,19 +100,19 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                 >
                   {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-                  Eliminar
+                  Delete
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>¿Eliminar clave API?</AlertDialogTitle>
+                    <AlertDialogTitle>Delete API key?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Todos los bots dejarán de usar funciones de IA hasta que se configure una nueva clave.
+                      All bots will stop using AI features until a new key is configured.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={() => void handleDelete()} className="bg-red-600 hover:bg-red-700 text-white">
-                      Eliminar
+                      Delete
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -121,7 +121,7 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
           ) : (
             <>
               <XCircle className="h-5 w-5 text-slate-400 flex-shrink-0" />
-              <p className="text-sm text-slate-500 font-medium">Sin configurar — IA desactivada</p>
+              <p className="text-sm text-slate-500 font-medium">Not configured — AI disabled</p>
             </>
           )}
         </div>
@@ -129,7 +129,7 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
         {/* Input */}
         <div className="space-y-1.5">
           <Label className="text-sm font-bold text-slate-700">
-            {configured ? 'Reemplazar clave API' : 'Ingresar clave API'}
+            {configured ? 'Replace API key' : 'Enter API key'}
           </Label>
           <div className="relative">
             <Input
@@ -150,7 +150,7 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
               {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          <p className="text-xs text-slate-400">Validada contra OpenAI antes de guardarse. Nunca en texto plano.</p>
+          <p className="text-xs text-slate-400">Validated against OpenAI before saving. Never stored in plain text.</p>
         </div>
 
         <button
@@ -160,7 +160,7 @@ export function OpenAIKeyForm({ initialConfigured, initialSetAt }: OpenAIKeyForm
           style={{background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628'}}
         >
           {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-          {saving ? 'Verificando…' : 'Guardar y verificar'}
+          {saving ? 'Verifying…' : 'Save and verify'}
         </button>
       </div>
     </div>

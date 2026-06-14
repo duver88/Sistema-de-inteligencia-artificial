@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { FacebookIcon } from '@/components/icons/FacebookIcon';
 import { InstagramIcon } from '@/components/icons/InstagramIcon';
-import { AlertTriangle, CheckCircle2, Trash2, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Trash2, Loader2, Webhook } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -27,6 +27,7 @@ interface AccountListItemProps {
     connectedAt: string;
     tokenExpiresAt: string | null;
     isActive: boolean;
+    webhookSubscribed: boolean;
   };
   onDisconnect: (id: string) => void;
 }
@@ -47,11 +48,11 @@ export function AccountListItem({ account, onDisconnect }: AccountListItemProps)
     setDisconnecting(true);
     try {
       const res = await fetch(`/api/accounts/${account.id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Error al desconectar');
-      toast.success(`${account.pageName} desconectada`);
+      if (!res.ok) throw new Error('Failed to disconnect');
+      toast.success(`${account.pageName} disconnected`);
       onDisconnect(account.id);
     } catch {
-      toast.error('Error al desconectar la cuenta. Inténtalo de nuevo.');
+      toast.error('Failed to disconnect the account. Please try again.');
     } finally {
       setDisconnecting(false);
     }
@@ -87,25 +88,33 @@ export function AccountListItem({ account, onDisconnect }: AccountListItemProps)
         </div>
       </td>
       <td className="px-5 py-3.5 text-sm text-slate-500">
-        {new Date(account.connectedAt).toLocaleDateString('es-CO')}
+        {new Date(account.connectedAt).toLocaleDateString('en-US')}
       </td>
       <td className="px-5 py-3.5">
-        {isExpired ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
-            <AlertTriangle className="h-3 w-3" />
-            Token vencido
-          </span>
-        ) : isExpiringSoon ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-            <AlertTriangle className="h-3 w-3" />
-            Por vencer
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <CheckCircle2 className="h-3 w-3" />
-            Activa
-          </span>
-        )}
+        <div className="flex flex-col items-start gap-1.5">
+          {isExpired ? (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+              <AlertTriangle className="h-3 w-3" />
+              Token expired
+            </span>
+          ) : isExpiringSoon ? (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+              <AlertTriangle className="h-3 w-3" />
+              Expiring soon
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <CheckCircle2 className="h-3 w-3" />
+              Active
+            </span>
+          )}
+          {account.webhookSubscribed && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-50 text-cyan-700 border border-cyan-200">
+              <Webhook className="h-3 w-3" />
+              Webhook subscribed ✓
+            </span>
+          )}
+        </div>
       </td>
       <td className="px-5 py-3.5 text-right">
         <AlertDialog>
@@ -118,23 +127,23 @@ export function AccountListItem({ account, onDisconnect }: AccountListItemProps)
             ) : (
               <Trash2 className="h-3.5 w-3.5" />
             )}
-            Desconectar
+            Disconnect
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>¿Desconectar {account.pageName}?</AlertDialogTitle>
+              <AlertDialogTitle>Disconnect {account.pageName}?</AlertDialogTitle>
               <AlertDialogDescription>
-                Esto desactivará la cuenta y pausará su bot. La configuración del bot
-                y el historial de comentarios se conservarán. Puedes reconectar en cualquier momento.
+                This will deactivate the account and pause its bot. The bot
+                configuration and comment history will be preserved. You can reconnect at any time.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDisconnect}
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
-                Desconectar
+                Disconnect
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

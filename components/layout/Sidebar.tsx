@@ -14,11 +14,11 @@ import {
 import { LionsCoreIcon } from '@/components/icons/LionsCoreIcon';
 
 const navigation = [
-  { name: 'Resumen', href: '/overview', icon: LayoutDashboard },
-  { name: 'Cuentas', href: '/accounts', icon: LinkIcon },
+  { name: 'Overview', href: '/overview', icon: LayoutDashboard },
+  { name: 'Accounts', href: '/accounts', icon: LinkIcon },
   { name: 'Bots', href: '/bots', icon: Bot },
-  { name: 'Comentarios', href: '/comments', icon: MessageSquare },
-  { name: 'Configuración', href: '/settings', icon: Settings },
+  { name: 'Comments', href: '/comments', icon: MessageSquare },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 const bottomNavigation = [

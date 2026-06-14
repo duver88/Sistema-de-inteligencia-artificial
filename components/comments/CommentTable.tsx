@@ -116,11 +116,11 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
       <div className="flex items-center gap-2 text-xs text-slate-500">
         <span className={`h-2 w-2 rounded-full ${autoRefresh ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
         {autoRefresh
-          ? <span>Actualización automática activada · cada {POLL_INTERVAL_MS / 1000}s</span>
-          : <span>Actualización automática pausada</span>}
+          ? <span>Auto-refresh on · every {POLL_INTERVAL_MS / 1000}s</span>
+          : <span>Auto-refresh paused</span>}
         {lastUpdated && (
           <span className="text-slate-400">
-            · última: {lastUpdated.toLocaleTimeString('es-CO')}
+            · last: {lastUpdated.toLocaleTimeString('en-US')}
           </span>
         )}
       </div>
@@ -132,14 +132,14 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-          Actualizar
+          Refresh
         </button>
         <button
           type="button"
           onClick={() => setAutoRefresh(v => !v)}
           className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
         >
-          {autoRefresh ? 'Pausar' : 'Reanudar'}
+          {autoRefresh ? 'Pause' : 'Resume'}
         </button>
       </div>
     </div>
@@ -153,9 +153,9 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
           <div className="h-14 w-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
             <MessageCircle className="h-7 w-7 text-slate-400" />
           </div>
-          <p className="text-sm font-semibold text-slate-900 mb-1">Sin comentarios</p>
+          <p className="text-sm font-semibold text-slate-900 mb-1">No comments</p>
           <p className="text-xs text-slate-500">
-            Esperando nuevos comentarios… aparecerán aquí automáticamente.
+            Waiting for new comments… they will appear here automatically.
           </p>
         </div>
       </div>
@@ -183,18 +183,18 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
               href={buildPageUrl(currentPage - 1)}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
             >
-              Anterior
+              Previous
             </Link>
           )}
           <span className="text-sm text-slate-500 px-2">
-            Página {currentPage} de {pages}
+            Page {currentPage} of {pages}
           </span>
           {currentPage < pages && (
             <Link
               href={buildPageUrl(currentPage + 1)}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
             >
-              Siguiente
+              Next
             </Link>
           )}
         </div>

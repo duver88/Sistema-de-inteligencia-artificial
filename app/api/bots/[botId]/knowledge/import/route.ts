@@ -19,7 +19,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   const bot = await prisma.bot.findFirst({
     where: { id: botId, tenantId: ctx.tenantId },
   });
-  if (!bot) return NextResponse.json({ error: 'Bot no encontrado' }, { status: 404 });
+  if (!bot) return NextResponse.json({ error: 'Bot not found' }, { status: 404 });
 
   // Require OpenAI key
   const tenant = await prisma.tenant.findUnique({
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   });
   if (!tenant?.openaiApiKey) {
     return NextResponse.json(
-      { error: 'Configura tu clave API de OpenAI antes de importar documentos' },
+      { error: 'Configure your OpenAI API key before importing documents' },
       { status: 400 }
     );
   }
@@ -39,14 +39,14 @@ export async function POST(request: NextRequest, { params }: Params) {
   try {
     formData = await request.formData();
   } catch {
-    return NextResponse.json({ error: 'Error al leer el archivo' }, { status: 400 });
+    return NextResponse.json({ error: 'Failed to read the file' }, { status: 400 });
   }
 
   const file = formData.get('file') as File | null;
-  if (!file) return NextResponse.json({ error: 'Archivo requerido' }, { status: 400 });
+  if (!file) return NextResponse.json({ error: 'File required' }, { status: 400 });
 
   if (file.size > MAX_FILE_SIZE) {
-    return NextResponse.json({ error: 'El archivo excede el límite de 10MB' }, { status: 400 });
+    return NextResponse.json({ error: 'File exceeds the 10MB limit' }, { status: 400 });
   }
 
   const filename = file.name.toLowerCase();
@@ -86,18 +86,18 @@ export async function POST(request: NextRequest, { params }: Params) {
       text = sheets.join('\n\n');
     } else {
       return NextResponse.json(
-        { error: 'Formato no soportado. Usa PDF, TXT, DOCX, XLSX o CSV.' },
+        { error: 'Unsupported format. Use PDF, TXT, DOCX, XLSX or CSV.' },
         { status: 400 }
       );
     }
   } catch (err) {
     console.error('[import] text extraction error:', err);
-    return NextResponse.json({ error: 'Error al extraer el texto del archivo' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to extract text from the file' }, { status: 500 });
   }
 
   if (!text.trim()) {
     return NextResponse.json(
-      { error: 'No se pudo extraer texto del documento. Asegúrate de que no sea una imagen escaneada.' },
+      { error: 'Could not extract text from the document. Make sure it is not a scanned image.' },
       { status: 400 }
     );
   }
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     try {
       parsed = JSON.parse(raw);
     } catch {
-      return NextResponse.json({ error: 'La IA devolvió una respuesta inválida' }, { status: 500 });
+      return NextResponse.json({ error: 'The AI returned an invalid response' }, { status: 500 });
     }
 
     // Handle both {"entries": [...]} and direct array responses
@@ -172,6 +172,6 @@ export async function POST(request: NextRequest, { params }: Params) {
     return NextResponse.json({ entries: sanitized });
   } catch (err) {
     console.error('[import] OpenAI error:', err);
-    return NextResponse.json({ error: 'Error al procesar el documento con IA' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process the document with AI' }, { status: 500 });
   }
 }

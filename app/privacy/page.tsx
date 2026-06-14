@@ -4,11 +4,11 @@ import { LionsCoreIcon } from '@/components/icons/LionsCoreIcon';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidad — LionsCore',
-  description: 'Política de privacidad de LionsCore. Cómo recolectamos, usamos y protegemos tus datos.',
+  title: 'Privacy Policy — LionsCore',
+  description: 'LionsCore privacy policy. How we collect, use and protect your data.',
 };
 
-const LAST_UPDATED = '15 de abril de 2026';
+const LAST_UPDATED = 'April 15, 2026';
 const CONTACT_EMAIL = 'hernesto.ariza@lionsagencia.com';
 const DOMAIN = 'sia.lionscore.ai';
 
@@ -28,7 +28,7 @@ export default function PrivacyPage() {
               <span className="text-sm font-semibold" style={{ color: '#12fdee' }}>ai</span>
             </div>
           </Link>
-          <span className="text-slate-400 text-sm">Última actualización: {LAST_UPDATED}</span>
+          <span className="text-slate-400 text-sm">Last updated: {LAST_UPDATED}</span>
         </div>
       </header>
 
@@ -40,10 +40,10 @@ export default function PrivacyPage() {
         >
           <Shield className="h-8 w-8" style={{ color: '#0a1628' }} />
         </div>
-        <h1 className="text-4xl font-black text-white mb-4">Política de Privacidad</h1>
+        <h1 className="text-4xl font-black text-white mb-4">Privacy Policy</h1>
         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-          En LionsCore nos tomamos en serio la privacidad de tus datos. Esta política explica
-          qué información recolectamos, cómo la usamos y cómo la protegemos.
+          At LionsCore we take the privacy of your data seriously. This policy explains
+          what information we collect, how we use it and how we protect it.
         </p>
       </div>
 
@@ -51,117 +51,117 @@ export default function PrivacyPage() {
       <main className="max-w-4xl mx-auto px-6 pb-20 space-y-6">
 
         {/* Section 1 */}
-        <Section icon={<Database className="h-5 w-5 text-cyan-400" />} title="1. Datos que recolectamos">
-          <p>Al usar LionsCore, recolectamos la siguiente información:</p>
+        <Section icon={<Database className="h-5 w-5 text-cyan-400" />} title="1. Data we collect">
+          <p>When you use LionsCore, we collect the following information:</p>
           <ul className="mt-3 space-y-2">
             <Item>
-              <strong>Datos de perfil de Facebook:</strong> nombre y foto de perfil, necesarios para identificar tu cuenta.
+              <strong>Facebook profile data:</strong> name and profile picture, required to identify your account.
             </Item>
             <Item>
-              <strong>Correo electrónico</strong> (si lo compartes a través de Facebook): usado únicamente para comunicaciones de la plataforma.
+              <strong>Email address</strong> (if you share it through Facebook): used solely for platform communications.
             </Item>
             <Item>
-              <strong>Páginas de Facebook e Instagram:</strong> nombre, ID, foto e imagen de las páginas que eliges conectar a LionsCore.
+              <strong>Facebook and Instagram pages:</strong> name, ID, photo and image of the pages you choose to connect to LionsCore.
             </Item>
             <Item>
-              <strong>Tokens de acceso de páginas:</strong> credenciales cifradas que nos permiten leer y gestionar comentarios en tu nombre. Nunca se exponen en texto plano.
+              <strong>Page access tokens:</strong> encrypted credentials that allow us to read and manage comments on your behalf. They are never exposed in plain text.
             </Item>
             <Item>
-              <strong>Comentarios de tus publicaciones:</strong> el texto de los comentarios que reciben tus páginas, procesado en tiempo real para aplicar las reglas de moderación que tú configures.
+              <strong>Comments on your posts:</strong> the text of the comments your pages receive, processed in real time to apply the moderation rules you configure.
             </Item>
             <Item>
-              <strong>Configuración de la plataforma:</strong> reglas de moderación, base de conocimiento, instrucciones para el bot y preferencias de tu cuenta.
+              <strong>Platform settings:</strong> moderation rules, knowledge base, bot instructions and your account preferences.
             </Item>
           </ul>
         </Section>
 
         {/* Section 2 */}
-        <Section icon={<Eye className="h-5 w-5 text-cyan-400" />} title="2. Para qué usamos tus datos">
-          <p>Utilizamos la información recolectada exclusivamente para:</p>
+        <Section icon={<Eye className="h-5 w-5 text-cyan-400" />} title="2. What we use your data for">
+          <p>We use the information we collect exclusively to:</p>
           <ul className="mt-3 space-y-2">
-            <Item>Autenticar tu sesión y mantener tu cuenta activa en la plataforma.</Item>
-            <Item>Conectar y sincronizar tus páginas de Facebook e Instagram para gestionarlas desde LionsCore.</Item>
-            <Item>Procesar los comentarios de tus páginas mediante inteligencia artificial, aplicando las reglas y configuraciones que tú defines.</Item>
-            <Item>Responder, ocultar o eliminar comentarios automáticamente según tus instrucciones.</Item>
-            <Item>Mostrarte el historial y estadísticas de comentarios moderados en tu dashboard.</Item>
-            <Item>Enviarte notificaciones relevantes sobre el funcionamiento del servicio.</Item>
+            <Item>Authenticate your session and keep your account active on the platform.</Item>
+            <Item>Connect and sync your Facebook and Instagram pages so you can manage them from LionsCore.</Item>
+            <Item>Process the comments on your pages using artificial intelligence, applying the rules and settings you define.</Item>
+            <Item>Reply to, hide or delete comments automatically according to your instructions.</Item>
+            <Item>Show you the history and statistics of moderated comments in your dashboard.</Item>
+            <Item>Send you relevant notifications about how the service is running.</Item>
           </ul>
           <p className="mt-4 text-slate-400 text-sm">
-            Nunca usamos tus datos para fines distintos a los descritos sin tu consentimiento explícito.
+            We never use your data for purposes other than those described without your explicit consent.
           </p>
         </Section>
 
         {/* Section 3 */}
-        <Section icon={<Lock className="h-5 w-5 text-cyan-400" />} title="3. Cómo protegemos tus datos">
+        <Section icon={<Lock className="h-5 w-5 text-cyan-400" />} title="3. How we protect your data">
           <ul className="space-y-2">
             <Item>
-              <strong>Cifrado en reposo:</strong> todos los tokens de acceso se almacenan cifrados con AES-256-GCM. Nunca se guardan en texto plano en la base de datos.
+              <strong>Encryption at rest:</strong> all access tokens are stored encrypted with AES-256-GCM. They are never saved in plain text in the database.
             </Item>
             <Item>
-              <strong>Cifrado en tránsito:</strong> toda la comunicación entre tu navegador y nuestros servidores usa HTTPS con TLS.
+              <strong>Encryption in transit:</strong> all communication between your browser and our servers uses HTTPS with TLS.
             </Item>
             <Item>
-              <strong>Acceso limitado:</strong> solo el personal técnico estrictamente necesario tiene acceso a los sistemas de producción.
+              <strong>Limited access:</strong> only the strictly necessary technical staff have access to production systems.
             </Item>
             <Item>
-              <strong>Infraestructura segura:</strong> la aplicación corre en servidores con firewall configurado, acceso SSH por clave y certificados SSL gestionados por Let's Encrypt.
+              <strong>Secure infrastructure:</strong> the application runs on servers with a configured firewall, key-based SSH access and SSL certificates managed by Let's Encrypt.
             </Item>
             <Item>
-              <strong>Tokens de corta duración:</strong> los tokens de usuario de Facebook se intercambian por tokens de larga duración (60 días) y se renuevan automáticamente al reconectar.
+              <strong>Short-lived tokens:</strong> Facebook user tokens are exchanged for long-lived tokens (60 days) and are renewed automatically upon reconnecting.
             </Item>
           </ul>
         </Section>
 
         {/* Section 4 */}
-        <Section icon={<Users className="h-5 w-5 text-cyan-400" />} title="4. Compartición de datos con terceros">
+        <Section icon={<Users className="h-5 w-5 text-cyan-400" />} title="4. Sharing data with third parties">
           <p>
-            <strong className="text-white">No vendemos, alquilamos ni compartimos tus datos personales con terceros</strong> con fines comerciales o publicitarios.
+            <strong className="text-white">We do not sell, rent or share your personal data with third parties</strong> for commercial or advertising purposes.
           </p>
-          <p className="mt-3">Únicamente compartimos información con:</p>
+          <p className="mt-3">We only share information with:</p>
           <ul className="mt-3 space-y-2">
             <Item>
-              <strong>Meta (Facebook/Instagram):</strong> para ejecutar las acciones de moderación (responder, ocultar, eliminar comentarios) a través de su API oficial, usando los permisos que tú otorgaste.
+              <strong>Meta (Facebook/Instagram):</strong> to carry out moderation actions (replying to, hiding, deleting comments) through its official API, using the permissions you granted.
             </Item>
             <Item>
-              <strong>OpenAI:</strong> el texto de los comentarios se envía a la API de OpenAI para clasificación y generación de respuestas. Puedes usar tu propia API key configurada en Ajustes. OpenAI procesa los datos bajo su propia política de privacidad.
+              <strong>OpenAI:</strong> the text of comments is sent to the OpenAI API for classification and response generation. You can use your own API key configured in Settings. OpenAI processes the data under its own privacy policy.
             </Item>
           </ul>
           <p className="mt-4 text-slate-400 text-sm">
-            Ningún otro tercero tiene acceso a tus datos. No usamos herramientas de analítica de terceros que recolecten datos personales.
+            No other third party has access to your data. We do not use third-party analytics tools that collect personal data.
           </p>
         </Section>
 
         {/* Section 5 */}
-        <Section icon={<Trash2 className="h-5 w-5 text-cyan-400" />} title="5. Eliminación de tus datos">
-          <p>Tienes derecho a solicitar la eliminación completa de tus datos en cualquier momento.</p>
+        <Section icon={<Trash2 className="h-5 w-5 text-cyan-400" />} title="5. Deleting your data">
+          <p>You have the right to request the complete deletion of your data at any time.</p>
           <ul className="mt-3 space-y-2">
             <Item>
-              <strong>Desconectar una página:</strong> desde la sección <em>Cuentas</em> de la app puedes desconectar cualquier página en cualquier momento. Esto revoca el acceso de LionsCore a esa página.
+              <strong>Disconnect a page:</strong> from the <em>Accounts</em> section of the app you can disconnect any page at any time. This revokes LionsCore's access to that page.
             </Item>
             <Item>
-              <strong>Eliminar tu cuenta:</strong> envía un correo a{' '}
+              <strong>Delete your account:</strong> send an email to{' '}
               <a href={`mailto:${CONTACT_EMAIL}`} className="text-cyan-400 hover:text-cyan-300 underline">
                 {CONTACT_EMAIL}
               </a>{' '}
-              con el asunto <em>"Eliminar cuenta LionsCore"</em>. Borraremos todos tus datos (perfil, páginas conectadas, tokens, historial de comentarios y configuración del bot) en un plazo máximo de 7 días hábiles.
+              with the subject <em>"Delete LionsCore account"</em>. We will erase all your data (profile, connected pages, tokens, comment history and bot settings) within a maximum of 7 business days.
             </Item>
             <Item>
-              <strong>Revocar permisos de Facebook:</strong> puedes revocar los permisos otorgados a LionsCore directamente desde{' '}
+              <strong>Revoke Facebook permissions:</strong> you can revoke the permissions granted to LionsCore directly from{' '}
               <a
                 href="https://www.facebook.com/settings?tab=applications"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-cyan-400 hover:text-cyan-300 underline"
               >
-                Configuración → Aplicaciones de Facebook
+                Facebook Settings → Apps
               </a>.
             </Item>
           </ul>
         </Section>
 
         {/* Section 6 */}
-        <Section icon={<Mail className="h-5 w-5 text-cyan-400" />} title="6. Contacto">
-          <p>Para cualquier pregunta, solicitud o inquietud sobre esta política de privacidad:</p>
+        <Section icon={<Mail className="h-5 w-5 text-cyan-400" />} title="6. Contact">
+          <p>For any question, request or concern about this privacy policy:</p>
           <div className="mt-4 p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
             <p className="text-white font-semibold">LionsCore</p>
             <p className="text-slate-400 text-sm mt-1">{DOMAIN}</p>
@@ -174,14 +174,14 @@ export default function PrivacyPage() {
             </a>
           </div>
           <p className="mt-4 text-slate-400 text-sm">
-            Respondemos a todas las solicitudes en un plazo máximo de 5 días hábiles.
+            We respond to all requests within a maximum of 5 business days.
           </p>
         </Section>
 
         {/* Footer note */}
         <div className="pt-4 border-t border-white/10 text-center">
           <p className="text-slate-500 text-sm">
-            Esta política puede actualizarse ocasionalmente. La fecha de última actualización siempre estará visible en la parte superior de esta página.
+            This policy may be updated occasionally. The date of the last update will always be visible at the top of this page.
           </p>
           <p className="text-slate-600 text-xs mt-2">© {new Date().getFullYear()} LionsCore · {DOMAIN}</p>
         </div>

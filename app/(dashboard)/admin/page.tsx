@@ -28,8 +28,8 @@ export default async function AdminPage() {
   return (
     <div>
       <PageHeader
-        title="Panel de Administración"
-        description="Vista de súper-administrador de todos los tenants en la plataforma."
+        title="Admin Panel"
+        description="Super-admin view of all tenants on the platform."
       />
 
       {/* Stats */}
@@ -39,7 +39,7 @@ export default async function AdminPage() {
           <p className="text-3xl font-bold text-slate-900">{tenants.length}</p>
         </div>
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-2">Total Usuarios</p>
+          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-2">Total Users</p>
           <p className="text-3xl font-bold text-slate-900">{totalUsers}</p>
         </div>
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">

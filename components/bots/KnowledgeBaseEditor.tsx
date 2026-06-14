@@ -42,17 +42,17 @@ interface KnowledgeBaseEditorProps {
 const CATEGORIES = ['pricing', 'location', 'contact', 'features', 'general'];
 
 const CATEGORY_LABELS: Record<string, string> = {
-  pricing: 'Precios',
-  location: 'Ubicación',
-  contact: 'Contacto',
-  features: 'Características',
+  pricing: 'Pricing',
+  location: 'Location',
+  contact: 'Contact',
+  features: 'Features',
   general: 'General',
   // legacy Spanish keys
-  precios: 'Precios',
-  características: 'Características',
-  ubicación: 'Ubicación',
-  contacto: 'Contacto',
-  financiamiento: 'Financiamiento',
+  precios: 'Pricing',
+  características: 'Features',
+  ubicación: 'Location',
+  contacto: 'Contact',
+  financiamiento: 'Financing',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -102,7 +102,7 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
 
   async function saveEdit(entryId: string) {
     if (!editKey.trim() || !editValue.trim()) {
-      toast.error('La clave y el valor son requeridos');
+      toast.error('Key and value are required');
       return;
     }
     setSaving(true);
@@ -119,9 +119,9 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
         )
       );
       setEditingId(null);
-      toast.success('Entrada actualizada');
+      toast.success('Entry updated');
     } catch {
-      toast.error('Error al guardar los cambios');
+      toast.error('Failed to save changes');
     } finally {
       setSaving(false);
     }
@@ -133,9 +133,9 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
       const res = await fetch(`/api/bots/${botId}/knowledge?entryId=${entryId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
       setEntries(prev => prev.filter(e => e.id !== entryId));
-      toast.success('Entrada eliminada');
+      toast.success('Entry deleted');
     } catch {
-      toast.error('Error al eliminar la entrada');
+      toast.error('Failed to delete the entry');
     } finally {
       setDeletingId(null);
     }
@@ -147,7 +147,7 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
       {entries.length > 0 && (
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-slate-500">
-            {entries.length} entrada{entries.length !== 1 ? 's' : ''} en la base de conocimiento
+            {entries.length} {entries.length !== 1 ? 'entries' : 'entry'} in the knowledge base
           </p>
           <button
             onClick={() => setShowImporter(v => !v)}
@@ -159,7 +159,7 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
             style={showImporter ? { background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' } : undefined}
           >
             <FileUp className="h-4 w-4" />
-            Importar documento
+            Import document
           </button>
         </div>
       )}
@@ -178,9 +178,9 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
           >
             <BookOpen className="h-8 w-8 text-cyan-500" />
           </div>
-          <p className="text-base font-bold text-slate-900 mb-1">Sin conocimiento cargado</p>
+          <p className="text-base font-bold text-slate-900 mb-1">No knowledge loaded</p>
           <p className="text-sm text-slate-500 text-center max-w-sm mb-6 leading-relaxed">
-            Sube un documento para que la IA extraiga el conocimiento automáticamente.
+            Upload a document so the AI can extract the knowledge automatically.
           </p>
           <button
             onClick={() => setShowImporter(true)}
@@ -188,7 +188,7 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
             style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
           >
             <FileUp className="h-4 w-4" />
-            Importar documento
+            Import document
           </button>
         </div>
       )}
@@ -204,10 +204,10 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide w-1/4">Clave</th>
-                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Valor</th>
-                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide w-32">Categoría</th>
-                <th className="px-5 py-3.5 w-24 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Acciones</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide w-1/4">Key</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Value</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide w-32">Category</th>
+                <th className="px-5 py-3.5 w-24 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -254,14 +254,14 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
                             disabled={saving}
                             className="p-1.5 rounded-lg transition-colors disabled:opacity-50"
                             style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
-                            title="Guardar"
+                            title="Save"
                           >
                             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                           </button>
                           <button
                             onClick={cancelEdit}
                             className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
-                            title="Cancelar"
+                            title="Cancel"
                           >
                             <X className="h-3.5 w-3.5" />
                           </button>
@@ -287,7 +287,7 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
                           <button
                             onClick={() => startEdit(entry)}
                             className="p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors"
-                            title="Editar"
+                            title="Edit"
                           >
                             <Edit3 className="h-3.5 w-3.5" />
                           </button>
@@ -295,7 +295,7 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
                             <AlertDialogTrigger
                               disabled={deletingId === entry.id}
                               className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                              title="Eliminar"
+                              title="Delete"
                             >
                               {deletingId === entry.id ? (
                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -305,18 +305,18 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>¿Eliminar esta entrada?</AlertDialogTitle>
+                                <AlertDialogTitle>Delete this entry?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  La IA ya no tendrá acceso a <strong>"{entry.key}"</strong> al generar respuestas.
+                                  The AI will no longer have access to <strong>"{entry.key}"</strong> when generating responses.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => void handleDelete(entry.id)}
                                   className="bg-red-600 hover:bg-red-700 text-white"
                                 >
-                                  Eliminar
+                                  Delete
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
