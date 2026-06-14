@@ -1,5 +1,5 @@
 /**
- * Seed script for SocialPulse development environment.
+ * Seed script for LionsCore Comments development environment.
  * Creates a demo tenant (Urbamares) with projects, knowledge entries, and sample comment logs.
  *
  * Run with: npx tsx prisma/seed.ts

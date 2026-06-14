@@ -1,5 +1,5 @@
 # nginx.conf.example
-# Nginx reverse proxy configuration for SocialPulse (Next.js on port 3002).
+# Nginx reverse proxy configuration for LionsCore Comments (Next.js on port 3002).
 #
 # Usage:
 #   1. Copy to /etc/nginx/sites-available/socialpulse

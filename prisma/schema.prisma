@@ -1,4 +1,4 @@
-// Prisma schema for SocialPulse — CommentBot module
+// Prisma schema for LionsCore Comments — CommentBot module
 // Generator outputs to lib/generated/prisma (Prisma 7 style)
 
 generator client {

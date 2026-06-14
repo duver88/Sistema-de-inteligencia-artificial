@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'SocialPulse — Comment Management',
+  title: 'Lionscore — Comment Management',
   description: 'AI-powered social media comment management platform',
 };
 

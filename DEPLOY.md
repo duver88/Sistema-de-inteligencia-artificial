@@ -1,4 +1,4 @@
-# SocialPulse — VPS Deployment Guide
+# LionsCore Comments — VPS Deployment Guide
 
 ## Prerequisites on the server
 

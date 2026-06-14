@@ -9,7 +9,7 @@ cd "$APP_DIR"
 
 echo ""
 echo "=========================================="
-echo "  SocialPulse — Deploy $(date '+%Y-%m-%d %H:%M:%S')"
+echo "  LionsCore Comments — Deploy $(date '+%Y-%m-%d %H:%M:%S')"
 echo "=========================================="
 
 # ── 1. Pull latest code ───────────────────────────────────────────────────────
