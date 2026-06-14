@@ -88,7 +88,9 @@ export function parseFacebookWebhookEvent(entry: FacebookWebhookEntry): ParsedCo
   // Only process new top-level comments on posts
   if (value.item !== 'comment') return null;
   if (value.verb !== 'add') return null;
-  if (value.parent_id) return null; // Skip replies to comments
+  // Skip replies, but NOT top-level comments. On Facebook a top-level comment's
+  // parent_id equals the post_id; a reply's parent_id is the parent comment's id.
+  if (value.parent_id && value.parent_id !== value.post_id) return null;
 
   return {
     commentId: value.comment_id,
