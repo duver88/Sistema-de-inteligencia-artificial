@@ -4,11 +4,11 @@ import { LionsCoreIcon } from '@/components/icons/LionsCoreIcon';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Términos de Servicio — LionsCore',
-  description: 'Términos y condiciones de uso de la plataforma LionsCore.',
+  title: 'Terms of Service — LionsCore',
+  description: 'Terms and conditions of use for the LionsCore platform.',
 };
 
-const LAST_UPDATED = '15 de abril de 2026';
+const LAST_UPDATED = 'April 15, 2026';
 const DOMAIN = 'sia.lionscore.ai';
 const CONTACT_EMAIL = 'hernesto.ariza@lionsagencia.com';
 
@@ -28,7 +28,7 @@ export default function TermsPage() {
               <span className="text-sm font-semibold" style={{ color: '#12fdee' }}>ai</span>
             </div>
           </Link>
-          <span className="text-slate-400 text-sm">Última actualización: {LAST_UPDATED}</span>
+          <span className="text-slate-400 text-sm">Last updated: {LAST_UPDATED}</span>
         </div>
       </header>
 
@@ -40,106 +40,106 @@ export default function TermsPage() {
         >
           <FileText className="h-8 w-8" style={{ color: '#0a1628' }} />
         </div>
-        <h1 className="text-4xl font-black text-white mb-4">Términos de Servicio</h1>
+        <h1 className="text-4xl font-black text-white mb-4">Terms of Service</h1>
         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-          Al usar LionsCore aceptas estos términos. Por favor léelos con atención
-          antes de usar la plataforma.
+          By using LionsCore you accept these terms. Please read them carefully
+          before using the platform.
         </p>
       </div>
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 pb-20 space-y-6">
 
-        <Section icon={<FileText className="h-5 w-5 text-cyan-400" />} title="1. Aceptación de los términos">
+        <Section icon={<FileText className="h-5 w-5 text-cyan-400" />} title="1. Acceptance of the terms">
           <p>
-            Al acceder y usar LionsCore (<strong className="text-white">{DOMAIN}</strong>), aceptas quedar vinculado por estos Términos de Servicio.
-            Si no estás de acuerdo con alguno de estos términos, no debes usar la plataforma.
+            By accessing and using LionsCore (<strong className="text-white">{DOMAIN}</strong>), you agree to be bound by these Terms of Service.
+            If you do not agree with any of these terms, you must not use the platform.
           </p>
           <p className="mt-3">
-            Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios entran en vigor
-            al publicarse en esta página. El uso continuado de la plataforma después de cualquier cambio constituye
-            tu aceptación de los nuevos términos.
+            We reserve the right to modify these terms at any time. Changes take effect
+            when published on this page. Continued use of the platform after any change constitutes
+            your acceptance of the new terms.
           </p>
         </Section>
 
-        <Section icon={<CheckCircle className="h-5 w-5 text-cyan-400" />} title="2. Descripción del servicio">
-          <p>LionsCore es una plataforma de gestión de comentarios en redes sociales que ofrece:</p>
+        <Section icon={<CheckCircle className="h-5 w-5 text-cyan-400" />} title="2. Description of the service">
+          <p>LionsCore is a social media comment management platform that offers:</p>
           <ul className="mt-3 space-y-2">
-            <Item>Conexión con páginas de Facebook e Instagram mediante la API oficial de Meta.</Item>
-            <Item>Moderación automática de comentarios mediante inteligencia artificial.</Item>
-            <Item>Respuesta automática a comentarios según reglas y base de conocimiento configuradas por el usuario.</Item>
-            <Item>Panel de control para supervisar y gestionar la actividad de moderación.</Item>
-            <Item>Configuración de bots de moderación por página conectada.</Item>
+            <Item>Connection to Facebook and Instagram pages through Meta's official API.</Item>
+            <Item>Automatic comment moderation using artificial intelligence.</Item>
+            <Item>Automatic replies to comments based on rules and a knowledge base configured by the user.</Item>
+            <Item>A control panel to monitor and manage moderation activity.</Item>
+            <Item>Moderation bot configuration per connected page.</Item>
           </ul>
         </Section>
 
-        <Section icon={<AlertCircle className="h-5 w-5 text-cyan-400" />} title="3. Requisitos de uso">
-          <p>Para usar LionsCore debes:</p>
+        <Section icon={<AlertCircle className="h-5 w-5 text-cyan-400" />} title="3. Usage requirements">
+          <p>To use LionsCore you must:</p>
           <ul className="mt-3 space-y-2">
-            <Item>Tener al menos 18 años de edad.</Item>
-            <Item>Ser administrador de las páginas de Facebook que deseas conectar.</Item>
-            <Item>Cumplir con los <a href="https://www.facebook.com/terms.php" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline">Términos de Servicio de Meta</a> y las políticas de la plataforma.</Item>
-            <Item>Usar el servicio únicamente para fines legales y legítimos.</Item>
-            <Item>No usar la plataforma para enviar spam, contenido ofensivo o violar los derechos de terceros.</Item>
+            <Item>Be at least 18 years of age.</Item>
+            <Item>Be an administrator of the Facebook pages you want to connect.</Item>
+            <Item>Comply with <a href="https://www.facebook.com/terms.php" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline">Meta's Terms of Service</a> and the platform's policies.</Item>
+            <Item>Use the service only for legal and legitimate purposes.</Item>
+            <Item>Not use the platform to send spam, offensive content or to violate the rights of third parties.</Item>
           </ul>
         </Section>
 
-        <Section icon={<CheckCircle className="h-5 w-5 text-cyan-400" />} title="4. Cuenta y acceso">
+        <Section icon={<CheckCircle className="h-5 w-5 text-cyan-400" />} title="4. Account and access">
           <ul className="space-y-2">
-            <Item>El acceso a LionsCore se realiza exclusivamente mediante Facebook Login. Eres responsable de mantener la seguridad de tu cuenta de Facebook.</Item>
-            <Item>Cada cuenta de Facebook da acceso a un espacio de trabajo (tenant) independiente dentro de LionsCore.</Item>
-            <Item>No puedes compartir tu cuenta con terceros ni usarla para gestionar páginas sin autorización de sus propietarios.</Item>
-            <Item>Nos reservamos el derecho de suspender o cancelar cuentas que violen estos términos sin previo aviso.</Item>
+            <Item>Access to LionsCore is exclusively through Facebook Login. You are responsible for maintaining the security of your Facebook account.</Item>
+            <Item>Each Facebook account provides access to a separate workspace (tenant) within LionsCore.</Item>
+            <Item>You may not share your account with third parties or use it to manage pages without authorization from their owners.</Item>
+            <Item>We reserve the right to suspend or cancel accounts that violate these terms without prior notice.</Item>
           </ul>
         </Section>
 
-        <Section icon={<XCircle className="h-5 w-5 text-cyan-400" />} title="5. Uso prohibido">
-          <p>Está estrictamente prohibido:</p>
+        <Section icon={<XCircle className="h-5 w-5 text-cyan-400" />} title="5. Prohibited use">
+          <p>The following is strictly prohibited:</p>
           <ul className="mt-3 space-y-2">
-            <Item>Usar LionsCore para hostigar, amenazar o discriminar a personas.</Item>
-            <Item>Intentar acceder a cuentas, páginas o datos de otros usuarios sin autorización.</Item>
-            <Item>Usar la plataforma para distribuir malware, phishing u otro contenido malicioso.</Item>
-            <Item>Intentar hacer ingeniería inversa, descompilar o alterar el código de la plataforma.</Item>
-            <Item>Sobrecargar intencionalmente los servidores o infraestructura del servicio.</Item>
-            <Item>Revender o redistribuir el servicio sin autorización escrita de LionsCore.</Item>
+            <Item>Using LionsCore to harass, threaten or discriminate against people.</Item>
+            <Item>Attempting to access other users' accounts, pages or data without authorization.</Item>
+            <Item>Using the platform to distribute malware, phishing or other malicious content.</Item>
+            <Item>Attempting to reverse engineer, decompile or alter the platform's code.</Item>
+            <Item>Intentionally overloading the service's servers or infrastructure.</Item>
+            <Item>Reselling or redistributing the service without written authorization from LionsCore.</Item>
           </ul>
         </Section>
 
-        <Section icon={<RefreshCw className="h-5 w-5 text-cyan-400" />} title="6. Disponibilidad del servicio">
+        <Section icon={<RefreshCw className="h-5 w-5 text-cyan-400" />} title="6. Service availability">
           <p>
-            LionsCore se esfuerza por mantener el servicio disponible de forma continua, pero no garantiza
-            disponibilidad ininterrumpida. Podemos realizar mantenimientos programados que impliquen
-            interrupciones temporales.
+            LionsCore strives to keep the service continuously available, but does not guarantee
+            uninterrupted availability. We may perform scheduled maintenance that involves
+            temporary interruptions.
           </p>
           <p className="mt-3">
-            No somos responsables de interrupciones causadas por factores fuera de nuestro control, incluyendo
-            cambios en la API de Meta, problemas de conectividad o fuerza mayor.
+            We are not responsible for interruptions caused by factors beyond our control, including
+            changes to Meta's API, connectivity issues or force majeure.
           </p>
         </Section>
 
-        <Section icon={<Scale className="h-5 w-5 text-cyan-400" />} title="7. Limitación de responsabilidad">
+        <Section icon={<Scale className="h-5 w-5 text-cyan-400" />} title="7. Limitation of liability">
           <ul className="space-y-2">
-            <Item>LionsCore no se hace responsable por comentarios respondidos, ocultados o eliminados de forma incorrecta como resultado de la configuración del bot realizada por el usuario.</Item>
-            <Item>El usuario es el único responsable de las acciones que configure en sus bots de moderación y de las consecuencias que estas generen en sus páginas.</Item>
-            <Item>No garantizamos que la moderación por IA sea 100% precisa. Recomendamos revisar periódicamente la actividad del bot.</Item>
-            <Item>En ningún caso nuestra responsabilidad excederá el monto pagado por el servicio en los últimos 3 meses.</Item>
+            <Item>LionsCore is not liable for comments incorrectly replied to, hidden or deleted as a result of the bot configuration set up by the user.</Item>
+            <Item>The user is solely responsible for the actions they configure in their moderation bots and for the consequences these have on their pages.</Item>
+            <Item>We do not guarantee that AI moderation is 100% accurate. We recommend reviewing the bot's activity periodically.</Item>
+            <Item>In no event will our liability exceed the amount paid for the service in the last 3 months.</Item>
           </ul>
         </Section>
 
-        <Section icon={<FileText className="h-5 w-5 text-cyan-400" />} title="8. Propiedad intelectual">
+        <Section icon={<FileText className="h-5 w-5 text-cyan-400" />} title="8. Intellectual property">
           <p>
-            Todo el contenido, diseño, código y marca de LionsCore es propiedad de LionsCore y está protegido
-            por las leyes de propiedad intelectual aplicables. No se concede ningún derecho sobre estos elementos
-            más allá del uso normal de la plataforma.
+            All content, design, code and branding of LionsCore is the property of LionsCore and is protected
+            by the applicable intellectual property laws. No rights over these elements are granted
+            beyond normal use of the platform.
           </p>
           <p className="mt-3">
-            El contenido de tus páginas (comentarios, publicaciones, imágenes) es tuyo. LionsCore solo lo
-            procesa según tus instrucciones y no reclama ningún derecho sobre él.
+            The content of your pages (comments, posts, images) is yours. LionsCore only
+            processes it according to your instructions and claims no rights over it.
           </p>
         </Section>
 
-        <Section icon={<Mail className="h-5 w-5 text-cyan-400" />} title="9. Contacto">
-          <p>Para dudas sobre estos términos:</p>
+        <Section icon={<Mail className="h-5 w-5 text-cyan-400" />} title="9. Contact">
+          <p>For questions about these terms:</p>
           <div className="mt-4 p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
             <p className="text-white font-semibold">LionsCore</p>
             <p className="text-slate-400 text-sm mt-1">{DOMAIN}</p>
@@ -156,8 +156,8 @@ export default function TermsPage() {
         {/* Footer */}
         <div className="pt-4 border-t border-white/10 text-center space-y-3">
           <div className="flex items-center justify-center gap-6 text-sm">
-            <Link href="/privacy" className="text-cyan-400 hover:text-cyan-300 transition-colors">Política de Privacidad</Link>
-            <Link href="/data-deletion" className="text-cyan-400 hover:text-cyan-300 transition-colors">Eliminación de Datos</Link>
+            <Link href="/privacy" className="text-cyan-400 hover:text-cyan-300 transition-colors">Privacy Policy</Link>
+            <Link href="/data-deletion" className="text-cyan-400 hover:text-cyan-300 transition-colors">Data Deletion</Link>
           </div>
           <p className="text-slate-500 text-xs">© {new Date().getFullYear()} LionsCore · {DOMAIN}</p>
         </div>

@@ -46,7 +46,7 @@ export function CommentFilters({ bots }: CommentFiltersProps) {
       <div className="relative flex-1 min-w-48">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <Input
-          placeholder="Buscar comentarios…"
+          placeholder="Search comments…"
           defaultValue={searchParams.get('search') ?? undefined}
           onChange={e => updateParam('search', e.target.value)}
           className="pl-9 text-sm"
@@ -59,10 +59,10 @@ export function CommentFilters({ bots }: CommentFiltersProps) {
         onValueChange={v => updateParam('botId', v ?? '')}
       >
         <SelectTrigger className="w-44 text-sm">
-          <SelectValue placeholder="Todos los bots" />
+          <SelectValue placeholder="All bots" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Todos los bots</SelectItem>
+          <SelectItem value="">All bots</SelectItem>
           {bots.map(b => (
             <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
           ))}
@@ -75,16 +75,16 @@ export function CommentFilters({ bots }: CommentFiltersProps) {
         onValueChange={v => updateParam('action', v ?? '')}
       >
         <SelectTrigger className="w-48 text-sm">
-          <SelectValue placeholder="Todas las acciones" />
+          <SelectValue placeholder="All actions" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Todas las acciones</SelectItem>
-          <SelectItem value="REPLIED">Respondido</SelectItem>
-          <SelectItem value="DELETED">Eliminado</SelectItem>
-          <SelectItem value="HIDDEN">Oculto</SelectItem>
-          <SelectItem value="IGNORED">Ignorado</SelectItem>
-          <SelectItem value="MANUAL_REPLY">Resp. Manual</SelectItem>
-          <SelectItem value="MANUAL_DELETE">Elim. Manual</SelectItem>
+          <SelectItem value="">All actions</SelectItem>
+          <SelectItem value="REPLIED">Replied</SelectItem>
+          <SelectItem value="DELETED">Deleted</SelectItem>
+          <SelectItem value="HIDDEN">Hidden</SelectItem>
+          <SelectItem value="IGNORED">Ignored</SelectItem>
+          <SelectItem value="MANUAL_REPLY">Manual reply</SelectItem>
+          <SelectItem value="MANUAL_DELETE">Manual delete</SelectItem>
           <SelectItem value="ERROR">Error</SelectItem>
         </SelectContent>
       </Select>
@@ -95,10 +95,10 @@ export function CommentFilters({ bots }: CommentFiltersProps) {
         onValueChange={v => updateParam('platform', v ?? '')}
       >
         <SelectTrigger className="w-40 text-sm">
-          <SelectValue placeholder="Todas las plataformas" />
+          <SelectValue placeholder="All platforms" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Todas las plataformas</SelectItem>
+          <SelectItem value="">All platforms</SelectItem>
           <SelectItem value="FACEBOOK">Facebook</SelectItem>
           <SelectItem value="INSTAGRAM">Instagram</SelectItem>
         </SelectContent>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 import { MessageSquare, Trash2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { CommentStatusBadge } from './CommentStatusBadge';
 import { toast } from 'sonner';
@@ -42,12 +42,12 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
         body: JSON.stringify({ replyText: replyText.trim() }),
       });
       if (!res.ok) throw new Error();
-      toast.success('Respuesta enviada');
+      toast.success('Reply sent');
       setReplyText('');
       setExpanded(false);
       onActionComplete(comment.id, 'MANUAL_REPLY');
     } catch {
-      toast.error('Error al enviar la respuesta');
+      toast.error('Failed to send reply');
     } finally {
       setLoading(null);
     }
@@ -58,16 +58,16 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
     try {
       const res = await fetch(`/api/comments/${comment.id}/delete`, { method: 'POST' });
       if (!res.ok) throw new Error();
-      toast.success('Comentario eliminado');
+      toast.success('Comment deleted');
       onActionComplete(comment.id, 'MANUAL_DELETE');
     } catch {
-      toast.error('Error al eliminar el comentario');
+      toast.error('Failed to delete comment');
     } finally {
       setLoading(null);
     }
   }
 
-  const timeAgo = formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: es });
+  const timeAgo = formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: enUS });
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
@@ -80,7 +80,7 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="text-sm font-semibold text-slate-900">
-              {comment.authorName ?? 'Desconocido'}
+              {comment.authorName ?? 'Unknown'}
             </span>
             <span className="text-xs text-slate-400">{timeAgo}</span>
             <span className="text-xs text-slate-300">·</span>
@@ -105,7 +105,7 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
             <button
               onClick={() => setExpanded(v => !v)}
               className="p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-colors"
-              title="Responder"
+              title="Reply"
             >
               {expanded ? <ChevronUp className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
             </button>
@@ -116,7 +116,7 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
               onClick={() => void handleDelete()}
               disabled={loading === 'delete'}
               className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-50"
-              title="Eliminar"
+              title="Delete"
             >
               {loading === 'delete' ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -134,7 +134,7 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
           <div className="flex gap-2">
             <input
               type="text"
-              placeholder="Escribe una respuesta…"
+              placeholder="Write a reply…"
               value={replyText}
               onChange={e => setReplyText(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') void handleReply(); }}
@@ -147,7 +147,7 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
               style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
             >
               {loading === 'reply' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-              Enviar
+              Send
             </button>
           </div>
         </div>

@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
 // ── POST — Receive webhook events ─────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  console.log('[Webhook] Received Meta event:', new Date().toISOString());
   // Read the raw body BEFORE any parsing — required for HMAC verification
   const rawBody = Buffer.from(await request.arrayBuffer());
   const signature = request.headers.get('x-hub-signature-256');
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
 async function processWebhookAsync(rawBody: Buffer): Promise<void> {
   try {
     const body = JSON.parse(rawBody.toString()) as WebhookBody;
+    console.log('[Webhook] Processing event:', JSON.stringify(body).substring(0, 200));
     const comments = parseWebhookComments(body);
 
     for (const comment of comments) {

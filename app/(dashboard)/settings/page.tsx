@@ -16,8 +16,8 @@ export default async function SettingsPage() {
   return (
     <div>
       <PageHeader
-        title="Configuración"
-        description="Configura integraciones y preferencias de la cuenta."
+        title="Settings"
+        description="Configure account integrations and preferences."
       />
       <div className="max-w-lg">
         <OpenAIKeyForm

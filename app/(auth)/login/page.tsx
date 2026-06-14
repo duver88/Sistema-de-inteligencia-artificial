@@ -41,9 +41,9 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="bg-white rounded-3xl shadow-2xl p-8">
-          <h1 className="text-2xl font-black text-slate-900 mb-1">Iniciar sesión</h1>
+          <h1 className="text-2xl font-black text-slate-900 mb-1">Sign in</h1>
           <p className="text-slate-500 text-sm mb-7">
-            Conecta tu cuenta de Facebook para comenzar.
+            Connect your Facebook account to get started.
           </p>
 
           <button
@@ -53,12 +53,12 @@ export default function LoginPage() {
             style={{ background: 'linear-gradient(135deg, #1877F2, #0d65d9)' }}
           >
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <FacebookIcon className="h-5 w-5" />}
-            {loading ? 'Conectando…' : 'Continuar con Facebook'}
+            {loading ? 'Connecting…' : 'Continue with Facebook'}
           </button>
 
           <p className="mt-6 text-xs text-slate-400 text-center leading-relaxed">
-            Al conectar, autorizas a Lionscore a gestionar comentarios en tu nombre.
-            Puedes desconectar en cualquier momento.
+            By connecting, you authorize Lionscore to manage comments on your behalf.
+            You can disconnect at any time.
           </p>
         </div>
       </div>

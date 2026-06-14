@@ -87,13 +87,13 @@ function SaveBar({
         {status === 'idle' && dirty && (
           <span className="flex items-center gap-1.5 text-xs font-medium text-amber-600">
             <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-            Cambios sin guardar
+            Unsaved changes
           </span>
         )}
         {status === 'saved' && (
           <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
             <CheckCircle2 className="h-3.5 w-3.5" />
-            Guardado
+            Saved
           </span>
         )}
       </div>
@@ -117,7 +117,7 @@ function SaveBar({
       >
         {status === 'saving' && <Loader2 className="h-4 w-4 animate-spin" />}
         {status === 'saved' && <CheckCircle2 className="h-4 w-4" />}
-        {status === 'saving' ? 'Guardando...' : status === 'saved' ? 'Guardado' : 'Guardar cambios'}
+        {status === 'saving' ? 'Saving...' : status === 'saved' ? 'Saved' : 'Save changes'}
       </button>
     </div>
   );
@@ -155,7 +155,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
       });
       if (!res.ok) throw new Error();
     } catch {
-      toast.error('Error al guardar. Inténtalo de nuevo.');
+      toast.error('Failed to save. Please try again.');
     } finally {
       setSavingToggle(null);
     }
@@ -193,7 +193,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
       setAiStatus('saved');
       savedTimerRef.current = setTimeout(() => setAiStatus('idle'), 2000);
     } catch {
-      toast.error('Error al guardar. Inténtalo de nuevo.');
+      toast.error('Failed to save. Please try again.');
       setAiStatus('idle');
     }
   }
@@ -201,32 +201,32 @@ export function BotSettings({ bot }: BotSettingsProps) {
   const toggles = [
     {
       field: 'autoReply',
-      label: 'Respuesta automática con IA',
-      description: 'Genera y publica automáticamente respuestas de IA a los comentarios elegibles.',
+      label: 'Automatic AI replies',
+      description: 'Automatically generates and posts AI replies to eligible comments.',
       icon: <MessageSquare className="h-4 w-4" />,
       iconBg: 'bg-cyan-100',
       iconColor: 'text-cyan-600',
     },
     {
       field: 'deleteNegative',
-      label: 'Eliminar comentarios negativos',
-      description: 'Elimina los comentarios que coincidan con reglas de palabras clave ofensivas o negativas.',
+      label: 'Delete negative comments',
+      description: 'Deletes comments that match offensive or negative keyword rules.',
       icon: <Trash2 className="h-4 w-4" />,
       iconBg: 'bg-red-100',
       iconColor: 'text-red-600',
     },
     {
       field: 'hideSpam',
-      label: 'Ocultar comentarios spam',
-      description: 'Oculta los comentarios que coincidan con reglas de palabras clave de spam.',
+      label: 'Hide spam comments',
+      description: 'Hides comments that match spam keyword rules.',
       icon: <EyeOff className="h-4 w-4" />,
       iconBg: 'bg-amber-100',
       iconColor: 'text-amber-600',
     },
     {
       field: 'aiEnabled',
-      label: 'Moderación potenciada por IA',
-      description: 'Usa IA para clasificar comentarios límite más allá de las reglas de palabras clave.',
+      label: 'AI-powered moderation',
+      description: 'Uses AI to classify borderline comments beyond the keyword rules.',
       icon: <Zap className="h-4 w-4" />,
       iconBg: 'bg-cyan-100',
       iconColor: 'text-cyan-600',
@@ -241,7 +241,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
         <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide mb-5">General</h2>
         <div className="space-y-5">
           <div>
-            <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Nombre del bot</Label>
+            <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Bot name</Label>
             <Input
               defaultValue={data.name}
               onBlur={e => handleNameBlur(e.target.value)}
@@ -250,9 +250,9 @@ export function BotSettings({ bot }: BotSettingsProps) {
           </div>
           <div className="flex items-center justify-between border-2 border-cyan-200 bg-cyan-50 rounded-2xl p-6">
             <div>
-              <p className="text-sm font-semibold text-cyan-900">Interruptor principal</p>
+              <p className="text-sm font-semibold text-cyan-900">Master switch</p>
               <p className="text-xs text-cyan-600 mt-0.5">
-                Cuando está apagado, este bot no procesará ningún comentario.
+                When turned off, this bot will not process any comments.
               </p>
             </div>
             <Switch
@@ -262,7 +262,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
             />
           </div>
           <div className="text-sm text-slate-500 bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
-            Conectado a{' '}
+            Connected to{' '}
             <span className="font-medium text-slate-700">{data.account.pageName}</span>{' '}
             ({data.account.platform === 'FACEBOOK' ? 'Facebook' : data.account.platform === 'INSTAGRAM' ? 'Instagram' : data.account.platform.toLowerCase()})
           </div>
@@ -271,7 +271,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
 
       {/* ── Automation toggles ── */}
       <div>
-        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Automatización</h2>
+        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Automation</h2>
         <div className="space-y-3">
           {toggles.map((toggle) => (
             <div
@@ -303,10 +303,10 @@ export function BotSettings({ bot }: BotSettingsProps) {
         {/* Section title with dirty indicator */}
         <div className="flex items-center gap-2 mb-5">
           <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">
-            Configuración de IA
+            AI Configuration
           </h2>
           {aiDirty && aiStatus === 'idle' && (
-            <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" title="Cambios sin guardar" />
+            <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse flex-shrink-0" title="Unsaved changes" />
           )}
         </div>
 
@@ -314,7 +314,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
           {/* Tone + Language */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Tono de respuesta</Label>
+              <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Reply tone</Label>
               <Select
                 value={aiDraft.replyTone}
                 onValueChange={v => { if (v) setAiDraft(d => ({ ...d, replyTone: v })); }}
@@ -323,14 +323,14 @@ export function BotSettings({ bot }: BotSettingsProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="friendly">Amigable</SelectItem>
+                  <SelectItem value="friendly">Friendly</SelectItem>
                   <SelectItem value="formal">Formal</SelectItem>
                   <SelectItem value="casual">Casual</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Idioma</Label>
+              <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Language</Label>
               <Select
                 value={aiDraft.language}
                 onValueChange={v => { if (v) setAiDraft(d => ({ ...d, language: v })); }}
@@ -339,9 +339,9 @@ export function BotSettings({ bot }: BotSettingsProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="es">Español</SelectItem>
-                  <SelectItem value="en">Inglés</SelectItem>
-                  <SelectItem value="pt">Portugués</SelectItem>
+                  <SelectItem value="es">Spanish</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="pt">Portuguese</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -350,7 +350,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
           {/* Max chars */}
           <div>
             <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
-              Longitud máxima de respuesta (caracteres)
+              Maximum reply length (characters)
             </Label>
             <Input
               type="number"
@@ -368,17 +368,17 @@ export function BotSettings({ bot }: BotSettingsProps) {
           {/* Custom instructions */}
           <div>
             <Label className="text-sm font-medium text-slate-700 mb-1.5 block">
-              Instrucciones personalizadas
+              Custom instructions
             </Label>
             <Textarea
               value={aiDraft.systemInstructions}
               onChange={e => setAiDraft(d => ({ ...d, systemInstructions: e.target.value }))}
-              placeholder="Ej: Nunca revelar fechas de entrega. Siempre redirigir preguntas de financiación a WhatsApp."
+              placeholder="e.g. Never reveal delivery dates. Always redirect financing questions to WhatsApp."
               rows={4}
               className="resize-none"
             />
             <p className="text-xs text-slate-400 mt-1.5">
-              Estas instrucciones se inyectan directamente en el prompt de la IA.
+              These instructions are injected directly into the AI prompt.
             </p>
           </div>
         </div>

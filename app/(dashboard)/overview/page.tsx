@@ -21,17 +21,17 @@ export default async function OverviewPage() {
       prisma.commentLog.count({ where: { tenantId } }),
     ]);
 
-  const firstName = session?.user?.name?.split(' ')[0] ?? 'usuario';
+  const firstName = session?.user?.name?.split(' ')[0] ?? 'user';
 
   return (
     <div className="max-w-6xl space-y-7">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">
-          Hola, {firstName} 👋
+          Hi, {firstName} 👋
         </h1>
         <p className="text-slate-500 mt-1">
-          Aquí está el resumen de tu actividad de hoy.
+          Here's a summary of your activity today.
         </p>
       </div>
 
@@ -40,49 +40,49 @@ export default async function OverviewPage() {
         {/* Bots activos */}
         <div className="rounded-2xl shadow-lg p-6 text-white" style={{background: 'linear-gradient(135deg, #00C4D4 0%, #00E5FF 100%)'}}>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-semibold uppercase tracking-widest" style={{color: '#0a1628', opacity: 0.7}}>Bots Activos</p>
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{color: '#0a1628', opacity: 0.7}}>Active Bots</p>
             <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
               <Settings className="h-4 w-4 text-white" />
             </div>
           </div>
           <p className="text-4xl font-bold" style={{color: '#0a1628'}}>{activeBots}</p>
-          <p className="text-xs mt-1" style={{color: '#0a1628', opacity: 0.6}}>de {totalBots} en total</p>
+          <p className="text-xs mt-1" style={{color: '#0a1628', opacity: 0.6}}>of {totalBots} total</p>
         </div>
 
         {/* Comentarios hoy */}
         <div className="rounded-2xl shadow-lg p-6 text-white" style={{background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'}}>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-blue-200 text-xs font-semibold uppercase tracking-widest">Comentarios</p>
+            <p className="text-blue-200 text-xs font-semibold uppercase tracking-widest">Comments</p>
             <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
               <MessageSquare className="h-4 w-4 text-white" />
             </div>
           </div>
           <p className="text-4xl font-bold text-white">{commentsToday}</p>
-          <p className="text-blue-200 text-xs mt-1">recibidos hoy</p>
+          <p className="text-blue-200 text-xs mt-1">received today</p>
         </div>
 
         {/* Respondidos */}
         <div className="rounded-2xl shadow-lg p-6 text-white" style={{background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'}}>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-emerald-200 text-xs font-semibold uppercase tracking-widest">Respondidos</p>
+            <p className="text-emerald-200 text-xs font-semibold uppercase tracking-widest">Replied</p>
             <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
               <Zap className="h-4 w-4 text-white" />
             </div>
           </div>
           <p className="text-4xl font-bold text-white">{repliesToday}</p>
-          <p className="text-emerald-200 text-xs mt-1">por IA hoy</p>
+          <p className="text-emerald-200 text-xs mt-1">by AI today</p>
         </div>
 
         {/* Eliminados */}
         <div className="rounded-2xl shadow-lg p-6 text-white" style={{background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'}}>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-red-200 text-xs font-semibold uppercase tracking-widest">Eliminados</p>
+            <p className="text-red-200 text-xs font-semibold uppercase tracking-widest">Deleted</p>
             <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
               <Trash2 className="h-4 w-4 text-white" />
             </div>
           </div>
           <p className="text-4xl font-bold text-white">{deletedToday}</p>
-          <p className="text-red-200 text-xs mt-1">moderados hoy</p>
+          <p className="text-red-200 text-xs mt-1">moderated today</p>
         </div>
       </div>
 
@@ -93,17 +93,17 @@ export default async function OverviewPage() {
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold" style={{color: '#0a1628'}}>
-            {totalComments.toLocaleString('es-CO')} comentarios procesados en total
+            {totalComments.toLocaleString('en-US')} comments processed in total
           </p>
           <p className="text-xs mt-0.5 text-cyan-700">
-            Tu plataforma de moderación sigue trabajando por ti 24/7.
+            Your moderation platform keeps working for you 24/7.
           </p>
         </div>
       </div>
 
       {/* Quick actions */}
       <div>
-        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Acciones rápidas</h2>
+        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Quick actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Link
             href="/accounts"
@@ -115,8 +115,8 @@ export default async function OverviewPage() {
               </div>
               <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
             </div>
-            <p className="text-sm font-bold text-slate-900">Conectar Cuenta</p>
-            <p className="text-xs text-slate-500 mt-0.5">Páginas de Facebook o Instagram</p>
+            <p className="text-sm font-bold text-slate-900">Connect Account</p>
+            <p className="text-xs text-slate-500 mt-0.5">Facebook or Instagram pages</p>
           </Link>
 
           <Link
@@ -129,8 +129,8 @@ export default async function OverviewPage() {
               </div>
               <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
             </div>
-            <p className="text-sm font-bold text-slate-900">Configurar Bots</p>
-            <p className="text-xs text-slate-500 mt-0.5">Respuestas IA y reglas de moderación</p>
+            <p className="text-sm font-bold text-slate-900">Configure Bots</p>
+            <p className="text-xs text-slate-500 mt-0.5">AI replies and moderation rules</p>
           </Link>
 
           <Link
@@ -143,8 +143,8 @@ export default async function OverviewPage() {
               </div>
               <ArrowRight className="h-4 w-4 text-slate-300 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
             </div>
-            <p className="text-sm font-bold text-slate-900">Ver Comentarios</p>
-            <p className="text-xs text-slate-500 mt-0.5">{totalComments.toLocaleString('es-CO')} procesados en total</p>
+            <p className="text-sm font-bold text-slate-900">View Comments</p>
+            <p className="text-xs text-slate-500 mt-0.5">{totalComments.toLocaleString('en-US')} processed in total</p>
           </Link>
         </div>
       </div>

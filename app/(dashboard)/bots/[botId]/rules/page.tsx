@@ -39,12 +39,12 @@ export default async function RulesPage({
           className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
-          Volver al bot
+          Back to bot
         </Link>
       </div>
       <PageHeader
-        title="Reglas de Moderación"
-        description={`Dos niveles de moderación para ${bot.name}: palabras clave (rápido) + IA (inteligente)`}
+        title="Moderation Rules"
+        description={`Two levels of moderation for ${bot.name}: keywords (fast) + AI (smart)`}
       />
       <ModerationRulesEditor
         botId={botId}

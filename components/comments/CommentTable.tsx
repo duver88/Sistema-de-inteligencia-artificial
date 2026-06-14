@@ -49,8 +49,8 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
         <div className="h-14 w-14 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
           <MessageCircle className="h-7 w-7 text-slate-400" />
         </div>
-        <p className="text-sm font-semibold text-slate-900 mb-1">Sin comentarios</p>
-        <p className="text-xs text-slate-500">Intenta ajustar los filtros.</p>
+        <p className="text-sm font-semibold text-slate-900 mb-1">No comments</p>
+        <p className="text-xs text-slate-500">Try adjusting the filters.</p>
       </div>
     );
   }
@@ -75,18 +75,18 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
               href={buildPageUrl(currentPage - 1)}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
             >
-              Anterior
+              Previous
             </Link>
           )}
           <span className="text-sm text-slate-500 px-2">
-            Página {currentPage} de {totalPages}
+            Page {currentPage} of {totalPages}
           </span>
           {currentPage < totalPages && (
             <Link
               href={buildPageUrl(currentPage + 1)}
               className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
             >
-              Siguiente
+              Next
             </Link>
           )}
         </div>

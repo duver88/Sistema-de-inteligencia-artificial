@@ -27,7 +27,7 @@ export function TopBar() {
             {session?.user?.image ? (
               <img
                 src={session.user.image}
-                alt={session.user.name ?? 'Usuario'}
+                alt={session.user.name ?? 'User'}
                 className="h-8 w-8 rounded-full object-cover"
               />
             ) : (
@@ -37,7 +37,7 @@ export function TopBar() {
             )}
             <div className="hidden sm:block text-left">
               <p className="text-sm font-semibold text-slate-800 leading-tight max-w-[120px] truncate">
-                {session?.user?.name ?? 'Usuario'}
+                {session?.user?.name ?? 'User'}
               </p>
               <p className="text-xs text-slate-400 leading-tight max-w-[120px] truncate">
                 {session?.user?.email ?? ''}
@@ -59,7 +59,7 @@ export function TopBar() {
                   className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
                 >
                   <LogOut className="h-4 w-4" />
-                  Cerrar sesión
+                  Sign out
                 </button>
               </div>
             </>
