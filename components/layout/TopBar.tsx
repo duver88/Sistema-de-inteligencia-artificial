@@ -8,6 +8,7 @@ import { useState } from 'react';
 export function TopBar() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
@@ -24,10 +25,12 @@ export function TopBar() {
             onClick={() => setOpen(v => !v)}
             className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
           >
-            {session?.user?.image ? (
+            {session?.user?.image && !imgError ? (
               <img
                 src={session.user.image}
                 alt={session.user.name ?? 'User'}
+                referrerPolicy="no-referrer"
+                onError={() => setImgError(true)}
                 className="h-8 w-8 rounded-full object-cover"
               />
             ) : (
