@@ -15,6 +15,7 @@ interface Comment {
   action: string;
   platform: string;
   aiReply: string | null;
+  aiReplyId?: string | null;
   createdAt: Date | string;
   bot: {
     name: string;
@@ -50,6 +51,12 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
     );
   }
 
+  function handleReplyEdited(id: string, newReply: string) {
+    setComments(prev =>
+      prev.map(c => c.id === id ? { ...c, aiReply: newReply } : c)
+    );
+  }
+
   // Fetch the latest comments from the API using the current filters + page
   const fetchLatest = useCallback(async () => {
     if (inFlight.current) return; // Avoid overlapping requests
@@ -74,6 +81,7 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
         action: string;
         platform: string;
         aiReply: string | null;
+        aiReplyId: string | null;
         createdAt: string;
         bot: Comment['bot'];
       }) => ({
@@ -83,6 +91,7 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
         action: c.action,
         platform: c.platform,
         aiReply: c.aiReply,
+        aiReplyId: c.aiReplyId,
         createdAt: c.createdAt,
         bot: c.bot,
       }));
@@ -171,6 +180,7 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
             key={comment.id}
             comment={comment}
             onActionComplete={handleActionComplete}
+            onReplyEdited={handleReplyEdited}
           />
         ))}
       </div>

@@ -53,7 +53,7 @@ de comentarios usando inteligencia artificial.
 - ❌ Rechazado: pages_manage_engagement — "la captura de video no coincide con el caso de uso"
   * Causa 1: el texto decía "create, edit, and delete comments" pero la app NO tiene función de editar (solo reply/delete/hide) y el video no mostró editar.
   * Causa 2: video sin cumplir el checklist de Meta (login completo, UI/subtítulos en inglés, experiencia completa).
-- Re-submission pendiente: corregir texto (quitar "edit", mencionar reply/delete/hide), regrabar video en inglés mostrando login OAuth completo + los 3 flujos verificados en Facebook.
+- Re-submission pendiente: regrabar video en inglés mostrando login OAuth completo + los flujos verificados en Facebook. Desde jul 21 la app SÍ tiene edición de respuestas del bot (botón "Edit reply" en /comments y en /bots/[botId]/replies), así que el texto puede decir honestamente "create, edit, and delete comments" SI el video muestra la edición.
 
 ## OAuth Redirect URIs registradas en Meta
 - {NEXTAUTH_URL}/api/auth/callback/facebook

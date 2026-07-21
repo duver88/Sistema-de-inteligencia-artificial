@@ -88,6 +88,21 @@ async function deleteComment(
   return data.success === true;
 }
 
+/** Edit a comment published by the Page on Facebook. Instagram does NOT support editing comments. */
+async function editFacebookComment(
+  commentId: string,
+  message: string,
+  pageAccessToken: string
+): Promise<void> {
+  const url = `${META_BASE_URL}/${commentId}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, access_token: pageAccessToken }),
+  });
+  await handleResponse<{ success: boolean }>(res);
+}
+
 /** Hide a Facebook comment. Instagram does NOT support this — delete instead. */
 async function hideComment(
   commentId: string,
@@ -213,6 +228,7 @@ export const metaClient = {
   replyToFacebookComment,
   replyToInstagramComment,
   deleteComment,
+  editFacebookComment,
   hideComment,
   getFacebookPostMessage,
   getInstagramMediaCaption,

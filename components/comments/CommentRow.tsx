@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { enUS } from 'date-fns/locale';
-import { MessageSquare, Trash2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { MessageSquare, Trash2, Loader2, ChevronUp, Pencil } from 'lucide-react';
 import { CommentStatusBadge } from './CommentStatusBadge';
 import { toast } from 'sonner';
 
@@ -15,6 +15,7 @@ interface CommentRowProps {
     action: string;
     platform: string;
     aiReply: string | null;
+    aiReplyId?: string | null;
     createdAt: Date | string;
     bot: {
       name: string;
@@ -22,15 +23,22 @@ interface CommentRowProps {
     };
   };
   onActionComplete: (id: string, newAction: string) => void;
+  onReplyEdited?: (id: string, newReply: string) => void;
 }
 
-export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
+export function CommentRow({ comment, onActionComplete, onReplyEdited }: CommentRowProps) {
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [replyText, setReplyText] = useState('');
-  const [loading, setLoading] = useState<'reply' | 'delete' | null>(null);
+  const [editText, setEditText] = useState('');
+  const [loading, setLoading] = useState<'reply' | 'delete' | 'edit' | null>(null);
 
   const canReply = !['DELETED', 'MANUAL_DELETE'].includes(comment.action);
   const canDelete = !['DELETED', 'MANUAL_DELETE'].includes(comment.action);
+  const canEditReply =
+    comment.platform === 'FACEBOOK' &&
+    !!comment.aiReplyId &&
+    ['REPLIED', 'MANUAL_REPLY'].includes(comment.action);
 
   async function handleReply() {
     if (!replyText.trim()) return;
@@ -48,6 +56,26 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
       onActionComplete(comment.id, 'MANUAL_REPLY');
     } catch {
       toast.error('Failed to send reply');
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function handleEditReply() {
+    if (!editText.trim()) return;
+    setLoading('edit');
+    try {
+      const res = await fetch(`/api/comments/${comment.id}/edit-reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ replyText: editText.trim() }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success('Reply updated');
+      setEditing(false);
+      onReplyEdited?.(comment.id, editText.trim());
+    } catch {
+      toast.error('Failed to update reply');
     } finally {
       setLoading(null);
     }
@@ -101,9 +129,27 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
         <div className="flex items-center gap-2 flex-shrink-0">
           <CommentStatusBadge action={comment.action} />
 
+          {canEditReply && (
+            <button
+              onClick={() => {
+                if (editing) {
+                  setEditing(false);
+                } else {
+                  setEditText(comment.aiReply ?? '');
+                  setEditing(true);
+                  setExpanded(false);
+                }
+              }}
+              className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-colors"
+              title="Edit reply"
+            >
+              {editing ? <ChevronUp className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
+            </button>
+          )}
+
           {canReply && (
             <button
-              onClick={() => setExpanded(v => !v)}
+              onClick={() => { setExpanded(v => !v); setEditing(false); }}
               className="p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-50 rounded-xl transition-colors"
               title="Reply"
             >
@@ -148,6 +194,37 @@ export function CommentRow({ comment, onActionComplete }: CommentRowProps) {
             >
               {loading === 'reply' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
               Send
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit reply form */}
+      {editing && (
+        <div className="border-t border-slate-100 px-5 py-3.5 bg-slate-50">
+          <textarea
+            value={editText}
+            onChange={e => setEditText(e.target.value)}
+            rows={3}
+            placeholder="Edit the reply…"
+            className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent resize-y"
+          />
+          <div className="flex justify-end gap-2 mt-2">
+            <button
+              onClick={() => setEditing(false)}
+              disabled={loading === 'edit'}
+              className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => void handleEditReply()}
+              disabled={!editText.trim() || loading === 'edit'}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl transition-all disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
+            >
+              {loading === 'edit' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+              Save
             </button>
           </div>
         </div>

@@ -67,6 +67,7 @@ export default async function CommentsPage({
     action: c.action as string,
     platform: c.platform as string,
     aiReply: c.aiReply,
+    aiReplyId: c.aiReplyId,
     createdAt: c.createdAt.toISOString(),
     bot: c.bot,
   }));
