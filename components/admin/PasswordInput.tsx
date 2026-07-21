@@ -11,7 +11,13 @@ const PASSWORD_CHARSET =
 export function generateTempPassword(length = 14): string {
   const values = new Uint32Array(length);
   crypto.getRandomValues(values);
-  return Array.from(values, (v) => PASSWORD_CHARSET[v % PASSWORD_CHARSET.length]).join('');
+  const password = Array.from(values, (v) => PASSWORD_CHARSET[v % PASSWORD_CHARSET.length]).join('');
+  // Server policy requires at least one letter and one number — regenerate
+  // on the rare draw that misses either.
+  if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+    return generateTempPassword(length);
+  }
+  return password;
 }
 
 interface PasswordInputProps {

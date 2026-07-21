@@ -17,8 +17,8 @@ export default function ChangePasswordPage() {
     e.preventDefault();
     setError(null);
 
-    if (newPassword.length < 8) {
-      setError('New password must be at least 8 characters');
+    if (newPassword.length < 10) {
+      setError('New password must be at least 10 characters');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -97,10 +97,10 @@ export default function ChangePasswordPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                minLength={8}
+                minLength={10}
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
-                placeholder="At least 8 characters"
+                placeholder="At least 10 characters"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0bbfb8] focus:border-transparent transition-all"
               />
             </div>
@@ -114,7 +114,7 @@ export default function ChangePasswordPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                minLength={8}
+                minLength={10}
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 placeholder="Repeat the new password"

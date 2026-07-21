@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { requireTenant } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
+import { validatePassword } from '@/lib/password';
 
 // POST — change the current user's password.
 // Body: { currentPassword, newPassword }. Verifies the current password,
@@ -25,17 +26,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (newPassword.length < 8) {
-    return NextResponse.json(
-      { error: 'New password must be at least 8 characters' },
-      { status: 400 }
-    );
-  }
-
   const user = await prisma.user.findUnique({
     where: { id: ctx.userId },
-    select: { passwordHash: true },
+    select: { passwordHash: true, email: true },
   });
+
+  const passwordCheck = validatePassword(newPassword, user?.email);
+  if (!passwordCheck.ok) {
+    return NextResponse.json({ error: passwordCheck.error }, { status: 400 });
+  }
 
   if (!user?.passwordHash) {
     return NextResponse.json(

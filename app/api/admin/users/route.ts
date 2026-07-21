@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSuperAdmin } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
+import { validatePassword } from '@/lib/password';
 import bcrypt from 'bcryptjs';
 
 const EMAIL_REGEX = /^\S+@\S+\.\S+$/;
@@ -77,11 +78,9 @@ export async function POST(request: NextRequest) {
   if (!email || !EMAIL_REGEX.test(email)) {
     return NextResponse.json({ error: 'A valid email is required' }, { status: 400 });
   }
-  if (password.length < 8) {
-    return NextResponse.json(
-      { error: 'Password must be at least 8 characters' },
-      { status: 400 }
-    );
+  const passwordCheck = validatePassword(password, email);
+  if (!passwordCheck.ok) {
+    return NextResponse.json({ error: passwordCheck.error }, { status: 400 });
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });

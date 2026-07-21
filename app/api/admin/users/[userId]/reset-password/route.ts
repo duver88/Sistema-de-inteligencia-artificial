@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireSuperAdmin } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
+import { validatePassword } from '@/lib/password';
 import bcrypt from 'bcryptjs';
 
 type Params = { params: Promise<{ userId: string }> };
@@ -18,19 +19,18 @@ export async function POST(request: NextRequest, { params }: Params) {
   } | null;
 
   const password = typeof body?.password === 'string' ? body.password : '';
-  if (password.length < 8) {
-    return NextResponse.json(
-      { error: 'Password must be at least 8 characters' },
-      { status: 400 }
-    );
-  }
 
   const target = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true },
+    select: { id: true, email: true },
   });
   if (!target) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  }
+
+  const passwordCheck = validatePassword(password, target.email);
+  if (!passwordCheck.ok) {
+    return NextResponse.json({ error: passwordCheck.error }, { status: 400 });
   }
 
   const passwordHash = await bcrypt.hash(password, 12);

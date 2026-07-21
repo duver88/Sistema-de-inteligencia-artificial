@@ -141,7 +141,7 @@ export function ResetPasswordDialog({ user, onOpenChange, onReset }: ResetPasswo
               </label>
               <PasswordInput value={password} onChange={setPassword} />
               <p className="mt-1.5 text-xs text-slate-400">
-                At least 8 characters. You can copy it again on the next step.
+                At least 10 characters with a letter and a number. You can copy it again on the next step.
               </p>
             </div>
 

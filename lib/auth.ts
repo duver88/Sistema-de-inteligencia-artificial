@@ -13,24 +13,36 @@ const DUMMY_PASSWORD_HASH =
   '$2b$12$5rcgyoI5RvxZKoZwnYRekOVSgiFs7141y3KfBNZJlBXvyGYiORGVK';
 
 // ─── In-memory rate limit for failed login attempts ───────────────────────
-// Max 5 failed attempts per email in a 15-minute window. Module-level Map is
-// enough because PM2 runs a single fork in production.
+// Two independent limits, both keyed in the same Map ("email:<x>" / "ip:<x>"):
+//   - per email: 5 failed attempts / 15 min (protects one account)
+//   - per IP:   20 failed attempts / 15 min (stops attackers rotating emails)
+// Module-level Map is enough because PM2 runs a single fork in production.
 const MAX_FAILED_ATTEMPTS = 5;
+const MAX_FAILED_ATTEMPTS_PER_IP = 20;
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
-// Hard cap on tracked emails so an attacker spraying millions of unique
+// Hard cap on tracked keys so an attacker spraying millions of unique
 // random emails cannot grow the Map (and process memory) without bound.
 const MAX_TRACKED_EMAILS = 10_000;
 
 const failedAttempts = new Map<string, { count: number; windowStart: number }>();
 
-function isRateLimited(email: string): boolean {
-  const entry = failedAttempts.get(email);
+function isRateLimited(key: string, max: number): boolean {
+  const entry = failedAttempts.get(key);
   if (!entry) return false;
   if (Date.now() - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
-    failedAttempts.delete(email);
+    failedAttempts.delete(key);
     return false;
   }
-  return entry.count >= MAX_FAILED_ATTEMPTS;
+  return entry.count >= max;
+}
+
+// Client IP as forwarded by nginx (X-Real-IP / first hop of X-Forwarded-For).
+function clientIp(request: Request | undefined): string {
+  const real = request?.headers?.get('x-real-ip');
+  if (real) return real.trim();
+  const fwd = request?.headers?.get('x-forwarded-for');
+  if (fwd) return fwd.split(',')[0].trim();
+  return 'unknown';
 }
 
 function pruneFailedAttempts(now: number) {
@@ -48,21 +60,21 @@ function pruneFailedAttempts(now: number) {
   }
 }
 
-function recordFailedAttempt(email: string) {
+function recordFailedAttempt(key: string) {
   const now = Date.now();
-  if (!failedAttempts.has(email) && failedAttempts.size >= MAX_TRACKED_EMAILS) {
+  if (!failedAttempts.has(key) && failedAttempts.size >= MAX_TRACKED_EMAILS) {
     pruneFailedAttempts(now);
   }
-  const entry = failedAttempts.get(email);
+  const entry = failedAttempts.get(key);
   if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
-    failedAttempts.set(email, { count: 1, windowStart: now });
+    failedAttempts.set(key, { count: 1, windowStart: now });
   } else {
     entry.count += 1;
   }
 }
 
-function clearFailedAttempts(email: string) {
-  failedAttempts.delete(email);
+function clearFailedAttempts(key: string) {
+  failedAttempts.delete(key);
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -76,7 +88,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Return null on ANY failure so the client always sees the same
       // generic "Invalid email or password" error, never whether the
       // email exists, is suspended, or is rate limited.
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const email = typeof credentials?.email === 'string'
           ? credentials.email.trim().toLowerCase()
           : '';
@@ -84,8 +96,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           ? credentials.password
           : '';
 
-        if (!email || !password) return null;
-        if (isRateLimited(email)) return null;
+        // Length caps: emails beyond RFC size or absurdly long passwords are
+        // never legitimate; rejecting early also bounds bcrypt input size.
+        if (!email || !password || email.length > 254 || password.length > 256) {
+          return null;
+        }
+
+        const ip = clientIp(request);
+        const emailKey = `email:${email}`;
+        const ipKey = `ip:${ip}`;
+
+        const fail = (reason: string) => {
+          recordFailedAttempt(emailKey);
+          if (ip !== 'unknown') recordFailedAttempt(ipKey);
+          console.warn(`[Auth] Failed login (${reason}) email=${email} ip=${ip}`);
+          return null;
+        };
+
+        if (
+          isRateLimited(emailKey, MAX_FAILED_ATTEMPTS) ||
+          (ip !== 'unknown' && isRateLimited(ipKey, MAX_FAILED_ATTEMPTS_PER_IP))
+        ) {
+          console.warn(`[Auth] Rate-limited login attempt email=${email} ip=${ip}`);
+          return null;
+        }
 
         const user = await prisma.user.findUnique({
           where: { email },
@@ -102,37 +136,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // Burn the same bcrypt time as a real comparison so latency does
           // not reveal whether the email exists.
           await bcrypt.compare(password, DUMMY_PASSWORD_HASH);
-          recordFailedAttempt(email);
-          return null;
+          return fail('unknown-or-passwordless');
         }
 
         const passwordValid = await bcrypt.compare(password, user.passwordHash);
-        if (!passwordValid) {
-          recordFailedAttempt(email);
-          return null;
-        }
+        if (!passwordValid) return fail('bad-password');
 
-        if (user.status !== 'ACTIVE') {
-          recordFailedAttempt(email);
-          return null;
-        }
+        if (user.status !== 'ACTIVE') return fail('not-active');
 
-        clearFailedAttempts(email);
+        clearFailedAttempts(emailKey);
 
         await prisma.user.update({
           where: { id: user.id },
           data: { lastLoginAt: new Date() },
         });
 
+        console.info(`[Auth] Successful login email=${email} ip=${ip}`);
         return { id: user.id, name: user.name, email: user.email };
       },
     }),
   ],
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // Facebook appends #_=_ to the redirect URL — strip it so NextAuth
-      // doesn't pass the fragment to the session/signIn callbacks.
-      url = url.replace('#_=_', '');
       // Standard NextAuth redirect logic: allow relative URLs and same-origin
       if (url.startsWith('/')) return `${baseUrl}${url}`;
       if (new URL(url).origin === baseUrl) return url;
@@ -206,6 +231,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   session: {
     strategy: 'jwt',
+    // 7 days instead of the 30-day default: this is an admin-capable SaaS,
+    // shorter sessions shrink the window a stolen cookie is useful. Combined
+    // with the fresh-DB session callback, revocation is still immediate.
+    maxAge: 7 * 24 * 60 * 60,
   },
 });
 
