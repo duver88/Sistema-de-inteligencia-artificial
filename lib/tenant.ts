@@ -64,7 +64,7 @@ export async function getCurrentTenant(): Promise<TenantContext | null> {
  * opt out with `{ allowSuperAdmin: true }`.
  */
 export async function requireTenant(
-  options?: { allowSuperAdmin?: boolean }
+  options?: { allowSuperAdmin?: boolean; allowMustChangePassword?: boolean }
 ): Promise<TenantContext | NextResponse> {
   const ctx = await getCurrentTenant();
   if (!ctx) {
@@ -72,6 +72,13 @@ export async function requireTenant(
   }
   if (ctx.isSuperAdmin && !options?.allowSuperAdmin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+  // A user provisioned with a temporary password must change it before using
+  // any tenant feature — otherwise the forced rotation is only a UI gate the
+  // dashboard layout enforces, bypassable by calling the API directly. The
+  // password-change route itself opts out so the user can actually change it.
+  if (ctx.mustChangePassword && !options?.allowMustChangePassword) {
+    return NextResponse.json({ error: 'Password change required' }, { status: 403 });
   }
   return ctx;
 }

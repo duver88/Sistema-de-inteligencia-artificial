@@ -1,12 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { signOut } from 'next-auth/react';
 import { LionsCoreIcon } from '@/components/icons/LionsCoreIcon';
 import { Loader2 } from 'lucide-react';
 
 export default function ChangePasswordPage() {
-  const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -41,8 +40,11 @@ export default function ChangePasswordPage() {
         return;
       }
 
-      router.push('/');
-      router.refresh();
+      // Changing the password invalidates the current JWT (passwordChangedAt),
+      // so the session is already dead server-side. Sign out cleanly and send
+      // the user to the login page with a success notice instead of letting
+      // them bounce through a broken session.
+      await signOut({ redirectTo: '/login?passwordChanged=1' });
     } catch {
       setError('Failed to change password');
       setLoading(false);

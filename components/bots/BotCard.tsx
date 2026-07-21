@@ -41,7 +41,11 @@ export function BotCard({ bot }: BotCardProps) {
     try {
       const res = await fetch(`/api/bots/${bot.id}/toggle`, { method: 'POST' });
       if (!res.ok) throw new Error();
-      toast.success(`Bot ${value ? 'activated' : 'paused'}`);
+      // The endpoint flips server-side and returns the authoritative state —
+      // use it instead of assuming `value`, so the card can't end up inverted.
+      const data = (await res.json()) as { isActive: boolean };
+      setIsActive(data.isActive);
+      toast.success(`Bot ${data.isActive ? 'activated' : 'paused'}`);
     } catch {
       setIsActive(previous);
       toast.error('Failed to change the bot status.');

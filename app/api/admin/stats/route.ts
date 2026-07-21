@@ -43,8 +43,11 @@ export async function GET() {
       },
     }),
     prisma.user.count({ where: { status: 'SUSPENDED' } }),
+    // Expired = non-superadmin, past expiration, and NOT already suspended
+    // (status priority is Suspended > Expired > Active, so a suspended user
+    // must not also be counted here).
     prisma.user.count({
-      where: { isSuperAdmin: false, accessExpiresAt: { lte: now } },
+      where: { isSuperAdmin: false, status: { not: 'SUSPENDED' }, accessExpiresAt: { lte: now } },
     }),
     prisma.user.count({ where: { isSuperAdmin: true } }),
     prisma.socialAccount.count(),

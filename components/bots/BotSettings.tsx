@@ -175,7 +175,15 @@ export function BotSettings({ bot }: BotSettingsProps) {
   // ── Name blur-save (still instant — it's a unique single field) ──────────
 
   function handleNameBlur(value: string) {
-    void patchField('name', value);
+    const trimmed = value.trim();
+    // Don't persist an empty name (the API rejects it with a 400 anyway) or a
+    // no-op save; revert the field to the saved name if it was cleared.
+    if (!trimmed) {
+      setData(d => ({ ...d, name: data.name }));
+      return;
+    }
+    if (trimmed === data.name) return;
+    void patchField('name', trimmed);
   }
 
   // ── AI config — batch save ────────────────────────────────────────────────

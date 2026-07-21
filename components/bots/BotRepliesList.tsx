@@ -59,8 +59,34 @@ export function BotRepliesList({ botId, initialReplies, initialTotalPages }: Bot
       seeded.current = false;
       return;
     }
-    void fetchReplies(page);
-  }, [fetchReplies, page]);
+    // Guard against out-of-order responses: if the user paginates again before
+    // the previous request resolves, ignore the stale response.
+    let active = true;
+    setRefreshing(true);
+    setError(false);
+    const params = new URLSearchParams({
+      botId,
+      action: 'REPLIED,MANUAL_REPLY',
+      page: String(page),
+    });
+    fetch(`/api/comments?${params.toString()}`, { cache: 'no-store' })
+      .then(async (res) => {
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        if (!active) return;
+        setReplies(data.comments ?? []);
+        if (typeof data.totalPages === 'number') setTotalPages(Math.max(1, data.totalPages));
+      })
+      .catch(() => {
+        if (active) setError(true);
+      })
+      .finally(() => {
+        if (active) setRefreshing(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [botId, page]);
 
   function handleActionComplete(id: string, newAction: string) {
     setReplies(prev =>

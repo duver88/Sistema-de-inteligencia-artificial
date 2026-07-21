@@ -11,7 +11,7 @@ import { validatePassword } from '@/lib/password';
 export async function POST(request: NextRequest) {
   // Changing your own password is a role-agnostic self-service action, so
   // super admins are allowed here (requireTenant rejects them by default).
-  const ctx = await requireTenant({ allowSuperAdmin: true });
+  const ctx = await requireTenant({ allowSuperAdmin: true, allowMustChangePassword: true });
   if (ctx instanceof NextResponse) return ctx;
 
   const body = await request.json().catch(() => null) as

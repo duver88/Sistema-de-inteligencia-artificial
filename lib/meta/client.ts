@@ -176,24 +176,6 @@ async function subscribePageToWebhooks(
   return data.success === true;
 }
 
-// ── Token Exchange ───────────────────────────────────────────────────────────
-
-/** Exchange a short-lived user access token for a 60-day long-lived token. */
-async function exchangeForLongLivedToken(shortLivedToken: string): Promise<string> {
-  if (!process.env.FACEBOOK_CLIENT_ID) throw new Error('FACEBOOK_CLIENT_ID is not set');
-  if (!process.env.FACEBOOK_CLIENT_SECRET) throw new Error('FACEBOOK_CLIENT_SECRET is not set');
-
-  const url = new URL(`${META_BASE_URL}/oauth/access_token`);
-  url.searchParams.set('grant_type', 'fb_exchange_token');
-  url.searchParams.set('client_id', process.env.FACEBOOK_CLIENT_ID);
-  url.searchParams.set('client_secret', process.env.FACEBOOK_CLIENT_SECRET);
-  url.searchParams.set('fb_exchange_token', shortLivedToken);
-
-  const res = await fetch(url.toString());
-  const data = await handleResponse<{ access_token: string; expires_in?: number }>(res);
-  return data.access_token;
-}
-
 /** Get all Facebook Pages managed by the user, including linked Instagram accounts. */
 async function getManagedPages(longLivedUserToken: string): Promise<Array<{
   id: string;
@@ -233,7 +215,6 @@ export const metaClient = {
   getFacebookPostMessage,
   getInstagramMediaCaption,
   subscribePageToWebhooks,
-  exchangeForLongLivedToken,
   getManagedPages,
 };
 

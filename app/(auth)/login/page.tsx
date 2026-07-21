@@ -21,6 +21,8 @@ function LoginForm() {
   const callbackUrl =
     rawCallbackUrl && /^\/(?![/\\])/.test(rawCallbackUrl) ? rawCallbackUrl : '/';
 
+  const passwordChanged = searchParams.get('passwordChanged') === '1';
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
@@ -67,6 +69,12 @@ function LoginForm() {
           <p className="text-slate-500 text-sm mb-7">
             Enter your email and password to access your account.
           </p>
+
+          {passwordChanged && (
+            <div className="mb-5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700">
+              Your password was changed. Please sign in with your new password.
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

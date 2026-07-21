@@ -59,8 +59,27 @@ export function UsagePanel() {
   }, []);
 
   useEffect(() => {
-    void fetchUsage(days);
-  }, [fetchUsage, days]);
+    // Ignore a slow response for a range the user already switched away from,
+    // so out-of-order responses can't show data for the wrong range.
+    let active = true;
+    setError(null);
+    setLoading(true);
+    fetch(`/api/admin/usage?days=${days}`, { cache: 'no-store' })
+      .then(async (res) => {
+        if (!res.ok) throw new Error();
+        const usage = (await res.json()) as UsageData;
+        if (active) setData(usage);
+      })
+      .catch(() => {
+        if (active) setError('Failed to load AI usage. Please try again.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [days]);
 
   const totalTokens = data
     ? data.totals.promptTokens + data.totals.completionTokens

@@ -28,7 +28,9 @@ export default async function KnowledgePage({
   const entries = await prisma.knowledgeEntry.findMany({
     where: { botId },
     include: { project: { select: { name: true } } },
-    orderBy: { createdAt: 'asc' },
+    // Match the order used by GET /api/bots/[botId]/knowledge (the refresh
+    // after import) so the list doesn't reshuffle between load and refresh.
+    orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
   });
 
   return (
@@ -39,12 +41,12 @@ export default async function KnowledgePage({
           className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
-          Volver al bot
+          Back to bot
         </Link>
       </div>
       <PageHeader
-        title="Base de Conocimiento"
-        description={`Hechos y preguntas frecuentes para ${bot.name}`}
+        title="Knowledge Base"
+        description={`Facts and FAQs for ${bot.name}`}
       />
       <KnowledgeBaseEditor
         botId={botId}
