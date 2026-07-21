@@ -42,7 +42,8 @@ Todo ocurre únicamente sobre páginas que el usuario administra y ha conectado 
 1. El revisor pulsa **"Continuar con Facebook"**.
 2. Código relevante: `app/(auth)/login/page.tsx` → `signIn('facebook', { callbackUrl: '/' })`.
 3. NextAuth v5 redirige a `https://www.facebook.com/v21.0/dialog/oauth` con los scopes de LOGIN definidos en `FACEBOOK_LOGIN_SCOPES` (solo identidad — los permisos de páginas se piden después, en contexto, al conectar una página):
-   - `public_profile` (único scope de login — "email" no está disponible en esta app tipo Business)
+   - `public_profile`
+   - `pages_show_list` (Facebook Login for Business exige al menos un permiso de negocio en el diálogo; las páginas NO se guardan en el login — solo se conectan desde /accounts)
 4. El revisor aprueba los permisos. Facebook redirige a `https://sia.lionscore.ai/api/auth/callback/facebook`.
 5. En el callback (`lib/auth.ts`, hook `signIn`):
    - Se intercambia el token de corta duración por un **long-lived token de 60 días** vía `GET /v21.0/oauth/access_token?grant_type=fb_exchange_token`.

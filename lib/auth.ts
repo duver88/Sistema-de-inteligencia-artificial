@@ -49,121 +49,6 @@ async function resolveOrCreateTenant(
   return tenant.id;
 }
 
-// Fetch all Facebook Pages the user manages, plus their linked Instagram accounts
-async function fetchAndStoreSocialAccounts(
-  longLivedToken: string,
-  userId: string,
-  tenantId: string
-): Promise<void> {
-  const url = new URL(`${META_BASE_URL}/me/accounts`);
-  url.searchParams.set('access_token', longLivedToken);
-  url.searchParams.set(
-    'fields',
-    'id,name,picture,access_token,instagram_business_account{id,name,profile_picture_url}'
-  );
-
-  const res = await fetch(url.toString());
-  const data = await res.json() as {
-    data?: Array<{
-      id: string;
-      name: string;
-      picture?: { data?: { url?: string } };
-      access_token: string;
-      instagram_business_account?: {
-        id: string;
-        name: string;
-        profile_picture_url?: string;
-      };
-    }>;
-    error?: { message: string };
-  };
-
-  if (!res.ok || !data.data) {
-    console.error('Failed to fetch pages:', data.error);
-    return;
-  }
-
-  for (const page of data.data) {
-    const encryptedPageToken = encrypt(page.access_token);
-
-    // Upsert the Facebook Page
-    const fbAccount = await prisma.socialAccount.upsert({
-      where: { platform_pageId: { platform: 'FACEBOOK', pageId: page.id } },
-      update: {
-        pageName: page.name,
-        pageToken: encryptedPageToken,
-        pictureUrl: page.picture?.data?.url,
-        isActive: true,
-      },
-      create: {
-        tenantId,
-        platform: 'FACEBOOK',
-        pageId: page.id,
-        pageName: page.name,
-        pageToken: encryptedPageToken,
-        pictureUrl: page.picture?.data?.url,
-      },
-    });
-
-    // Create a default Bot for this account if one doesn't exist
-    const existingBot = await prisma.bot.findFirst({
-      where: { accountId: fbAccount.id, tenantId },
-    });
-    if (!existingBot) {
-      await prisma.bot.create({
-        data: {
-          tenantId,
-          accountId: fbAccount.id,
-          name: `Bot ${page.name}`,
-          isActive: false,
-        },
-      });
-    }
-
-    // Upsert linked Instagram Business Account if present
-    if (page.instagram_business_account) {
-      const ig = page.instagram_business_account;
-      // Instagram uses the same page access token
-      const encryptedIgToken = encrypt(page.access_token);
-
-      const igAccount = await prisma.socialAccount.upsert({
-        where: { platform_pageId: { platform: 'INSTAGRAM', pageId: ig.id } },
-        update: {
-          pageName: ig.name,
-          pageToken: encryptedIgToken,
-          pictureUrl: ig.profile_picture_url,
-          isActive: true,
-          linkedFacebookPageId: fbAccount.id,
-        },
-        create: {
-          tenantId,
-          platform: 'INSTAGRAM',
-          pageId: ig.id,
-          pageName: ig.name,
-          pageToken: encryptedIgToken,
-          pictureUrl: ig.profile_picture_url,
-          linkedFacebookPageId: fbAccount.id,
-        },
-      });
-
-      // Create a default Bot for the Instagram account if one doesn't exist
-      const existingIgBot = await prisma.bot.findFirst({
-        where: { accountId: igAccount.id, tenantId },
-      });
-      if (!existingIgBot) {
-        await prisma.bot.create({
-          data: {
-            tenantId,
-            accountId: igAccount.id,
-            name: `Bot Instagram ${ig.name}`,
-            isActive: false,
-          },
-        });
-      }
-    }
-  }
-}
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -172,12 +57,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
       authorization: {
         params: {
-          // Login only needs identity. Page permissions (FACEBOOK_SCOPES) are
-          // requested later, in the "Connect account" OAuth flow — Meta App
-          // Review expects permissions to be requested in context, not at login.
-          // Note: "email" is NOT available in this Meta app (Business type /
-          // Facebook Login for Business) — requesting it throws Invalid Scopes.
-          scope: process.env.FACEBOOK_LOGIN_SCOPES || 'public_profile',
+          // Minimal login scope. This Meta app uses Facebook Login for
+          // Business, which rejects the dialog unless at least ONE business
+          // permission is requested — public_profile alone shows "app needs
+          // at least one supported permission", and "email" doesn't exist in
+          // Business apps (Invalid Scopes). pages_show_list is the lightest
+          // approved option. The rest of the page permissions are requested
+          // in context, in the "Connect account" flow (FACEBOOK_SCOPES).
+          scope: process.env.FACEBOOK_LOGIN_SCOPES || 'public_profile,pages_show_list',
         },
       },
       // Facebook has its own internal CSRF protection and does not work
@@ -221,7 +108,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
 
           // Resolve (or create) the tenant for this user
-          const tenantId: string = await resolveOrCreateTenant(
+          await resolveOrCreateTenant(
             dbUser?.tenantId,
             userId,
             (profile as { name?: string })?.name || user.name || user.email
@@ -240,12 +127,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
           });
 
-          // 4. Fetch pages and create SocialAccounts + default Bots.
-          // With identity-only login scopes (FACEBOOK_LOGIN_SCOPES) /me/accounts
-          // returns no pages, so this is a no-op: pages are connected via
-          // /accounts "Connect account", which also subscribes webhooks —
-          // pages created here never got webhookSubscribed.
-          await fetchAndStoreSocialAccounts(longLivedToken, userId, tenantId);
+          // Pages are NOT discovered at login. They connect via /accounts
+          // "Connect account", which requests the full page permissions and
+          // subscribes webhooks. Doing it here overwrote good page tokens
+          // with weak ones (login scope lacks pages_manage_engagement) and
+          // left pages without webhookSubscribed.
         } catch (err) {
           console.error('Error during Facebook sign-in flow:', err);
           // Don't block sign-in — user can still access the dashboard
