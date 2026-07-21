@@ -298,6 +298,25 @@ model AiUsage {
   @@index([day])
 }
 
+// ─── AUDIT LOG ────────────────────────────────────────────────────────────
+// Append-only record of privileged admin actions. `actorId`/`actorEmail`
+// identify who performed the action; `action` is one of the exported
+// constants in lib/audit.ts. `metadata` NEVER contains secrets (no API keys,
+// tokens or password hashes). Not relationally linked to User so entries
+// survive user deletion (the actor snapshot lives in actorEmail).
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  actorEmail String
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 enum CommentAction {
   REPLIED // AI generated and posted a reply
   DELETED // Comment was deleted (offensive/negative)

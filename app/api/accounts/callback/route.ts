@@ -3,6 +3,7 @@ import { requireTenant } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
 import { encrypt } from '@/lib/crypto';
 import { metaClient } from '@/lib/meta/client';
+import { getPlanLimits, isUnlimited } from '@/lib/plans';
 import { cookies } from 'next/headers';
 
 const META_API_VERSION = 'v21.0';
@@ -90,12 +91,43 @@ export async function GET(request: NextRequest) {
     // 3. Fetch managed pages (with linked Instagram accounts)
     const pages = await metaClient.getManagedPages(longLivedToken);
 
+    // Enforce the tenant's plan page limit before creating any new
+    // SocialAccount. A page (or Instagram account) already owned by THIS tenant
+    // is a reconnection and does not count; a brand-new page — or one being
+    // pulled in from another tenant — does. `projectedPages` tracks the running
+    // owned count so a single OAuth batch can't blow past the ceiling.
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: ctx.tenantId },
+      select: { plan: true },
+    });
+    const maxPages = getPlanLimits(tenant?.plan ?? 'FREE').maxPages;
+    const pagesUnlimited = isUnlimited(maxPages);
+    let projectedPages = await prisma.socialAccount.count({
+      where: { tenantId: ctx.tenantId },
+    });
+    let planLimitHit = false;
+
     // 4. Save each page (and its Instagram account) to the database.
     // Ownership contract: the page belongs to the last user who proves Facebook
     // admin access via OAuth. Everything tied to the account — the SocialAccount,
     // its Bots (with their config/knowledge/projects, which follow the bot) and
     // their CommentLogs — moves to the connecting tenant atomically.
     for (const page of pages) {
+      // Does this Facebook page already belong to the connecting tenant? If so
+      // it's a reconnection and is exempt from the page-limit check.
+      const existingFb = await prisma.socialAccount.findUnique({
+        where: { platform_pageId: { platform: 'FACEBOOK', pageId: page.id } },
+        select: { tenantId: true },
+      });
+      const fbIsNewForTenant = existingFb?.tenantId !== ctx.tenantId;
+      if (!pagesUnlimited && fbIsNewForTenant && projectedPages >= maxPages) {
+        // Adding this page (and its linked Instagram account) would exceed the
+        // plan. Skip the whole page and flag it so the user is told why.
+        planLimitHit = true;
+        continue;
+      }
+      if (fbIsNewForTenant) projectedPages++;
+
       const encryptedPageToken = encrypt(page.access_token);
 
       const fbAccount = await prisma.$transaction(async (tx) => {
@@ -168,6 +200,20 @@ export async function GET(request: NextRequest) {
       // account + bots + comment logs move to the connecting tenant atomically)
       if (page.instagram_business_account) {
         const ig = page.instagram_business_account;
+
+        // An Instagram Business account is its own SocialAccount row, so it
+        // also consumes a page slot. Same reconnection exemption applies.
+        const existingIg = await prisma.socialAccount.findUnique({
+          where: { platform_pageId: { platform: 'INSTAGRAM', pageId: ig.id } },
+          select: { tenantId: true },
+        });
+        const igIsNewForTenant = existingIg?.tenantId !== ctx.tenantId;
+        if (!pagesUnlimited && igIsNewForTenant && projectedPages >= maxPages) {
+          planLimitHit = true;
+          continue;
+        }
+        if (igIsNewForTenant) projectedPages++;
+
         const encryptedIgToken = encrypt(page.access_token);
 
         await prisma.$transaction(async (tx) => {
@@ -225,6 +271,11 @@ export async function GET(request: NextRequest) {
     // success when the user deselected every page (or manages none).
     if (pages.length === 0) {
       return NextResponse.redirect(`${appUrl}/accounts?error=no_pages`);
+    }
+    // At least one page was blocked by the plan's page limit. Some pages may
+    // still have connected; surface the limit so the user knows why not all did.
+    if (planLimitHit) {
+      return NextResponse.redirect(`${appUrl}/accounts?error=plan_limit`);
     }
     return NextResponse.redirect(`${appUrl}/accounts?success=true&count=${pages.length}`);
   } catch (err) {

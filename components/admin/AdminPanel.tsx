@@ -1,17 +1,33 @@
 'use client';
 
 import { useState } from 'react';
-import { LayoutDashboard, Sparkles, Users } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Sparkles,
+  Users,
+  Layers,
+  MessageSquare,
+  CreditCard,
+  ScrollText,
+} from 'lucide-react';
 import { UserManagement } from './UserManagement';
 import { AdminOverview } from './AdminOverview';
 import { OpenAiKeyCard } from './OpenAiKeyCard';
 import { UsagePanel } from './UsagePanel';
+import { PagesAndBotsPanel } from './PagesAndBotsPanel';
+import { ModerationPanel } from './ModerationPanel';
+import { PlansPanel } from './PlansPanel';
+import { AuditLogPanel } from './AuditLogPanel';
 
-type AdminTab = 'overview' | 'users' | 'ai';
+type AdminTab = 'overview' | 'users' | 'pages' | 'moderation' | 'plans' | 'audit' | 'ai';
 
 const TABS: { id: AdminTab; label: string; icon: typeof Users }[] = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
   { id: 'users', label: 'Users', icon: Users },
+  { id: 'pages', label: 'Pages & Bots', icon: Layers },
+  { id: 'moderation', label: 'Moderation', icon: MessageSquare },
+  { id: 'plans', label: 'Plans', icon: CreditCard },
+  { id: 'audit', label: 'Audit log', icon: ScrollText },
   { id: 'ai', label: 'AI & Usage', icon: Sparkles },
 ];
 
@@ -52,6 +68,10 @@ export function AdminPanel({ currentUserId }: AdminPanelProps) {
 
       {tab === 'overview' && <AdminOverview />}
       {tab === 'users' && <UserManagement currentUserId={currentUserId} />}
+      {tab === 'pages' && <PagesAndBotsPanel />}
+      {tab === 'moderation' && <ModerationPanel />}
+      {tab === 'plans' && <PlansPanel />}
+      {tab === 'audit' && <AuditLogPanel />}
       {tab === 'ai' && (
         <div className="space-y-6">
           <OpenAiKeyCard />

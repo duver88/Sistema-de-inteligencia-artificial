@@ -27,6 +27,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   token_exchange: 'Failed to retrieve the Facebook token.',
   server_config: 'Server configuration error.',
   no_pages: 'No pages were connected. Make sure you selected a Facebook Page you administer.',
+  plan_limit: 'You have reached your plan’s page limit. Upgrade your plan or disconnect a page to add more.',
   unexpected: 'An unexpected error occurred. Please try again.',
 };
 
