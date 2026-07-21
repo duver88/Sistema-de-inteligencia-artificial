@@ -1,6 +1,13 @@
 import OpenAI from 'openai';
+import type { AiCallUsage } from '@/lib/ai/usage';
 
 export type Classification = 'DELETE' | 'HIDE' | 'REPLY' | 'IGNORE';
+
+export interface ClassificationResult {
+  classification: Classification;
+  /** Token usage of the OpenAI call — null when the call itself failed. */
+  usage: AiCallUsage | null;
+}
 
 const VALID_CLASSIFICATIONS = new Set<Classification>(['DELETE', 'HIDE', 'REPLY', 'IGNORE']);
 
@@ -34,17 +41,17 @@ Respond with ONLY the single action word. No explanation. No punctuation. Just t
 /**
  * Classify a social media comment into one of four moderation actions.
  *
- * Requires a per-tenant OpenAI API key — throws "OpenAI API key not configured"
- * if the tenant has none, so the pipeline can log it as IGNORED.
+ * Also returns the token usage of the OpenAI call so the pipeline can record
+ * it with recordAiUsage (usage is null when the call failed).
  *
- * Fail-open strategy: on any *other* error, returns 'REPLY' so comments are
- * never accidentally deleted due to a transient AI service failure.
+ * Fail-open strategy: on any error, returns 'REPLY' so comments are never
+ * accidentally deleted due to a transient AI service failure.
  */
 export async function classifyComment(
   commentText: string,
   openaiApiKey: string,
   config?: ClassifierConfig
-): Promise<Classification> {
+): Promise<ClassificationResult> {
   const openai = new OpenAI({ apiKey: openaiApiKey });
 
   try {
@@ -58,15 +65,22 @@ export async function classifyComment(
       ],
     });
 
+    const usage: AiCallUsage = {
+      model: response.model || 'gpt-4o-mini',
+      promptTokens: response.usage?.prompt_tokens ?? 0,
+      completionTokens: response.usage?.completion_tokens ?? 0,
+    };
+
     const text = (response.choices[0]?.message?.content ?? '').trim().toUpperCase();
 
     if (VALID_CLASSIFICATIONS.has(text as Classification)) {
-      return text as Classification;
+      return { classification: text as Classification, usage };
     }
 
-    return 'IGNORE';
+    return { classification: 'IGNORE', usage };
   } catch (err) {
     console.error('[Classifier] AI call failed, defaulting to REPLY (fail-open):', err);
-    return 'REPLY'; // Fail open — safer than accidentally deleting real comments
+    // Fail open — safer than accidentally deleting real comments
+    return { classification: 'REPLY', usage: null };
   }
 }

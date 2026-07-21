@@ -56,7 +56,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     spamInstructions: string;
   }>;
 
-  // openaiApiKey is managed exclusively via /api/settings/openai — never via bot PATCH
+  // The OpenAI API key is managed exclusively by the platform admin via /api/admin/openai — never via bot PATCH
   const { ...safeBody } = body;
 
   const updated = await prisma.bot.update({

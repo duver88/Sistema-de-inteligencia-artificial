@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireTenant } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
-import { decrypt } from '@/lib/crypto';
+import { getOpenAiApiKey } from '@/lib/ai/key';
+import { recordAiUsage } from '@/lib/ai/usage';
 import OpenAI from 'openai';
 
 type Params = { params: Promise<{ botId: string }> };
@@ -21,18 +22,18 @@ export async function POST(request: NextRequest, { params }: Params) {
   });
   if (!bot) return NextResponse.json({ error: 'Bot not found' }, { status: 404 });
 
-  // Require OpenAI key
+  // Require OpenAI key (platform-wide setting, with legacy tenant-key fallback)
   const tenant = await prisma.tenant.findUnique({
     where: { id: ctx.tenantId },
     select: { openaiApiKey: true },
   });
-  if (!tenant?.openaiApiKey) {
+  const apiKey = await getOpenAiApiKey(tenant?.openaiApiKey ?? null);
+  if (!apiKey) {
     return NextResponse.json(
-      { error: 'Configure your OpenAI API key before importing documents' },
+      { error: 'AI service is not configured — contact your administrator' },
       { status: 400 }
     );
   }
-  const apiKey = decrypt(tenant.openaiApiKey);
 
   // Parse multipart form data
   let formData: FormData;
@@ -124,6 +125,11 @@ export async function POST(request: NextRequest, { params }: Params) {
       ],
       temperature: 0.1,
       response_format: { type: 'json_object' },
+    });
+
+    await recordAiUsage(ctx.tenantId, completion.model, {
+      promptTokens: completion.usage?.prompt_tokens ?? 0,
+      completionTokens: completion.usage?.completion_tokens ?? 0,
     });
 
     const raw = completion.choices[0]?.message?.content ?? '{"entries":[]}';

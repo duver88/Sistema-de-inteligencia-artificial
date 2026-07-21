@@ -123,7 +123,7 @@ export default function PrivacyPage() {
               <strong>Meta (Facebook/Instagram):</strong> to carry out moderation actions (replying to, hiding, deleting comments) through its official API, using the permissions you granted.
             </Item>
             <Item>
-              <strong>OpenAI:</strong> the text of comments is sent to the OpenAI API for classification and response generation. You can use your own API key configured in Settings. OpenAI processes the data under its own privacy policy.
+              <strong>OpenAI:</strong> the text of comments is sent to the OpenAI API for classification and response generation, using an API key managed by the platform. OpenAI processes the data under its own privacy policy.
             </Item>
           </ul>
           <p className="mt-4 text-slate-400 text-sm">

@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { UserManagement } from '@/components/admin/UserManagement';
+import { AdminPanel } from '@/components/admin/AdminPanel';
 
 export default async function AdminPage() {
   const session = await auth();
@@ -11,9 +11,9 @@ export default async function AdminPage() {
     <div>
       <PageHeader
         title="Admin Panel"
-        description="Manage platform users, their tenants and access."
+        description="Platform overview, user management and AI configuration."
       />
-      <UserManagement currentUserId={session.user.id} />
+      <AdminPanel currentUserId={session.user.id} />
     </div>
   );
 }

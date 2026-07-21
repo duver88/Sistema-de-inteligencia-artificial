@@ -147,7 +147,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   const target = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, status: true, isSuperAdmin: true },
+    select: { id: true, email: true, status: true, isSuperAdmin: true, tenantId: true },
   });
   if (!target) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -201,6 +201,19 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   if (body.isSuperAdmin !== undefined) {
     if (typeof body.isSuperAdmin !== 'boolean') {
       return NextResponse.json({ error: 'Invalid isSuperAdmin value' }, { status: 400 });
+    }
+    // Anti-brick guard: admins created via userType 'ADMIN' have no tenant.
+    // Demoting such a user would leave an account with neither a tenant nor
+    // the super-admin flag — getCurrentTenant() returns null for it, so every
+    // API responds 401 and every dashboard page renders blank. Reject it.
+    if (body.isSuperAdmin === false && target.isSuperAdmin && !target.tenantId) {
+      return NextResponse.json(
+        {
+          error:
+            'This administrator has no tenant and cannot be demoted to a regular user. Demoting them would leave the account unable to access anything.',
+        },
+        { status: 400 }
+      );
     }
     data.isSuperAdmin = body.isSuperAdmin;
   }
@@ -369,10 +382,13 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     let tenantOrphaned = false;
 
     if (target.tenantId) {
-      // Tenant→SocialAccount, Tenant→Bot and Tenant→CommentLog are all
-      // Restrict relations: deleting a tenant that still holds ANY of them
-      // would throw P2003 and roll back the whole transaction. Only delete
-      // the tenant when it has no data at all; otherwise leave it orphaned.
+      // Tenant→SocialAccount, Tenant→Bot, Tenant→CommentLog and Tenant→AiUsage
+      // are all Restrict relations: deleting a tenant that still holds ANY of
+      // them would throw P2003 and roll back the whole transaction. Only
+      // delete the tenant when it has no meaningful data; otherwise leave it
+      // orphaned. AiUsage rows are pure billing aggregates (they can exist
+      // without any CommentLog, e.g. from knowledge imports), so instead of
+      // blocking the deletion they are removed together with the tenant.
       const [remainingUsers, socialAccounts, bots, comments] = await Promise.all([
         tx.user.count({ where: { tenantId: target.tenantId } }),
         tx.socialAccount.count({ where: { tenantId: target.tenantId } }),
@@ -382,6 +398,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
       if (remainingUsers === 0) {
         if (socialAccounts === 0 && bots === 0 && comments === 0) {
+          await tx.aiUsage.deleteMany({ where: { tenantId: target.tenantId } });
           await tx.tenant.delete({ where: { id: target.tenantId } });
           tenantDeleted = true;
         } else {

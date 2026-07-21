@@ -26,6 +26,7 @@ model Tenant {
   accounts SocialAccount[]
   bots     Bot[]
   comments CommentLog[]
+  aiUsage  AiUsage[]
 }
 
 enum Plan {
@@ -269,6 +270,32 @@ model CommentLog {
   @@index([tenantId, createdAt])
   @@index([botId, createdAt])
   @@index([platform, commentId])
+}
+
+// ─── APP SETTING ──────────────────────────────────────────────────────────
+// Global platform-level key/value settings (e.g. the platform OpenAI API key).
+// `value` is ALWAYS encrypted with lib/crypto (AES-256-GCM) before storage.
+model AppSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+// ─── AI USAGE ─────────────────────────────────────────────────────────────
+// Aggregated OpenAI usage per tenant, per UTC day, per model.
+model AiUsage {
+  id       String @id @default(cuid())
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+
+  day              DateTime // UTC date truncated to midnight
+  model            String
+  calls            Int      @default(0)
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+
+  @@unique([tenantId, day, model])
+  @@index([day])
 }
 
 enum CommentAction {

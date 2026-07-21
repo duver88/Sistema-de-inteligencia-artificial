@@ -41,6 +41,14 @@ export function EditUserDialog({ user, currentUserId, onOpenChange, onUpdated }:
   }, [user]);
 
   const isSelf = user?.id === currentUserId;
+  // Admins created as platform administrators have no tenant. Demoting them
+  // would leave an account with neither tenant nor admin rights — unusable —
+  // so the PATCH endpoint rejects it and the toggle is locked here too.
+  const isTenantlessAdmin = !!user && user.isSuperAdmin && !user.tenant;
+  const adminToggleLocked = isSelf || isTenantlessAdmin;
+  const adminToggleLockReason = isSelf
+    ? 'You cannot change your own admin role'
+    : 'This administrator has no tenant and cannot be demoted to a regular user';
   // The PATCH endpoint rejects expiration changes on yourself, and
   // administrators never expire. Lock the field based on the PENDING role
   // toggle (not the saved one): promoting locks it so a hidden expiration
@@ -134,7 +142,7 @@ export function EditUserDialog({ user, currentUserId, onOpenChange, onUpdated }:
           </div>
           <div
             className="flex items-center justify-between gap-3 border border-slate-200 rounded-xl px-3 py-2.5"
-            title={isSelf ? 'You cannot change your own admin role' : undefined}
+            title={adminToggleLocked ? adminToggleLockReason : undefined}
           >
             <div className="flex items-center gap-2 min-w-0">
               <ShieldCheck className="h-4 w-4 text-purple-600 flex-shrink-0" />
@@ -148,7 +156,7 @@ export function EditUserDialog({ user, currentUserId, onOpenChange, onUpdated }:
             <Switch
               checked={isAdmin}
               onCheckedChange={(checked) => setIsAdmin(checked)}
-              disabled={isSelf}
+              disabled={adminToggleLocked}
               aria-label="Administrator"
             />
           </div>

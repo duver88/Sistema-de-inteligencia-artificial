@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 
 export interface TenantContext {
   userId: string;
+  // Empty string for super admins without a tenant (admin-type accounts are
+  // created with tenantId null) — they never operate tenant features anyway.
   tenantId: string;
   role: string;
   isSuperAdmin: boolean;
@@ -13,7 +15,8 @@ export interface TenantContext {
 /**
  * Get the current user's tenant context from the session.
  * Returns null if the user is not authenticated or their account is not
- * ACTIVE (a suspended user is treated as unauthenticated).
+ * ACTIVE (a suspended user is treated as unauthenticated). Non-admin users
+ * additionally require a tenant; super admins may have none (tenantId '').
  */
 export async function getCurrentTenant(): Promise<TenantContext | null> {
   const session = await auth();
@@ -31,12 +34,18 @@ export async function getCurrentTenant(): Promise<TenantContext | null> {
     },
   });
 
-  if (!user || !user.tenantId) return null;
+  if (!user) return null;
   if (user.status !== 'ACTIVE') return null;
+  // Regular users must belong to a tenant; super admins are platform-only
+  // accounts that may legitimately have no tenant (tenantId null). They still
+  // need a context for role-agnostic routes (requireSuperAdmin, or
+  // requireTenant({ allowSuperAdmin: true }) routes like /api/me/password
+  // that only use userId).
+  if (!user.tenantId && !user.isSuperAdmin) return null;
 
   return {
     userId: user.id,
-    tenantId: user.tenantId,
+    tenantId: user.tenantId ?? '',
     role: user.role,
     isSuperAdmin: user.isSuperAdmin,
     mustChangePassword: user.mustChangePassword,

@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import type { Platform } from '@/lib/generated/prisma/client';
+import type { AiCallUsage } from '@/lib/ai/usage';
 
 export interface KnowledgeEntry {
   key: string;
@@ -76,11 +77,20 @@ function buildFallbackReply(params: ReplyGeneratorParams): string {
   return `Hola ${authorMention}, gracias por tu comentario. Para más información escríbenos por DM y con gusto te atendemos. 😊`;
 }
 
+export interface ReplyResult {
+  reply: string;
+  /** Token usage of the OpenAI call — null when the call itself failed. */
+  usage: AiCallUsage | null;
+}
+
 /**
  * Generate a contextual AI reply for a comment using the knowledge base.
  * Fails gracefully with a generic fallback message on any error.
+ *
+ * Also returns the token usage of the OpenAI call so the pipeline can record
+ * it with recordAiUsage (usage is null when the call failed).
  */
-export async function generateReply(params: ReplyGeneratorParams): Promise<string> {
+export async function generateReply(params: ReplyGeneratorParams): Promise<ReplyResult> {
   const openai = new OpenAI({ apiKey: params.openaiApiKey });
   const knowledgeBase = formatKnowledgeBase(params.knowledgeEntries);
   const systemPrompt = buildSystemPrompt(params, knowledgeBase);
@@ -99,6 +109,12 @@ export async function generateReply(params: ReplyGeneratorParams): Promise<strin
       ],
     });
 
+    const usage: AiCallUsage = {
+      model: response.model || 'gpt-4o-mini',
+      promptTokens: response.usage?.prompt_tokens ?? 0,
+      completionTokens: response.usage?.completion_tokens ?? 0,
+    };
+
     let reply = (response.choices[0]?.message?.content ?? '').trim();
 
     // Cleanup: remove wrapping quotes, hashtags, excess whitespace, enforce length
@@ -108,9 +124,9 @@ export async function generateReply(params: ReplyGeneratorParams): Promise<strin
       .trim()
       .substring(0, params.maxChars);
 
-    return reply || buildFallbackReply(params);
+    return { reply: reply || buildFallbackReply(params), usage };
   } catch (err) {
     console.error('[Responder] AI call failed, using fallback reply:', err);
-    return buildFallbackReply(params);
+    return { reply: buildFallbackReply(params), usage: null };
   }
 }

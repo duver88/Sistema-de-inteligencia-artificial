@@ -59,7 +59,7 @@ export default function DataDeletionPage() {
             <Item>IDs and access tokens for your connected Facebook and Instagram pages (stored encrypted).</Item>
             <Item>The configuration of your moderation bots, rules and knowledge base.</Item>
             <Item>History of comments processed by the platform.</Item>
-            <Item>Your account preferences and settings (for example, your OpenAI API key if you configured it).</Item>
+            <Item>Your account preferences and settings (including, for older accounts, an OpenAI API key if you configured one in the past — stored encrypted).</Item>
           </ul>
         </Section>
 

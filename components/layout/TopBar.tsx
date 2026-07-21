@@ -4,11 +4,20 @@ import { LogOut, ChevronDown, Bell } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 
 export function TopBar() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
-  const [imgError, setImgError] = useState(false);
+
+  const userName = session?.user?.name ?? 'User';
+  // /api/me/avatar proxies the Facebook profile picture and only has one for
+  // tenant users who connected Facebook. Super admins can never connect
+  // Facebook, so skip the request entirely for them; for everyone else
+  // UserAvatar falls back to an initials circle if the proxy has no photo.
+  const avatarSrc = session?.user && !session.user.isSuperAdmin
+    ? '/api/me/avatar'
+    : undefined;
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
@@ -25,21 +34,10 @@ export function TopBar() {
             onClick={() => setOpen(v => !v)}
             className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
           >
-            {session?.user && !imgError ? (
-              <img
-                src="/api/me/avatar"
-                alt={session.user.name ?? 'User'}
-                onError={() => setImgError(true)}
-                className="h-8 w-8 rounded-full object-cover"
-              />
-            ) : (
-              <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold" style={{background: 'linear-gradient(135deg, #0bbfb8, #12fdee)', color: '#021130'}}>
-                {(session?.user?.name ?? 'U')[0].toUpperCase()}
-              </div>
-            )}
+            <UserAvatar name={userName} image={avatarSrc} size={32} />
             <div className="hidden sm:block text-left">
               <p className="text-sm font-semibold text-slate-800 leading-tight max-w-[120px] truncate">
-                {session?.user?.name ?? 'User'}
+                {userName}
               </p>
               <p className="text-xs text-slate-400 leading-tight max-w-[120px] truncate">
                 {session?.user?.email ?? ''}

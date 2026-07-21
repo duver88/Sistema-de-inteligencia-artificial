@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma';
 import { matchesKeywords } from './keyword-detector';
 import { classifyComment } from '@/lib/ai/classifier';
 import { generateReply } from '@/lib/ai/responder';
+import { getOpenAiApiKey } from '@/lib/ai/key';
+import { recordAiUsage } from '@/lib/ai/usage';
 import { metaClient } from '@/lib/meta/client';
 import { decrypt } from '@/lib/crypto';
 import type { ParsedComment } from '@/lib/meta/webhook';
@@ -129,21 +131,22 @@ export async function processComment(
     return;
   }
 
-  // Resolve and validate the OpenAI API key before doing any AI work
+  // Resolve the OpenAI API key before doing any AI work:
+  // platform-wide AppSetting first, legacy tenant key as fallback.
   let openaiApiKey: string | null = null;
   if (bot.aiEnabled || bot.autoReply) {
-    if (!bot.tenant.openaiApiKey) {
+    openaiApiKey = await getOpenAiApiKey(bot.tenant.openaiApiKey);
+    if (!openaiApiKey) {
       await logComment({
         tenantId: bot.tenantId,
         botId,
         comment,
         action: 'IGNORED',
         processingMs: Date.now() - startTime,
-        errorMessage: 'OpenAI API key not configured',
+        errorMessage: 'OpenAI API key not configured — contact your administrator',
       });
       return;
     }
-    openaiApiKey = decrypt(bot.tenant.openaiApiKey);
   }
 
   // Pre-flight check: bot must be active
@@ -208,7 +211,7 @@ export async function processComment(
 
     // ── STEP 3: AI Classification ─────────────────────────────────────────────
     if (bot.aiEnabled) {
-      const classification = await classifyComment(
+      const { classification, usage: classifyUsage } = await classifyComment(
         comment.commentText,
         openaiApiKey!,
         {
@@ -216,6 +219,10 @@ export async function processComment(
           spamInstructions: bot.spamInstructions,
         }
       );
+
+      if (classifyUsage) {
+        await recordAiUsage(bot.tenantId, classifyUsage.model, classifyUsage);
+      }
 
       if (classification === 'DELETE') {
         await metaClient.deleteComment(comment.commentId, pageToken);
@@ -276,7 +283,7 @@ export async function processComment(
       );
 
       // Generate the AI reply
-      aiReply = await generateReply({
+      const replyResult = await generateReply({
         commentText: comment.commentText,
         authorName: comment.authorName,
         postCaption,
@@ -293,6 +300,12 @@ export async function processComment(
         platform: comment.platform,
         openaiApiKey: openaiApiKey!,
       });
+
+      if (replyResult.usage) {
+        await recordAiUsage(bot.tenantId, replyResult.usage.model, replyResult.usage);
+      }
+
+      aiReply = replyResult.reply;
 
       // Post the reply to Meta
       if (comment.platform === 'FACEBOOK') {

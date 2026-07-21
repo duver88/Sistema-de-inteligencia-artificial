@@ -11,6 +11,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { PasswordInput, generateTempPassword } from './PasswordInput';
 import { dateInputToUtcEndOfDay } from './access';
 import type { AdminUser } from './types';
@@ -21,7 +28,16 @@ interface CreateUserDialogProps {
   onCreated: (user: AdminUser) => void;
 }
 
+type UserType = 'USER' | 'ADMIN';
+
+const USER_TYPE_DESCRIPTIONS: Record<UserType, string> = {
+  USER: 'Can connect Facebook Pages and manage their own bots',
+  ADMIN:
+    'Full platform access: manages users, API keys and settings. Cannot connect Facebook.',
+};
+
 export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDialogProps) {
+  const [userType, setUserType] = useState<UserType>('USER');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,6 +53,7 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
   // Reset the form (with a fresh random password) every time the modal opens
   useEffect(() => {
     if (open) {
+      setUserType('USER');
       setName('');
       setEmail('');
       setPassword(generateTempPassword());
@@ -59,8 +76,13 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
           name: name.trim(),
           email: email.trim(),
           password,
-          // Access is valid through the END of the chosen day, in UTC
-          accessExpiresAt: expiresOn ? dateInputToUtcEndOfDay(expiresOn) : null,
+          userType,
+          // Access is valid through the END of the chosen day, in UTC.
+          // Administrators never expire, so they always send null.
+          accessExpiresAt:
+            userType === 'USER' && expiresOn
+              ? dateInputToUtcEndOfDay(expiresOn)
+              : null,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -148,12 +170,35 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
             <DialogHeader>
               <DialogTitle>Create user</DialogTitle>
               <DialogDescription>
-                A new tenant will be created for this user. They must change the
-                temporary password on first login.
+                {userType === 'ADMIN'
+                  ? 'The administrator must change the temporary password on first login.'
+                  : 'A new tenant will be created for this user. They must change the temporary password on first login.'}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                  User type
+                </label>
+                <Select
+                  value={userType}
+                  onValueChange={(v) => {
+                    if (v === 'USER' || v === 'ADMIN') setUserType(v);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USER">User</SelectItem>
+                    <SelectItem value="ADMIN">Administrator</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="mt-1.5 text-xs text-slate-400">
+                  {USER_TYPE_DESCRIPTIONS[userType]}
+                </p>
+              </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
                   Name
@@ -188,6 +233,8 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
                   At least 10 characters with a letter and a number. You can copy it again on the next step.
                 </p>
               </div>
+              {/* Administrators never expire, so the field is hidden for them */}
+              {userType === 'USER' && (
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
                   Access expires on
@@ -214,6 +261,7 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
                   Leave empty for unlimited access.
                 </p>
               </div>
+              )}
             </div>
 
             <DialogFooter>
