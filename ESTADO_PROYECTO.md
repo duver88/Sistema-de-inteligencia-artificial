@@ -14,7 +14,7 @@ de comentarios usando inteligencia artificial.
 - Next.js 14 (App Router)
 - Prisma + PostgreSQL
 - BullMQ + Redis (queue de comentarios)
-- NextAuth (autenticación Facebook OAuth)
+- NextAuth (login por email + contraseña, sesiones JWT; Facebook OAuth solo para conectar páginas)
 - PM2 (gestión de procesos)
 - Nginx + Let's Encrypt (reverse proxy + SSL)
 
@@ -29,8 +29,8 @@ de comentarios usando inteligencia artificial.
 - FACEBOOK_CLIENT_ID → mismo que FACEBOOK_APP_ID
 - FACEBOOK_APP_SECRET → App Secret de Meta (usado por NextAuth)
 - FACEBOOK_CLIENT_SECRET → mismo que FACEBOOK_APP_SECRET
-- FACEBOOK_LOGIN_SCOPES → Scopes del LOGIN (public_profile,pages_show_list — Facebook Login for Business exige ≥1 permiso de negocio en el diálogo; "email" no existe en apps Business)
 - FACEBOOK_SCOPES → Scopes al CONECTAR páginas (incluye pages_manage_engagement para responder/borrar/ocultar comentarios; hasta que Meta lo apruebe solo se concede a usuarios con rol en la Meta app)
+- ~~FACEBOOK_LOGIN_SCOPES~~ → YA NO SE USA (el login con Facebook fue eliminado en jul 2026; puede borrarse del .env)
 - FACEBOOK_PAGES_APP_ID → App ID para el flujo de conexión de páginas (mismo valor que FACEBOOK_APP_ID)
 - FACEBOOK_PAGES_APP_SECRET → App Secret para el flujo de conexión de páginas (mismo valor que FACEBOOK_APP_SECRET)
 - FACEBOOK_PAGES_REDIRECT_URI → URL callback de cuentas ({NEXTAUTH_URL}/api/accounts/callback)
@@ -39,6 +39,18 @@ de comentarios usando inteligencia artificial.
 - POLLING_ENABLED=false → El polling fue eliminado, siempre false
 - DATABASE_URL → URL de PostgreSQL
 - REDIS_URL → URL de Redis
+
+## Autenticación SaaS (jul 2026)
+- Login ÚNICO por email + contraseña (NextAuth provider Credentials, hash bcrypt cost 12). El login con Facebook fue ELIMINADO por completo.
+- Session strategy: `jwt` (antes `database`). El callback `session` consulta la BD en cada request, así que una suspensión corta el acceso en el siguiente request.
+- El OAuth de Facebook sigue existiendo SOLO para conectar páginas en /accounts (rutas app/api/accounts/connect y callback, variables FACEBOOK_PAGES_*). No confundir con el login.
+- Alta de usuarios SOLO desde el panel admin (no hay registro público): al crear un usuario se crea su Tenant + User con contraseña temporal y mustChangePassword=true.
+- Usuario con mustChangePassword=true → el dashboard lo redirige a /change-password hasta que la cambie (POST /api/me/password).
+- Suspensión inmediata: User.status (ACTIVE|SUSPENDED); un usuario SUSPENDED se trata como no autenticado en requireTenant/getCurrentTenant/requireSuperAdmin.
+- Rate limit de login: máx 5 intentos fallidos por email en 15 min (Map en memoria; PM2 corre 1 solo fork). Errores siempre genéricos ("Invalid email or password").
+- APIs admin (requireSuperAdmin): GET/POST /api/admin/users, PATCH/DELETE /api/admin/users/[userId], POST /api/admin/users/[userId]/reset-password.
+- FACEBOOK_LOGIN_SCOPES ya NO se usa (login social eliminado). FACEBOOK_SCOPES sigue vigente para conectar páginas.
+- Bootstrap de producción: scripts/bootstrap-saas.sql (limpia users de prueba, convierte al owner en superadmin, trunca la tabla Session obsoleta con jwt).
 
 ## App Meta (LionsCore Pages)
 - App ID: 1693982431760040

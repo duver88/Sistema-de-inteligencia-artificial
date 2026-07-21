@@ -56,6 +56,15 @@ model User {
   // Super admin flag (for admin panel access)
   isSuperAdmin Boolean @default(false)
 
+  // Credentials auth (email + password login)
+  passwordHash       String?
+  status             UserStatus @default(ACTIVE)
+  mustChangePassword Boolean    @default(false)
+  lastLoginAt        DateTime?
+  // Set on every password change/reset; JWTs issued before this instant are
+  // rejected by the session callback (invalidates stolen/old sessions).
+  passwordChangedAt  DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -67,6 +76,11 @@ enum UserRole {
   OWNER
   ADMIN
   MEMBER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
 }
 
 // NextAuth Account (do not rename — required by NextAuth adapter)

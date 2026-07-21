@@ -1,76 +1,131 @@
 import NextAuth from 'next-auth';
-import Facebook from 'next-auth/providers/facebook';
-import { PrismaAdapter } from '@auth/prisma-adapter';
+import Credentials from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
-import { encrypt } from '@/lib/crypto';
 
-if (!process.env.FACEBOOK_CLIENT_ID) throw new Error('FACEBOOK_CLIENT_ID is not set');
-if (!process.env.FACEBOOK_CLIENT_SECRET) throw new Error('FACEBOOK_CLIENT_SECRET is not set');
 if (!process.env.NEXTAUTH_SECRET) throw new Error('NEXTAUTH_SECRET is not set');
 
-const META_API_VERSION = 'v21.0';
-const META_BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`;
+// Precomputed cost-12 bcrypt hash of a throwaway string. When the email does
+// not exist (or has no passwordHash) we still run bcrypt.compare against this
+// hash so the response takes the same time as a real comparison — otherwise
+// the ~200ms difference is a timing oracle that reveals which emails exist.
+const DUMMY_PASSWORD_HASH =
+  '$2b$12$5rcgyoI5RvxZKoZwnYRekOVSgiFs7141y3KfBNZJlBXvyGYiORGVK';
 
-// Exchange a short-lived user token for a 60-day long-lived token
-async function exchangeForLongLivedToken(shortLivedToken: string): Promise<string> {
-  const url = new URL(`${META_BASE_URL}/oauth/access_token`);
-  url.searchParams.set('grant_type', 'fb_exchange_token');
-  url.searchParams.set('client_id', process.env.FACEBOOK_CLIENT_ID!);
-  url.searchParams.set('client_secret', process.env.FACEBOOK_CLIENT_SECRET!);
-  url.searchParams.set('fb_exchange_token', shortLivedToken);
+// ─── In-memory rate limit for failed login attempts ───────────────────────
+// Max 5 failed attempts per email in a 15-minute window. Module-level Map is
+// enough because PM2 runs a single fork in production.
+const MAX_FAILED_ATTEMPTS = 5;
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+// Hard cap on tracked emails so an attacker spraying millions of unique
+// random emails cannot grow the Map (and process memory) without bound.
+const MAX_TRACKED_EMAILS = 10_000;
 
-  const res = await fetch(url.toString());
-  const data = await res.json() as { access_token?: string; error?: { message: string } };
+const failedAttempts = new Map<string, { count: number; windowStart: number }>();
 
-  if (!res.ok || !data.access_token) {
-    throw new Error(`Token exchange failed: ${JSON.stringify(data.error)}`);
+function isRateLimited(email: string): boolean {
+  const entry = failedAttempts.get(email);
+  if (!entry) return false;
+  if (Date.now() - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    failedAttempts.delete(email);
+    return false;
   }
-
-  return data.access_token;
+  return entry.count >= MAX_FAILED_ATTEMPTS;
 }
 
-// Resolve an existing tenantId or create a new Tenant for the user
-async function resolveOrCreateTenant(
-  existingTenantId: string | null | undefined,
-  userId: string,
-  displayName: string | null | undefined
-): Promise<string> {
-  if (existingTenantId) return existingTenantId;
+function pruneFailedAttempts(now: number) {
+  // Drop entries whose rate-limit window has already expired.
+  for (const [key, entry] of failedAttempts) {
+    if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+      failedAttempts.delete(key);
+    }
+  }
+  // Still at capacity: evict the oldest entries to make room (a Map
+  // iterates in insertion order, so the first keys are the oldest).
+  for (const key of failedAttempts.keys()) {
+    if (failedAttempts.size < MAX_TRACKED_EMAILS) break;
+    failedAttempts.delete(key);
+  }
+}
 
-  const tenant = await prisma.tenant.create({
-    data: { name: displayName ?? 'My Workspace' },
-  });
+function recordFailedAttempt(email: string) {
+  const now = Date.now();
+  if (!failedAttempts.has(email) && failedAttempts.size >= MAX_TRACKED_EMAILS) {
+    pruneFailedAttempts(now);
+  }
+  const entry = failedAttempts.get(email);
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    failedAttempts.set(email, { count: 1, windowStart: now });
+  } else {
+    entry.count += 1;
+  }
+}
 
-  await prisma.user.updateMany({
-    where: { id: userId },
-    data: { tenantId: tenant.id, role: 'OWNER' },
-  });
-
-  return tenant.id;
+function clearFailedAttempts(email: string) {
+  failedAttempts.delete(email);
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
   providers: [
-    Facebook({
-      clientId: process.env.FACEBOOK_CLIENT_ID,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-      authorization: {
-        params: {
-          // Minimal login scope. This Meta app uses Facebook Login for
-          // Business, which rejects the dialog unless at least ONE business
-          // permission is requested — public_profile alone shows "app needs
-          // at least one supported permission", and "email" doesn't exist in
-          // Business apps (Invalid Scopes). pages_show_list is the lightest
-          // approved option. The rest of the page permissions are requested
-          // in context, in the "Connect account" flow (FACEBOOK_SCOPES).
-          scope: process.env.FACEBOOK_LOGIN_SCOPES || 'public_profile,pages_show_list',
-        },
+    Credentials({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
-      // Facebook has its own internal CSRF protection and does not work
-      // reliably with NextAuth v5 PKCE or state cookie checks.
-      // Disabling checks avoids "pkceCodeVerifier/state could not be parsed".
-      checks: [],
+      // Return null on ANY failure so the client always sees the same
+      // generic "Invalid email or password" error, never whether the
+      // email exists, is suspended, or is rate limited.
+      async authorize(credentials) {
+        const email = typeof credentials?.email === 'string'
+          ? credentials.email.trim().toLowerCase()
+          : '';
+        const password = typeof credentials?.password === 'string'
+          ? credentials.password
+          : '';
+
+        if (!email || !password) return null;
+        if (isRateLimited(email)) return null;
+
+        const user = await prisma.user.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            passwordHash: true,
+            status: true,
+          },
+        });
+
+        if (!user?.passwordHash) {
+          // Burn the same bcrypt time as a real comparison so latency does
+          // not reveal whether the email exists.
+          await bcrypt.compare(password, DUMMY_PASSWORD_HASH);
+          recordFailedAttempt(email);
+          return null;
+        }
+
+        const passwordValid = await bcrypt.compare(password, user.passwordHash);
+        if (!passwordValid) {
+          recordFailedAttempt(email);
+          return null;
+        }
+
+        if (user.status !== 'ACTIVE') {
+          recordFailedAttempt(email);
+          return null;
+        }
+
+        clearFailedAttempts(email);
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        });
+
+        return { id: user.id, name: user.name, email: user.email };
+      },
     }),
   ],
   callbacks: {
@@ -83,73 +138,78 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
-    async session({ session, user }) {
-      // Attach user ID and tenantId to the session
-      const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { id: true, tenantId: true, role: true, isSuperAdmin: true },
-      });
-      if (dbUser) {
-        session.user.id = dbUser.id;
-        session.user.tenantId = dbUser.tenantId ?? '';
-        session.user.role = dbUser.role;
-        session.user.isSuperAdmin = dbUser.isSuperAdmin;
+    async jwt({ token, user }) {
+      // On sign-in, persist the user id and the sign-in time in the token.
+      // authTime lets the session callback reject tokens issued before the
+      // user's last password change (see passwordChangedAt below).
+      if (user?.id) {
+        token.sub = user.id;
+        token.authTime = Date.now();
       }
-      return session;
+      return token;
     },
-    async signIn({ account, user, profile }) {
-      if (account?.provider === 'facebook' && account.access_token && user.id) {
-        const userId = user.id; // Narrowed to string within this block
-        try {
-          // 1. Ensure this user has a tenant
-          const dbUser = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { tenantId: true },
-          });
+    async session({ session, token }) {
+      // Always load FRESH user data from the database so changes like a
+      // suspension or a role change take effect on the very next request.
+      //
+      // Fail closed: when the token has no subject, the user no longer
+      // exists, is not ACTIVE, or the token was issued before the last
+      // password change, return a session WITHOUT a user identity. Every
+      // consumer (dashboard pages, API routes, lib/tenant.ts) checks
+      // session.user.id / tenantId / isSuperAdmin, so an empty user means
+      // the request is treated as unauthenticated — a suspension, deletion
+      // or password reset cuts access on the very next request.
+      const unauthenticated = () =>
+        ({ expires: session.expires } as typeof session);
 
-          // Resolve (or create) the tenant for this user
-          await resolveOrCreateTenant(
-            dbUser?.tenantId,
-            userId,
-            (profile as { name?: string })?.name || user.name || user.email
-          );
+      if (!token.sub) return unauthenticated();
 
-          // 2. Exchange short-lived token for long-lived token (60 days)
-          const longLivedToken = await exchangeForLongLivedToken(account.access_token);
-          const encryptedToken = encrypt(longLivedToken);
+      const dbUser = await prisma.user.findUnique({
+        where: { id: token.sub },
+        select: {
+          id: true,
+          tenantId: true,
+          role: true,
+          isSuperAdmin: true,
+          mustChangePassword: true,
+          status: true,
+          name: true,
+          email: true,
+          passwordChangedAt: true,
+        },
+      });
 
-          // 3. Store the long-lived token on the user record
-          await prisma.user.updateMany({
-            where: { id: userId },
-            data: {
-              facebookToken: encryptedToken,
-              tokenExpiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000), // 60 days
-            },
-          });
+      if (!dbUser || dbUser.status !== 'ACTIVE') return unauthenticated();
 
-          // Pages are NOT discovered at login. They connect via /accounts
-          // "Connect account", which requests the full page permissions and
-          // subscribes webhooks. Doing it here overwrote good page tokens
-          // with weak ones (login scope lacks pages_manage_engagement) and
-          // left pages without webhookSubscribed.
-        } catch (err) {
-          console.error('Error during Facebook sign-in flow:', err);
-          // Don't block sign-in — user can still access the dashboard
-        }
+      // Invalidate JWTs issued before the last password change (admin reset
+      // or self-service change) so a stolen cookie dies as soon as the
+      // password is rotated. Tokens without authTime predate this check and
+      // are rejected whenever a password change has happened.
+      if (dbUser.passwordChangedAt) {
+        const authTime = typeof token.authTime === 'number' ? token.authTime : 0;
+        if (authTime < dbUser.passwordChangedAt.getTime()) return unauthenticated();
       }
 
-      return true;
+      session.user.id = dbUser.id;
+      session.user.tenantId = dbUser.tenantId ?? '';
+      session.user.role = dbUser.role;
+      session.user.isSuperAdmin = dbUser.isSuperAdmin;
+      session.user.mustChangePassword = dbUser.mustChangePassword;
+      session.user.status = dbUser.status;
+      session.user.name = dbUser.name;
+      session.user.email = dbUser.email ?? session.user.email;
+      return session;
     },
   },
   pages: {
     signIn: '/login',
   },
   session: {
-    strategy: 'database',
+    strategy: 'jwt',
   },
 });
 
-// Augment NextAuth types to include tenantId and role on session
+// Augment NextAuth types to include tenant/auth fields on session
 declare module 'next-auth' {
   interface Session {
     user: {
@@ -157,9 +217,15 @@ declare module 'next-auth' {
       tenantId: string;
       role: string;
       isSuperAdmin: boolean;
+      mustChangePassword: boolean;
+      status: string;
       name?: string | null;
       email?: string | null;
       image?: string | null;
     };
   }
 }
+
+// Note: token.authTime (millisecond timestamp of the sign-in that issued the
+// token) is stored via the JWT's Record<string, unknown> index signature, so
+// no module augmentation is needed for '@auth/core/jwt'.

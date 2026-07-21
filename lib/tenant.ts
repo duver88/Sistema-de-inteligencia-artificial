@@ -7,11 +7,13 @@ export interface TenantContext {
   tenantId: string;
   role: string;
   isSuperAdmin: boolean;
+  mustChangePassword?: boolean;
 }
 
 /**
  * Get the current user's tenant context from the session.
- * Returns null if the user is not authenticated.
+ * Returns null if the user is not authenticated or their account is not
+ * ACTIVE (a suspended user is treated as unauthenticated).
  */
 export async function getCurrentTenant(): Promise<TenantContext | null> {
   const session = await auth();
@@ -19,16 +21,25 @@ export async function getCurrentTenant(): Promise<TenantContext | null> {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, tenantId: true, role: true, isSuperAdmin: true },
+    select: {
+      id: true,
+      tenantId: true,
+      role: true,
+      isSuperAdmin: true,
+      status: true,
+      mustChangePassword: true,
+    },
   });
 
   if (!user || !user.tenantId) return null;
+  if (user.status !== 'ACTIVE') return null;
 
   return {
     userId: user.id,
     tenantId: user.tenantId,
     role: user.role,
     isSuperAdmin: user.isSuperAdmin,
+    mustChangePassword: user.mustChangePassword,
   };
 }
 

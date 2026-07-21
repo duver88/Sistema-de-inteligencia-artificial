@@ -4,7 +4,7 @@
 **App ID:** 1693982431760040
 **URL de producción:** https://sia.lionscore.ai
 **Tipo:** Business App
-**Productos usados:** Facebook Login, Webhooks, Pages API, (Instagram Graph API — fase 2)
+**Productos usados:** Facebook Login for Business (solo para conectar páginas — el acceso a la plataforma es por email + contraseña), Webhooks, Pages API, (Instagram Graph API — fase 2)
 
 ---
 
@@ -18,14 +18,18 @@ Todo ocurre únicamente sobre páginas que el usuario administra y ha conectado 
 
 ## 2. Credenciales de prueba para el revisor
 
+El acceso a la plataforma es por **email + contraseña** (no hay registro público: las cuentas se crean desde el panel de administración). Para la revisión se creará un usuario de prueba desde el panel admin y sus credenciales se entregarán en el formulario de App Review:
+
 | Campo | Valor |
 |---|---|
 | URL | https://sia.lionscore.ai |
-| Usuario de prueba | *[completar con el Test User de Facebook creado en App Dashboard → Roles → Test Users]* |
+| Email de prueba | *[completar con el usuario creado desde el panel admin]* |
 | Contraseña | *[completar]* |
+| Test User de Facebook | *[completar con el Test User de App Dashboard → Roles → Test Users, usado SOLO en el Paso 3 para conectar páginas]* |
+| Contraseña del Test User | *[completar]* |
 | Página de prueba | *[completar con el nombre de la Page del Test User]* |
 
-> **Nota:** el Test User ya tiene permiso de Admin sobre una Facebook Page de prueba. No es necesario crear una página nueva: basta con iniciar sesión y continuar el flujo.
+> **Nota:** el Test User de Facebook ya tiene permiso de Admin sobre una Facebook Page de prueba. No es necesario crear una página nueva: basta con iniciar sesión en LionsCore con el email/contraseña de prueba y, en el Paso 3, autorizar las páginas con el Test User de Facebook.
 
 ---
 
@@ -35,25 +39,20 @@ Todo ocurre únicamente sobre páginas que el usuario administra y ha conectado 
 
 1. Abrir https://sia.lionscore.ai en el navegador.
 2. El middleware detecta que no hay sesión y redirige automáticamente a `/login`.
-3. En `/login` aparece el botón **"Continuar con Facebook"**.
+3. En `/login` aparece el formulario de **email + contraseña**.
 
-### Paso 2 — Iniciar sesión con Facebook (`Facebook Login`)
+> El login de la plataforma NO usa Facebook. El OAuth de Facebook aparece únicamente en el Paso 3, al conectar páginas desde `/accounts` — que es donde se solicitan los permisos de páginas en contexto.
 
-1. El revisor pulsa **"Continuar con Facebook"**.
-2. Código relevante: `app/(auth)/login/page.tsx` → `signIn('facebook', { callbackUrl: '/' })`.
-3. NextAuth v5 redirige a `https://www.facebook.com/v21.0/dialog/oauth` con los scopes de LOGIN definidos en `FACEBOOK_LOGIN_SCOPES` (solo identidad — los permisos de páginas se piden después, en contexto, al conectar una página):
-   - `public_profile`
-   - `pages_show_list` (Facebook Login for Business exige al menos un permiso de negocio en el diálogo; las páginas NO se guardan en el login — solo se conectan desde /accounts)
-4. El revisor aprueba los permisos. Facebook redirige a `https://sia.lionscore.ai/api/auth/callback/facebook`.
-5. En el callback (`lib/auth.ts`, hook `signIn`):
-   - Se intercambia el token de corta duración por un **long-lived token de 60 días** vía `GET /v21.0/oauth/access_token?grant_type=fb_exchange_token`.
-   - El token se cifra con **AES-256-GCM** (`lib/crypto.ts`) antes de persistirse.
-   - Se crea (o reutiliza) un `Tenant` para el usuario y se le asigna rol `OWNER`.
-   - Las páginas NO se descubren en el login: se conectan desde `/accounts` con el botón "Connect account" (ver Paso 3), que es donde se solicitan los permisos de páginas (`FACEBOOK_SCOPES`, incluido `pages_manage_engagement`).
+### Paso 2 — Iniciar sesión con email y contraseña
 
-### Paso 3 — Conectar páginas manualmente desde el dashboard
+1. El revisor introduce el email y la contraseña de prueba entregados en el formulario de App Review (sección 2) y pulsa **"Sign in"**.
+2. Código relevante: `app/(auth)/login/page.tsx` → `signIn('credentials', { email, password })` (NextAuth v5, provider Credentials, sesión JWT).
+3. La contraseña se verifica contra un hash **bcrypt** almacenado en la base de datos; no interviene ninguna API de Meta en este paso.
+4. Tras autenticarse, el revisor llega al dashboard. Si la cuenta se creó con contraseña temporal, la app pide cambiarla una vez en `/change-password` antes de continuar.
 
-> Aparte del descubrimiento automático durante el login, el usuario puede disparar el flujo de re-conexión de páginas desde `/accounts` (por ejemplo, cuando añade una página nueva o cuando el token expira).
+### Paso 3 — Conectar páginas desde el dashboard (aquí aparece Facebook OAuth)
+
+> Este es el ÚNICO punto donde interviene el login de Facebook: el usuario conecta sus páginas desde `/accounts` (y repite el flujo cuando añade una página nueva o cuando el token expira). Aquí se solicitan los permisos de páginas (`FACEBOOK_SCOPES`, incluido `pages_manage_engagement`). Para este paso el revisor inicia sesión en Facebook con el **Test User** indicado en la sección 2.
 
 1. El revisor navega a `/accounts` (sidebar → "Cuentas Conectadas").
 2. Pulsa **"Conectar cuenta"** (componente `ConnectAccountCard.tsx`).
@@ -110,8 +109,8 @@ Todo ocurre únicamente sobre páginas que el usuario administra y ha conectado 
 
 | Permiso | Por qué se necesita | Dónde se usa en el código |
 |---|---|---|
-| `public_profile`, `email` | Crear la cuenta del usuario en LionsCore y mostrar su nombre/foto. | `lib/auth.ts` callback `signIn`. |
-| `pages_show_list` | Listar las páginas que el usuario administra para que pueda elegir cuál conectar. | `lib/auth.ts` y `app/api/accounts/callback/route.ts` → `GET /me/accounts`. |
+| `public_profile` | Identificar al usuario de Facebook durante el flujo de conexión de páginas (el acceso a LionsCore es por email + contraseña, sin Facebook). | Diálogo OAuth de `app/api/accounts/connect/route.ts`. |
+| `pages_show_list` | Listar las páginas que el usuario administra para que pueda elegir cuál conectar. | `app/api/accounts/callback/route.ts` → `GET /me/accounts`. |
 | `pages_read_engagement` | Leer los comentarios y el caption de los posts para clasificarlos y detectar proyecto. | `lib/meta/client.ts` y `lib/moderation/pipeline.ts`. |
 | `pages_read_user_content` | Acceder al contenido del usuario final (texto del comentario, autor) entregado vía webhook. | Payload del webhook, procesado en `lib/meta/webhook.ts` y `comment-processor.ts`. |
 | `pages_manage_metadata` | Suscribir/desuscribir cada página a los webhooks (campo `feed`). | `lib/meta/client.ts → subscribePageToWebhooks` (`POST /{pageId}/subscribed_apps`). |
@@ -154,7 +153,7 @@ Todo ocurre únicamente sobre páginas que el usuario administra y ha conectado 
 - **Framework:** Next.js 14 (App Router) + TypeScript.
 - **Base de datos:** PostgreSQL con Prisma.
 - **Cola:** BullMQ sobre Redis (proceso `lionscore-worker` con PM2).
-- **Auth:** NextAuth v5 con `database` session strategy y Facebook provider.
+- **Auth:** NextAuth v5 con provider Credentials (email + contraseña, hash bcrypt) y sesiones JWT. Facebook OAuth se usa únicamente para conectar páginas desde `/accounts`.
 - **Versión Meta API:** v21.0 (consistente en login, conexión de páginas y operaciones de comentarios).
 
 ---

@@ -1,14 +1,16 @@
 /**
  * middleware.ts — Edge-compatible auth guard.
  *
- * We use a plain cookie existence check instead of NextAuth's auth()
- * because our main config uses session strategy: 'database'. The database
- * session token is an opaque string, NOT a JWT, so calling NextAuth's auth()
- * in the Edge Runtime throws "JWTSessionError: Invalid Compact JWE".
+ * We use a plain cookie existence check instead of NextAuth's auth().
+ * Our main config uses session strategy: 'jwt'; the JWT session cookie
+ * keeps the same names (authjs.session-token / __Secure-authjs.session-token
+ * over HTTPS), so an existence check remains a valid fast first gate.
  *
  * Security model: cookie existence is a fast first gate. Every protected
  * API route and server component additionally calls requireTenant() which
- * does the real database-backed session verification.
+ * does the real database-backed verification (user exists and is ACTIVE).
+ *
+ * Note: /change-password is intentionally NOT public — it requires a session.
  */
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -21,7 +23,7 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for a session cookie (database sessions use __Secure- prefix over HTTPS)
+  // Check for a session cookie (JWT sessions use __Secure- prefix over HTTPS)
   const sessionCookie =
     req.cookies.get('__Secure-authjs.session-token') ??
     req.cookies.get('authjs.session-token');
