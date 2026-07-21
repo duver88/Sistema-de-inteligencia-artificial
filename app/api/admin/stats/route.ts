@@ -77,6 +77,32 @@ export async function GET() {
     byAction[group.action] = group._count._all;
   }
 
+  // Daily comment volume for the last 14 days (UTC), split into replied vs
+  // total, so the dashboard can plot an activity trend. Gaps are backfilled
+  // with zeros below.
+  const DAYS = 14;
+  const rangeStart = new Date(todayStart.getTime() - (DAYS - 1) * 24 * 60 * 60 * 1000);
+  const dailyRows = await prisma.$queryRaw<{ day: Date; total: bigint; replied: bigint }[]>`
+    SELECT date_trunc('day', "createdAt" AT TIME ZONE 'UTC') AS day,
+           count(*) AS total,
+           count(*) FILTER (WHERE "action" IN ('REPLIED', 'MANUAL_REPLY')) AS replied
+    FROM "CommentLog"
+    WHERE "createdAt" >= ${rangeStart}
+    GROUP BY 1
+    ORDER BY 1
+  `;
+  const dailyMap = new Map<string, { total: number; replied: number }>();
+  for (const row of dailyRows) {
+    const key = row.day.toISOString().slice(0, 10);
+    dailyMap.set(key, { total: Number(row.total), replied: Number(row.replied) });
+  }
+  const byDay = Array.from({ length: DAYS }, (_, i) => {
+    const d = new Date(rangeStart.getTime() + i * 24 * 60 * 60 * 1000);
+    const key = d.toISOString().slice(0, 10);
+    const entry = dailyMap.get(key);
+    return { day: key, total: entry?.total ?? 0, replied: entry?.replied ?? 0 };
+  });
+
   return NextResponse.json({
     users: {
       total: usersTotal,
@@ -98,6 +124,7 @@ export async function GET() {
       today: commentsToday,
       last7d: commentsLast7d,
       byAction,
+      byDay,
     },
     recentErrors: recentErrorLogs.map((log) => ({
       id: log.id,

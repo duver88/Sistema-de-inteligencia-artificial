@@ -3,7 +3,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { enUS } from 'date-fns/locale';
-import { AlertTriangle, CheckCircle2, Loader2, RefreshCw } from 'lucide-react';
+import {
+  AlertTriangle, CheckCircle2, Loader2, RefreshCw,
+  Users, Link2, Bot, MessageSquare,
+} from 'lucide-react';
+import { ActivityChart, type DayPoint } from './ActivityChart';
 
 interface AdminStats {
   users: {
@@ -26,6 +30,7 @@ interface AdminStats {
     today: number;
     last7d: number;
     byAction: Record<string, number>;
+    byDay: DayPoint[];
   };
   recentErrors: {
     id: string;
@@ -58,6 +63,26 @@ function StatTile({ label, value, sub }: { label: string; value: number; sub?: s
       <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-2">{label}</p>
       <p className="text-3xl font-bold text-slate-900">{formatNumber(value)}</p>
       {sub && <p className="text-xs text-slate-400 mt-1">{sub}</p>}
+    </div>
+  );
+}
+
+function KpiCard({
+  label, value, sub, icon: Icon, from, to, ink,
+}: {
+  label: string; value: number; sub: string;
+  icon: typeof Users; from: string; to: string; ink: string;
+}) {
+  return (
+    <div className="rounded-2xl shadow-lg p-5" style={{ background: `linear-gradient(135deg, ${from} 0%, ${to} 100%)` }}>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: ink, opacity: 0.75 }}>{label}</p>
+        <div className="h-8 w-8 rounded-lg bg-white/25 flex items-center justify-center">
+          <Icon className="h-4 w-4" style={{ color: ink }} />
+        </div>
+      </div>
+      <p className="text-4xl font-bold" style={{ color: ink }}>{formatNumber(value)}</p>
+      <p className="text-xs mt-1" style={{ color: ink, opacity: 0.7 }}>{sub}</p>
     </div>
   );
 }
@@ -131,33 +156,44 @@ export function AdminOverview() {
         </button>
       </div>
 
-      {/* Users */}
-      <div className="grid grid-cols-5 gap-4 mb-4">
-        <StatTile label="Users" value={stats.users.total} />
-        <StatTile label="Active" value={stats.users.active} />
-        <StatTile label="Suspended" value={stats.users.suspended} />
-        <StatTile label="Expired" value={stats.users.expired} />
-        <StatTile label="Admins" value={stats.users.admins} />
-      </div>
-
-      {/* Platform */}
-      <div className="grid grid-cols-5 gap-4 mb-6">
-        <StatTile
-          label="Connected pages"
-          value={stats.accounts.total}
+      {/* Hero KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <KpiCard
+          label="Users" value={stats.users.total}
+          sub={`${formatNumber(stats.users.active)} active · ${formatNumber(stats.users.admins)} admins`}
+          icon={Users} from="#6366f1" to="#4f46e5" ink="#ffffff"
+        />
+        <KpiCard
+          label="Connected pages" value={stats.accounts.total}
           sub={`${formatNumber(stats.accounts.webhookSubscribed)} with webhook`}
+          icon={Link2} from="#00C4D4" to="#00E5FF" ink="#0a1628"
         />
-        <StatTile
-          label="Bots"
-          value={stats.bots.total}
-          sub={`${formatNumber(stats.bots.active)} active`}
+        <KpiCard
+          label="Active bots" value={stats.bots.active}
+          sub={`of ${formatNumber(stats.bots.total)} total`}
+          icon={Bot} from="#10b981" to="#059669" ink="#ffffff"
         />
-        <StatTile label="Comments today" value={stats.comments.today} />
-        <StatTile label="Last 7 days" value={stats.comments.last7d} />
-        <StatTile label="Total comments" value={stats.comments.total} />
+        <KpiCard
+          label="Comments today" value={stats.comments.today}
+          sub={`${formatNumber(stats.comments.last7d)} in the last 7 days`}
+          icon={MessageSquare} from="#3b82f6" to="#2563eb" ink="#ffffff"
+        />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* Activity chart + user status breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        <div className="lg:col-span-2">
+          <ActivityChart data={stats.comments.byDay} />
+        </div>
+        <div className="grid grid-cols-2 gap-4 content-start">
+          <StatTile label="Suspended" value={stats.users.suspended} />
+          <StatTile label="Expired" value={stats.users.expired} />
+          <StatTile label="Bots total" value={stats.bots.total} />
+          <StatTile label="Total comments" value={stats.comments.total} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Comments by action */}
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
           <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-4">

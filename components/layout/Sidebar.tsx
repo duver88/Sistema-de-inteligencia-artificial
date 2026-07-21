@@ -26,6 +26,14 @@ const bottomNavigation = [
   { name: 'Admin', href: '/admin', icon: Shield },
 ];
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="px-5 pt-1 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+      {children}
+    </p>
+  );
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -49,6 +57,7 @@ export function Sidebar() {
 
       {/* Main Nav */}
       <nav className="flex-1 py-5 space-y-0.5">
+        {mainNavigation.length > 0 && <SectionLabel>Menu</SectionLabel>}
         {mainNavigation.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + '/');
@@ -58,7 +67,7 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 mx-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-150',
+                'relative flex items-center gap-3 mx-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-150',
                 isActive
                   ? 'font-semibold'
                   : 'text-slate-400 hover:bg-white/5 hover:text-white'
@@ -70,32 +79,39 @@ export function Sidebar() {
             </Link>
           );
         })}
+
+        {/* Admin section — superadmins only */}
+        {adminNavigation.length > 0 && (
+          <div className="pt-2">
+            <SectionLabel>Administration</SectionLabel>
+            {adminNavigation.map((item) => {
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + '/');
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    'flex items-center gap-3 mx-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-150',
+                    isActive
+                      ? 'font-semibold'
+                      : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                  )}
+                  style={isActive ? { background: 'linear-gradient(135deg, #0bbfb8, #12fdee)', color: '#021130' } : undefined}
+                >
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </nav>
 
-      {/* Bottom Nav — Admin link, superadmins only */}
-      {adminNavigation.length > 0 && (
-      <div className="py-4 border-t border-white/10 space-y-0.5">
-        {adminNavigation.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 mx-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-150',
-                isActive
-                  ? 'font-semibold'
-                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
-              )}
-              style={isActive ? { background: 'linear-gradient(135deg, #0bbfb8, #12fdee)', color: '#021130' } : undefined}
-            >
-              <item.icon className="h-5 w-5 flex-shrink-0" />
-              {item.name}
-            </Link>
-          );
-        })}
+      {/* Footer */}
+      <div className="px-5 py-4 border-t border-white/10">
+        <p className="text-[11px] text-slate-500">Lionscore · Comment AI</p>
       </div>
-      )}
     </div>
   );
 }
