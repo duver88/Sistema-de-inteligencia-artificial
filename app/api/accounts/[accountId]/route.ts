@@ -20,14 +20,17 @@ export async function DELETE(
     return NextResponse.json({ error: 'Account not found' }, { status: 404 });
   }
 
-  // Deactivate the account and its bot(s)
+  // Deactivate the account and ALL of its bots — including any orphaned bots
+  // left under a previous tenant, so they can never be picked up again by the
+  // webhook if the page is later reconnected. Ownership of the account itself
+  // was already verified against ctx.tenantId above.
   await prisma.$transaction([
     prisma.socialAccount.update({
       where: { id: accountId },
       data: { isActive: false },
     }),
     prisma.bot.updateMany({
-      where: { accountId, tenantId: ctx.tenantId },
+      where: { accountId },
       data: { isActive: false },
     }),
   ]);

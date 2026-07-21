@@ -13,6 +13,10 @@ const META_BASE_URL = 'https://graph.facebook.com/v21.0';
  * stream the image bytes back. The token never reaches the client.
  */
 export async function GET() {
+  // auth() + explicit status check, NOT requireTenant: a SUSPENDED user must
+  // not use this proxy, but User.tenantId is nullable (e.g. a super admin with
+  // "No tenant assigned") and requireTenant would 401 those users, silently
+  // breaking their avatar. The status check alone is what this route needs.
   const session = await auth();
   if (!session?.user?.id) return new NextResponse(null, { status: 401 });
 
@@ -23,11 +27,12 @@ export async function GET() {
     }),
     prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { facebookToken: true },
+      select: { facebookToken: true, status: true },
     }),
   ]);
 
-  if (!account || !user?.facebookToken) return new NextResponse(null, { status: 404 });
+  if (!user || user.status !== 'ACTIVE') return new NextResponse(null, { status: 401 });
+  if (!account || !user.facebookToken) return new NextResponse(null, { status: 404 });
 
   let token: string;
   try {

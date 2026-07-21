@@ -90,43 +90,64 @@ export async function GET(request: NextRequest) {
     // 3. Fetch managed pages (with linked Instagram accounts)
     const pages = await metaClient.getManagedPages(longLivedToken);
 
-    // 4. Save each page (and its Instagram account) to the database
+    // 4. Save each page (and its Instagram account) to the database.
+    // Ownership contract: the page belongs to the last user who proves Facebook
+    // admin access via OAuth. Everything tied to the account — the SocialAccount,
+    // its Bots (with their config/knowledge/projects, which follow the bot) and
+    // their CommentLogs — moves to the connecting tenant atomically.
     for (const page of pages) {
       const encryptedPageToken = encrypt(page.access_token);
 
-      const fbAccount = await prisma.socialAccount.upsert({
-        where: { platform_pageId: { platform: 'FACEBOOK', pageId: page.id } },
-        update: {
-          tenantId: ctx.tenantId,
-          pageName: page.name,
-          pageToken: encryptedPageToken,
-          pictureUrl: page.picture?.data?.url,
-          isActive: true,
-        },
-        create: {
-          tenantId: ctx.tenantId,
-          platform: 'FACEBOOK',
-          pageId: page.id,
-          pageName: page.name,
-          pageToken: encryptedPageToken,
-          pictureUrl: page.picture?.data?.url,
-        },
-      });
-
-      // Create default Bot for Facebook page if none exists
-      const existingBot = await prisma.bot.findFirst({
-        where: { accountId: fbAccount.id, tenantId: ctx.tenantId },
-      });
-      if (!existingBot) {
-        await prisma.bot.create({
-          data: {
+      const fbAccount = await prisma.$transaction(async (tx) => {
+        const account = await tx.socialAccount.upsert({
+          where: { platform_pageId: { platform: 'FACEBOOK', pageId: page.id } },
+          update: {
             tenantId: ctx.tenantId,
-            accountId: fbAccount.id,
-            name: `Bot ${page.name}`,
-            isActive: false,
+            pageName: page.name,
+            pageToken: encryptedPageToken,
+            pictureUrl: page.picture?.data?.url,
+            isActive: true,
+          },
+          create: {
+            tenantId: ctx.tenantId,
+            platform: 'FACEBOOK',
+            pageId: page.id,
+            pageName: page.name,
+            pageToken: encryptedPageToken,
+            pictureUrl: page.picture?.data?.url,
           },
         });
-      }
+
+        // Move ALL bots of this account (from any previous tenant) to the
+        // connecting tenant, keeping their configuration intact...
+        await tx.bot.updateMany({
+          where: { accountId: account.id, tenantId: { not: ctx.tenantId } },
+          data: { tenantId: ctx.tenantId },
+        });
+        // ...and move their CommentLogs along with them.
+        await tx.commentLog.updateMany({
+          where: { bot: { accountId: account.id }, tenantId: { not: ctx.tenantId } },
+          data: { tenantId: ctx.tenantId },
+        });
+
+        // Create a default Bot ONLY if the account has no bot at all
+        // (no tenant filter — a moved bot must never be duplicated).
+        const existingBot = await tx.bot.findFirst({
+          where: { accountId: account.id },
+        });
+        if (!existingBot) {
+          await tx.bot.create({
+            data: {
+              tenantId: ctx.tenantId,
+              accountId: account.id,
+              name: `Bot ${page.name}`,
+              isActive: false,
+            },
+          });
+        }
+
+        return account;
+      });
 
       // Subscribe Facebook page to webhooks
       if (!fbAccount.webhookSubscribed) {
@@ -143,45 +164,60 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Handle linked Instagram Business Account
+      // Handle linked Instagram Business Account (same ownership contract:
+      // account + bots + comment logs move to the connecting tenant atomically)
       if (page.instagram_business_account) {
         const ig = page.instagram_business_account;
         const encryptedIgToken = encrypt(page.access_token);
 
-        const igAccount = await prisma.socialAccount.upsert({
-          where: { platform_pageId: { platform: 'INSTAGRAM', pageId: ig.id } },
-          update: {
-            tenantId: ctx.tenantId,
-            pageName: ig.name,
-            pageToken: encryptedIgToken,
-            pictureUrl: ig.profile_picture_url,
-            isActive: true,
-            linkedFacebookPageId: fbAccount.id,
-          },
-          create: {
-            tenantId: ctx.tenantId,
-            platform: 'INSTAGRAM',
-            pageId: ig.id,
-            pageName: ig.name,
-            pageToken: encryptedIgToken,
-            pictureUrl: ig.profile_picture_url,
-            linkedFacebookPageId: fbAccount.id,
-          },
-        });
-
-        const existingIgBot = await prisma.bot.findFirst({
-          where: { accountId: igAccount.id, tenantId: ctx.tenantId },
-        });
-        if (!existingIgBot) {
-          await prisma.bot.create({
-            data: {
+        await prisma.$transaction(async (tx) => {
+          const igAccount = await tx.socialAccount.upsert({
+            where: { platform_pageId: { platform: 'INSTAGRAM', pageId: ig.id } },
+            update: {
               tenantId: ctx.tenantId,
-              accountId: igAccount.id,
-              name: `Bot Instagram ${ig.name}`,
-              isActive: false,
+              pageName: ig.name,
+              pageToken: encryptedIgToken,
+              pictureUrl: ig.profile_picture_url,
+              isActive: true,
+              linkedFacebookPageId: fbAccount.id,
+            },
+            create: {
+              tenantId: ctx.tenantId,
+              platform: 'INSTAGRAM',
+              pageId: ig.id,
+              pageName: ig.name,
+              pageToken: encryptedIgToken,
+              pictureUrl: ig.profile_picture_url,
+              linkedFacebookPageId: fbAccount.id,
             },
           });
-        }
+
+          // Move ALL bots of this account and their CommentLogs to the
+          // connecting tenant (configuration/knowledge/projects follow the bot).
+          await tx.bot.updateMany({
+            where: { accountId: igAccount.id, tenantId: { not: ctx.tenantId } },
+            data: { tenantId: ctx.tenantId },
+          });
+          await tx.commentLog.updateMany({
+            where: { bot: { accountId: igAccount.id }, tenantId: { not: ctx.tenantId } },
+            data: { tenantId: ctx.tenantId },
+          });
+
+          // Create a default Bot ONLY if the account has no bot at all
+          const existingIgBot = await tx.bot.findFirst({
+            where: { accountId: igAccount.id },
+          });
+          if (!existingIgBot) {
+            await tx.bot.create({
+              data: {
+                tenantId: ctx.tenantId,
+                accountId: igAccount.id,
+                name: `Bot Instagram ${ig.name}`,
+                isActive: false,
+              },
+            });
+          }
+        });
       }
     }
 

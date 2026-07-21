@@ -6,6 +6,7 @@ import { enUS } from 'date-fns/locale';
 import {
   Ban,
   CheckCircle2,
+  Eye,
   KeyRound,
   Loader2,
   Pencil,
@@ -29,6 +30,7 @@ import { CreateUserDialog } from './CreateUserDialog';
 import { EditUserDialog } from './EditUserDialog';
 import { ResetPasswordDialog } from './ResetPasswordDialog';
 import { DeleteUserDialog } from './DeleteUserDialog';
+import { UserDetailsDialog } from './UserDetailsDialog';
 import type { AdminUser } from './types';
 
 const PLAN_CONFIG: Record<string, { label: string; className: string }> = {
@@ -49,6 +51,7 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const [createOpen, setCreateOpen] = useState(false);
+  const [detailsUser, setDetailsUser] = useState<AdminUser | null>(null);
   const [editUser, setEditUser] = useState<AdminUser | null>(null);
   const [resetUser, setResetUser] = useState<AdminUser | null>(null);
   const [deleteUser, setDeleteUser] = useState<AdminUser | null>(null);
@@ -133,6 +136,10 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreated={(user) => setUsers((prev) => [...prev, user])}
+      />
+      <UserDetailsDialog
+        user={detailsUser}
+        onOpenChange={(open) => { if (!open) setDetailsUser(null); }}
       />
       <EditUserDialog
         user={editUser}
@@ -329,6 +336,14 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setDetailsUser(user)}
+                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+                            title="View details"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => setEditUser(user)}

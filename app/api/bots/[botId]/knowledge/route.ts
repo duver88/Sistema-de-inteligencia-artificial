@@ -45,6 +45,22 @@ export async function POST(request: NextRequest, { params }: Params) {
     order?: number;
   };
 
+  // Referential integrity: a provided projectId must belong to THIS bot
+  // (which is already verified to belong to this tenant). Otherwise a tenant
+  // could attach entries to another tenant's Project.
+  if (body.projectId) {
+    const project = await prisma.project.findFirst({
+      where: { id: body.projectId, botId },
+      select: { id: true },
+    });
+    if (!project) {
+      return NextResponse.json(
+        { error: 'Project not found for this bot' },
+        { status: 400 }
+      );
+    }
+  }
+
   const entry = await prisma.knowledgeEntry.create({
     data: {
       botId,

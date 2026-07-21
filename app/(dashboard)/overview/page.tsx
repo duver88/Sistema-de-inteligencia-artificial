@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { MessageSquare, Settings, Zap, Trash2, ArrowRight, TrendingUp } from 'lucide-react';
+import { MessageSquare, Settings, Zap, Trash2, ArrowRight, TrendingUp, Link2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function OverviewPage() {
@@ -11,7 +11,7 @@ export default async function OverviewPage() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [totalBots, activeBots, commentsToday, repliesToday, deletedToday, totalComments] =
+  const [totalBots, activeBots, commentsToday, repliesToday, deletedToday, totalComments, accountCount] =
     await Promise.all([
       prisma.bot.count({ where: { tenantId } }),
       prisma.bot.count({ where: { tenantId, isActive: true } }),
@@ -19,6 +19,7 @@ export default async function OverviewPage() {
       prisma.commentLog.count({ where: { tenantId, action: 'REPLIED', createdAt: { gte: today } } }),
       prisma.commentLog.count({ where: { tenantId, action: 'DELETED', createdAt: { gte: today } } }),
       prisma.commentLog.count({ where: { tenantId } }),
+      prisma.socialAccount.count({ where: { tenantId, isActive: true } }),
     ]);
 
   const firstName = session?.user?.name?.split(' ')[0] ?? 'user';
@@ -34,6 +35,38 @@ export default async function OverviewPage() {
           Here's a summary of your activity today.
         </p>
       </div>
+
+      {/* Onboarding CTA — shown only while the tenant has no connected accounts */}
+      {accountCount === 0 && (
+        <div
+          className="rounded-2xl p-6 border flex flex-col sm:flex-row items-start sm:items-center gap-5"
+          style={{ background: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)', borderColor: '#a5f3fc' }}
+        >
+          <div
+            className="h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)' }}
+          >
+            <Link2 className="h-6 w-6" style={{ color: '#0a1628' }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-base font-bold" style={{ color: '#0a1628' }}>
+              Connect your Facebook account to get started
+            </p>
+            <p className="text-sm mt-1 text-cyan-700">
+              Link a Facebook page or Instagram account and let AI reply to and
+              moderate your comments automatically.
+            </p>
+          </div>
+          <Link
+            href="/accounts"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
+          >
+            Connect Account
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      )}
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

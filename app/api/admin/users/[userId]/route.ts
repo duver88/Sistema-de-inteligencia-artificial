@@ -24,6 +24,105 @@ const USER_SELECT = {
   tenant: { select: { id: true, name: true, plan: true } },
 } as const;
 
+// GET — Full detail for a single user (super admin only). Returns the user,
+// its tenant (with an "OpenAI key configured" flag — NEVER the key itself),
+// the tenant's connected social accounts and its bots. Page tokens and the
+// encrypted OpenAI API key are never included in the response.
+export async function GET(_req: NextRequest, { params }: Params) {
+  const ctx = await requireSuperAdmin();
+  if (ctx instanceof NextResponse) return ctx;
+
+  const { userId } = await params;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      status: true,
+      isSuperAdmin: true,
+      mustChangePassword: true,
+      lastLoginAt: true,
+      createdAt: true,
+      tenantId: true,
+      tenant: {
+        select: {
+          id: true,
+          name: true,
+          plan: true,
+          openaiApiKey: true, // mapped to a boolean below, value never returned
+          openaiKeySetAt: true,
+        },
+      },
+    },
+  });
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  }
+
+  const [accounts, bots] = user.tenantId
+    ? await Promise.all([
+        prisma.socialAccount.findMany({
+          where: { tenantId: user.tenantId },
+          select: {
+            id: true,
+            platform: true,
+            pageName: true,
+            pictureUrl: true,
+            isActive: true,
+            webhookSubscribed: true,
+            connectedAt: true,
+          },
+          orderBy: { connectedAt: 'desc' },
+        }),
+        prisma.bot.findMany({
+          where: { tenantId: user.tenantId },
+          select: {
+            id: true,
+            name: true,
+            isActive: true,
+            aiModel: true,
+            account: { select: { pageName: true } },
+            _count: { select: { comments: true } },
+          },
+          orderBy: { name: 'asc' },
+        }),
+      ])
+    : [[], []];
+
+  return NextResponse.json({
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      status: user.status,
+      isSuperAdmin: user.isSuperAdmin,
+      mustChangePassword: user.mustChangePassword,
+      lastLoginAt: user.lastLoginAt,
+      createdAt: user.createdAt,
+    },
+    tenant: user.tenant
+      ? {
+          id: user.tenant.id,
+          name: user.tenant.name,
+          plan: user.tenant.plan,
+          openaiKeySet: user.tenant.openaiApiKey !== null,
+          openaiKeySetAt: user.tenant.openaiKeySetAt,
+        }
+      : null,
+    accounts,
+    bots: bots.map((bot) => ({
+      id: bot.id,
+      name: bot.name,
+      isActive: bot.isActive,
+      aiModel: bot.aiModel,
+      pageName: bot.account.pageName,
+      commentCount: bot._count.comments,
+    })),
+  });
+}
+
 // PATCH — Partially update a user (super admin only)
 export async function PATCH(request: NextRequest, { params }: Params) {
   const ctx = await requireSuperAdmin();

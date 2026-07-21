@@ -89,12 +89,6 @@ async function processWebhookAsync(rawBody: Buffer): Promise<void> {
           platform: comment.platform,
           isActive: true,
         },
-        include: {
-          bots: {
-            where: { isActive: true },
-            take: 1,
-          },
-        },
       });
 
       if (!account) {
@@ -105,15 +99,28 @@ async function processWebhookAsync(rawBody: Buffer): Promise<void> {
         continue;
       }
 
-      if (!account.bots?.[0]) {
+      // Resolve the bot for this account: it MUST belong to the same tenant as
+      // the account (never an orphan bot left behind by a previous tenant).
+      // If several match, prefer active bots and, among those, the oldest one
+      // (deterministic — no unordered "first row" selection).
+      const bot = await prisma.bot.findFirst({
+        where: {
+          accountId: account.id,
+          tenantId: account.tenantId,
+        },
+        orderBy: [
+          { isActive: 'desc' },
+          { createdAt: 'asc' },
+        ],
+      });
+
+      if (!bot || !bot.isActive) {
         console.warn(
-          `[Webhook] ⚠️ La página "${account.pageName}" no tiene BOT ACTIVO — comentario descartado. ` +
+          `[Webhook] ⚠️ La página "${account.pageName}" no tiene BOT ACTIVO en su tenant — comentario descartado. ` +
           'Activa el bot para que el comentario llegue al pipeline y aparezca en /comments.'
         );
         continue;
       }
-
-      const bot = account.bots[0];
       // Use underscore separator — BullMQ does not allow colons in custom jobIds
       const jobId = `${comment.platform}_${comment.commentId}`;
 

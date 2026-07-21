@@ -116,6 +116,19 @@ export async function processComment(
     return;
   }
 
+  // Tenant integrity guard: the bot must belong to the same tenant as its
+  // account. An orphan bot (left behind when the account moved to another
+  // tenant) must never process comments — it would moderate with the old
+  // tenant's config, bill the old tenant's OpenAI key and write the
+  // CommentLog into the wrong tenant.
+  if (bot.tenantId !== bot.account.tenantId) {
+    console.warn(
+      `[Pipeline] ⚠️ Bot ${botId} (tenant ${bot.tenantId}) does not match its account's tenant ` +
+      `(${bot.account.tenantId}) — comment ${comment.commentId} skipped`
+    );
+    return;
+  }
+
   // Resolve and validate the OpenAI API key before doing any AI work
   let openaiApiKey: string | null = null;
   if (bot.aiEnabled || bot.autoReply) {
