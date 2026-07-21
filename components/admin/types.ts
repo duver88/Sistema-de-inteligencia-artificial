@@ -9,6 +9,9 @@ export interface AdminUser {
   mustChangePassword: boolean;
   lastLoginAt: string | null;
   createdAt: string;
+  // ISO string of the end of the day (UTC) the account expires, or null
+  // for unlimited access. Ignored for super admins — they never expire.
+  accessExpiresAt: string | null;
   tenant: { id: string; name: string; plan: string } | null;
   stats: { accounts: number; bots: number; comments: number };
 }
@@ -45,6 +48,7 @@ export interface AdminUserDetails {
     mustChangePassword: boolean;
     lastLoginAt: string | null;
     createdAt: string;
+    accessExpiresAt: string | null;
   };
   tenant: {
     id: string;

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -27,6 +28,13 @@ const bottomNavigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isSuperAdmin = session?.user?.isSuperAdmin === true;
+
+  // Superadmins are administrators only: hide the tenant navigation and
+  // show just the Admin link. Normal users never see the Admin link.
+  const mainNavigation = isSuperAdmin ? [] : navigation;
+  const adminNavigation = isSuperAdmin ? bottomNavigation : [];
 
   return (
     <div className="w-64 flex flex-col flex-shrink-0" style={{ background: '#021130' }}>
@@ -41,7 +49,7 @@ export function Sidebar() {
 
       {/* Main Nav */}
       <nav className="flex-1 py-5 space-y-0.5">
-        {navigation.map((item) => {
+        {mainNavigation.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + '/');
 
@@ -64,9 +72,10 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom Nav */}
+      {/* Bottom Nav — Admin link, superadmins only */}
+      {adminNavigation.length > 0 && (
       <div className="py-4 border-t border-white/10 space-y-0.5">
-        {bottomNavigation.map((item) => {
+        {adminNavigation.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
@@ -86,6 +95,7 @@ export function Sidebar() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

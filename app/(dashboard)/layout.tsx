@@ -25,7 +25,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <SessionWrapper>
+    <SessionWrapper session={session}>
       <div className="flex h-screen overflow-hidden" style={{background: '#f1f5f9'}}>
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">

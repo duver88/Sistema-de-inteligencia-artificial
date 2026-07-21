@@ -21,6 +21,7 @@ export async function GET() {
       mustChangePassword: true,
       lastLoginAt: true,
       createdAt: true,
+      accessExpiresAt: true,
       tenant: {
         select: {
           id: true,
@@ -45,6 +46,7 @@ export async function GET() {
       mustChangePassword: user.mustChangePassword,
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
+      accessExpiresAt: user.accessExpiresAt,
       tenant: user.tenant
         ? { id: user.tenant.id, name: user.tenant.name, plan: user.tenant.plan }
         : null,
@@ -66,6 +68,7 @@ export async function POST(request: NextRequest) {
     name?: unknown;
     email?: unknown;
     password?: unknown;
+    accessExpiresAt?: unknown;
   } | null;
 
   const name = typeof body?.name === 'string' ? body.name.trim() : '';
@@ -81,6 +84,31 @@ export async function POST(request: NextRequest) {
   const passwordCheck = validatePassword(password, email);
   if (!passwordCheck.ok) {
     return NextResponse.json({ error: passwordCheck.error }, { status: 400 });
+  }
+
+  // Optional access expiration (ISO string or null; null = no expiration)
+  let accessExpiresAt: Date | null = null;
+  if (body?.accessExpiresAt !== undefined && body.accessExpiresAt !== null) {
+    if (typeof body.accessExpiresAt !== 'string') {
+      return NextResponse.json(
+        { error: 'accessExpiresAt must be an ISO date string or null' },
+        { status: 400 }
+      );
+    }
+    const parsed = new Date(body.accessExpiresAt);
+    if (Number.isNaN(parsed.getTime())) {
+      return NextResponse.json(
+        { error: 'accessExpiresAt is not a valid date' },
+        { status: 400 }
+      );
+    }
+    if (parsed.getTime() <= Date.now()) {
+      return NextResponse.json(
+        { error: 'The access expiration date must be in the future' },
+        { status: 400 }
+      );
+    }
+    accessExpiresAt = parsed;
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -104,6 +132,7 @@ export async function POST(request: NextRequest) {
           tenantId: tenant.id,
           role: 'OWNER',
           mustChangePassword: true,
+          accessExpiresAt,
         },
         select: {
           id: true,
@@ -114,6 +143,7 @@ export async function POST(request: NextRequest) {
           mustChangePassword: true,
           lastLoginAt: true,
           createdAt: true,
+          accessExpiresAt: true,
           tenant: { select: { id: true, name: true, plan: true } },
         },
       });

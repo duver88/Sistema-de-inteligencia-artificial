@@ -6,6 +6,7 @@ import { enUS } from 'date-fns/locale';
 import {
   Ban,
   Bot as BotIcon,
+  CalendarClock,
   CheckCircle2,
   Globe,
   KeyRound,
@@ -21,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { formatAccessDate, isAccessExpired } from './access';
 import type { AdminUser, AdminUserDetails } from './types';
 
 const PLAN_CONFIG: Record<string, { label: string; className: string }> = {
@@ -149,6 +151,11 @@ export function UserDetailsDialog({ user, onOpenChange }: UserDetailsDialogProps
                         <Ban className="h-3 w-3" />
                         Suspended
                       </span>
+                    ) : isAccessExpired(details.user) ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                        <CalendarClock className="h-3 w-3" />
+                        Expired
+                      </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                         <CheckCircle2 className="h-3 w-3" />
@@ -163,11 +170,19 @@ export function UserDetailsDialog({ user, onOpenChange }: UserDetailsDialogProps
                     details.user.isSuperAdmin ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-700 border border-purple-200">
                         <ShieldCheck className="h-3 w-3" />
-                        Super admin
+                        Administrator
                       </span>
                     ) : (
-                      'Member'
+                      'User'
                     )
+                  }
+                />
+                <InfoRow
+                  label="Access until"
+                  value={
+                    !details.user.isSuperAdmin && details.user.accessExpiresAt
+                      ? formatAccessDate(details.user.accessExpiresAt)
+                      : 'No limit'
                   }
                 />
                 <InfoRow

@@ -1,10 +1,12 @@
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
 import { MessageSquare, Settings, Zap, Trash2, ArrowRight, TrendingUp, Link2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function OverviewPage() {
   const session = await auth();
+  if (session?.user?.isSuperAdmin) redirect('/admin');
   const tenantId = session?.user?.tenantId;
   if (!tenantId) return null;
 

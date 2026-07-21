@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import {
   Ban,
+  CalendarClock,
   CheckCircle2,
   Eye,
   KeyRound,
@@ -13,6 +14,7 @@ import {
   RefreshCw,
   ShieldCheck,
   Trash2,
+  User as UserIcon,
   UserPlus,
   Users,
 } from 'lucide-react';
@@ -31,6 +33,7 @@ import { EditUserDialog } from './EditUserDialog';
 import { ResetPasswordDialog } from './ResetPasswordDialog';
 import { DeleteUserDialog } from './DeleteUserDialog';
 import { UserDetailsDialog } from './UserDetailsDialog';
+import { formatAccessDate, isAccessExpired } from './access';
 import type { AdminUser } from './types';
 
 const PLAN_CONFIG: Record<string, { label: string; className: string }> = {
@@ -105,8 +108,10 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
     }
   }
 
-  const activeCount = users.filter((u) => u.status === 'ACTIVE').length;
-  const suspendedCount = users.length - activeCount;
+  // Effective state priority: Suspended > Expired > Active
+  const suspendedCount = users.filter((u) => u.status === 'SUSPENDED').length;
+  const expiredCount = users.filter((u) => u.status === 'ACTIVE' && isAccessExpired(u)).length;
+  const activeCount = users.length - suspendedCount - expiredCount;
 
   const toolbar = (
     <div className="flex items-center justify-between mb-4">
@@ -143,6 +148,7 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
       />
       <EditUserDialog
         user={editUser}
+        currentUserId={currentUserId}
         onOpenChange={(open) => { if (!open) setEditUser(null); }}
         onUpdated={replaceUser}
       />
@@ -219,7 +225,7 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
   return (
     <div>
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
           <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-2">Users</p>
           <p className="text-3xl font-bold text-slate-900">{users.length}</p>
@@ -227,6 +233,10 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
           <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-2">Active</p>
           <p className="text-3xl font-bold text-slate-900">{activeCount}</p>
+        </div>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-2">Expired</p>
+          <p className="text-3xl font-bold text-slate-900">{expiredCount}</p>
         </div>
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
           <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-2">Suspended</p>
@@ -251,7 +261,9 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">User</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Role</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Access until</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Tenant</th>
                   <th className="text-center px-3 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Pages</th>
                   <th className="text-center px-3 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Bots</th>
@@ -265,6 +277,7 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
                   const isSelf = user.id === currentUserId;
                   const plan = user.tenant ? (PLAN_CONFIG[user.tenant.plan] ?? PLAN_CONFIG.FREE) : null;
                   const suspended = user.status === 'SUSPENDED';
+                  const expired = isAccessExpired(user);
                   return (
                     <tr key={user.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/80 transition-colors">
                       <td className="px-5 py-3.5">
@@ -277,15 +290,6 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
                               <p className="text-sm font-medium text-slate-900 truncate">
                                 {user.name ?? '—'}
                               </p>
-                              {user.isSuperAdmin && (
-                                <span
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-purple-50 text-purple-700 border border-purple-200"
-                                  title="Super admin"
-                                >
-                                  <ShieldCheck className="h-3 w-3" />
-                                  Admin
-                                </span>
-                              )}
                               {isSelf && (
                                 <span className="text-[10px] text-slate-400 font-medium">(you)</span>
                               )}
@@ -295,11 +299,29 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
+                        {user.isSuperAdmin ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                            <ShieldCheck className="h-3 w-3" />
+                            Administrator
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                            <UserIcon className="h-3 w-3" />
+                            User
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5">
                         <div className="flex flex-col items-start gap-1">
                           {suspended ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
                               <Ban className="h-3 w-3" />
                               Suspended
+                            </span>
+                          ) : expired ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                              <CalendarClock className="h-3 w-3" />
+                              Expired
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -311,6 +333,15 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
                             <span className="text-[10px] text-amber-600">Must change password</span>
                           )}
                         </div>
+                      </td>
+                      <td className="px-5 py-3.5 text-xs whitespace-nowrap">
+                        {!user.isSuperAdmin && user.accessExpiresAt ? (
+                          <span className={expired ? 'text-amber-600 font-medium' : 'text-slate-600'}>
+                            {formatAccessDate(user.accessExpiresAt)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">No limit</span>
+                        )}
                       </td>
                       <td className="px-5 py-3.5">
                         {user.tenant ? (

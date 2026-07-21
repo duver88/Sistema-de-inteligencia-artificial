@@ -129,6 +129,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: true,
             passwordHash: true,
             status: true,
+            isSuperAdmin: true,
+            accessExpiresAt: true,
           },
         });
 
@@ -143,6 +145,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!passwordValid) return fail('bad-password');
 
         if (user.status !== 'ACTIVE') return fail('not-active');
+
+        // Access-validity deadline. Superadmins never expire; for everyone
+        // else an accessExpiresAt in the past blocks login with the same
+        // generic error the client sees for bad credentials.
+        if (
+          !user.isSuperAdmin &&
+          user.accessExpiresAt &&
+          user.accessExpiresAt <= new Date()
+        ) {
+          return fail('expired');
+        }
 
         clearFailedAttempts(emailKey);
 
@@ -201,10 +214,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: true,
           email: true,
           passwordChangedAt: true,
+          accessExpiresAt: true,
         },
       });
 
       if (!dbUser || dbUser.status !== 'ACTIVE') return unauthenticated();
+
+      // Kill active sessions of non-superadmin users whose access validity
+      // deadline has passed (superadmins never expire).
+      if (
+        !dbUser.isSuperAdmin &&
+        dbUser.accessExpiresAt &&
+        dbUser.accessExpiresAt <= new Date()
+      ) {
+        return unauthenticated();
+      }
 
       // Invalidate JWTs issued before the last password change (admin reset
       // or self-service change) so a stolen cookie dies as soon as the

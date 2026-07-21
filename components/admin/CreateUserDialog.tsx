@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Check, Copy, Loader2 } from 'lucide-react';
+import { Check, Copy, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { PasswordInput, generateTempPassword } from './PasswordInput';
+import { dateInputToUtcEndOfDay } from './access';
 import type { AdminUser } from './types';
 
 interface CreateUserDialogProps {
@@ -24,6 +25,8 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // yyyy-MM-dd from the date input; '' = unlimited access
+  const [expiresOn, setExpiresOn] = useState('');
   const [submitting, setSubmitting] = useState(false);
   // After a successful create, keep the dialog open on a confirmation step
   // showing the temporary password one last time — closing immediately
@@ -37,6 +40,7 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
       setName('');
       setEmail('');
       setPassword(generateTempPassword());
+      setExpiresOn('');
       setCreated(null);
       setCopied(false);
     }
@@ -51,7 +55,13 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
       const res = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), email: email.trim(), password }),
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          password,
+          // Access is valid through the END of the chosen day, in UTC
+          accessExpiresAt: expiresOn ? dateInputToUtcEndOfDay(expiresOn) : null,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -176,6 +186,32 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
                 <PasswordInput value={password} onChange={setPassword} />
                 <p className="mt-1.5 text-xs text-slate-400">
                   At least 10 characters with a letter and a number. You can copy it again on the next step.
+                </p>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                  Access expires on
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={expiresOn}
+                    onChange={(e) => setExpiresOn(e.target.value)}
+                    min={new Date().toISOString().slice(0, 10)}
+                    className="flex-1 text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setExpiresOn('')}
+                    disabled={!expiresOn}
+                    className="px-3 py-2 text-slate-500 hover:text-red-600 hover:bg-red-50 border border-slate-200 rounded-xl transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                    title="Clear expiration date"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <p className="mt-1.5 text-xs text-slate-400">
+                  Leave empty for unlimited access.
                 </p>
               </div>
             </div>

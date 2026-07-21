@@ -46,11 +46,23 @@ export async function getCurrentTenant(): Promise<TenantContext | null> {
 /**
  * Require an authenticated tenant context. Returns a 401 response if not authenticated.
  * Use in API route handlers: `const ctx = await requireTenant(); if (ctx instanceof NextResponse) return ctx;`
+ *
+ * Super admins are administrators ONLY — they never operate tenant features
+ * (connect Facebook pages, run bots, reply to comments, change OpenAI
+ * settings, ...), so by default they are rejected with 403 even when their
+ * account still has a tenantId. Routes that are legitimately shared by every
+ * signed-in user regardless of role (e.g. changing your own password) can
+ * opt out with `{ allowSuperAdmin: true }`.
  */
-export async function requireTenant(): Promise<TenantContext | NextResponse> {
+export async function requireTenant(
+  options?: { allowSuperAdmin?: boolean }
+): Promise<TenantContext | NextResponse> {
   const ctx = await getCurrentTenant();
   if (!ctx) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  if (ctx.isSuperAdmin && !options?.allowSuperAdmin) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   return ctx;
 }

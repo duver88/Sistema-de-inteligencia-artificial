@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import type { Prisma } from '@/lib/generated/prisma/client';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { BotRepliesList } from '@/components/bots/BotRepliesList';
 import Link from 'next/link';
@@ -15,6 +15,7 @@ export default async function RepliesPage({
   params: Promise<{ botId: string }>;
 }) {
   const session = await auth();
+  if (session?.user?.isSuperAdmin) redirect('/admin');
   const tenantId = session?.user?.tenantId;
   if (!tenantId) return null;
 

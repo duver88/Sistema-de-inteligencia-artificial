@@ -21,6 +21,7 @@ const USER_SELECT = {
   mustChangePassword: true,
   lastLoginAt: true,
   createdAt: true,
+  accessExpiresAt: true,
   tenant: { select: { id: true, name: true, plan: true } },
 } as const;
 
@@ -45,6 +46,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       mustChangePassword: true,
       lastLoginAt: true,
       createdAt: true,
+      accessExpiresAt: true,
       tenantId: true,
       tenant: {
         select: {
@@ -101,6 +103,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       mustChangePassword: user.mustChangePassword,
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
+      accessExpiresAt: user.accessExpiresAt,
     },
     tenant: user.tenant
       ? {
@@ -135,6 +138,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     email?: unknown;
     status?: unknown;
     isSuperAdmin?: unknown;
+    accessExpiresAt?: unknown;
   } | null;
 
   if (!body) {
@@ -154,6 +158,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     email?: string;
     status?: UserStatus;
     isSuperAdmin?: boolean;
+    accessExpiresAt?: Date | null;
   } = {};
 
   if (body.name !== undefined) {
@@ -198,6 +203,53 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Invalid isSuperAdmin value' }, { status: 400 });
     }
     data.isSuperAdmin = body.isSuperAdmin;
+  }
+
+  if (body.accessExpiresAt !== undefined) {
+    // Anti-lockout: expiration dates can never be set on yourself or on any
+    // super admin — super admins never expire. Clearing (null) is always
+    // allowed, and a date may accompany a demotion (isSuperAdmin: false) in
+    // the same request, so demote+clear / demote+set stay atomic.
+    if (userId === ctx.userId) {
+      return NextResponse.json(
+        { error: 'You cannot change your own access expiration date' },
+        { status: 400 }
+      );
+    }
+    if (
+      body.accessExpiresAt !== null &&
+      (data.isSuperAdmin === true || (target.isSuperAdmin && data.isSuperAdmin !== false))
+    ) {
+      return NextResponse.json(
+        { error: 'Super admin accounts cannot have an access expiration date' },
+        { status: 400 }
+      );
+    }
+    if (body.accessExpiresAt === null) {
+      data.accessExpiresAt = null;
+    } else {
+      if (typeof body.accessExpiresAt !== 'string') {
+        return NextResponse.json(
+          { error: 'accessExpiresAt must be an ISO date string or null' },
+          { status: 400 }
+        );
+      }
+      const parsed = new Date(body.accessExpiresAt);
+      if (Number.isNaN(parsed.getTime())) {
+        return NextResponse.json(
+          { error: 'accessExpiresAt is not a valid date' },
+          { status: 400 }
+        );
+      }
+      data.accessExpiresAt = parsed;
+    }
+  }
+
+  // Promotion to super admin always clears any stored expiration date so a
+  // stale (and invisible — the UI shows "No limit" for admins) date cannot
+  // silently re-arm and lock the user out on a later demotion.
+  if (data.isSuperAdmin === true) {
+    data.accessExpiresAt = null;
   }
 
   if (Object.keys(data).length === 0) {

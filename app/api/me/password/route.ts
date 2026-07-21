@@ -9,7 +9,9 @@ import { validatePassword } from '@/lib/password';
 // requires the new one to be at least 8 characters, then stores the new
 // hash and clears the mustChangePassword flag.
 export async function POST(request: NextRequest) {
-  const ctx = await requireTenant();
+  // Changing your own password is a role-agnostic self-service action, so
+  // super admins are allowed here (requireTenant rejects them by default).
+  const ctx = await requireTenant({ allowSuperAdmin: true });
   if (ctx instanceof NextResponse) return ctx;
 
   const body = await request.json().catch(() => null) as

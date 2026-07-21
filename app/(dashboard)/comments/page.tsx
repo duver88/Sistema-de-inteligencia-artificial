@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import type { Prisma } from '@/lib/generated/prisma/client';
+import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { CommentFilters } from '@/components/comments/CommentFilters';
 import { CommentTable } from '@/components/comments/CommentTable';
@@ -14,6 +15,7 @@ export default async function CommentsPage({
   searchParams: Promise<{ botId?: string; action?: string; platform?: string; search?: string; page?: string }>;
 }) {
   const session = await auth();
+  if (session?.user?.isSuperAdmin) redirect('/admin');
   const tenantId = session?.user?.tenantId;
   if (!tenantId) return null;
 

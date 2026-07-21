@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ModerationRulesEditor } from '@/components/bots/ModerationRulesEditor';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ export default async function RulesPage({
   params: Promise<{ botId: string }>;
 }) {
   const session = await auth();
+  if (session?.user?.isSuperAdmin) redirect('/admin');
   const tenantId = session?.user?.tenantId;
   if (!tenantId) return null;
 

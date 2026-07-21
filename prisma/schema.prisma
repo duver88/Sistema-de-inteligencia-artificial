@@ -64,6 +64,10 @@ model User {
   // Set on every password change/reset; JWTs issued before this instant are
   // rejected by the session callback (invalidates stolen/old sessions).
   passwordChangedAt  DateTime?
+  // Access validity deadline. Null = no expiration. A non-superadmin whose
+  // accessExpiresAt <= now cannot log in and any active session dies on the
+  // next request (session callback). Ignored entirely for superadmins.
+  accessExpiresAt    DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,10 +1,12 @@
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { OpenAIKeyForm } from '@/components/settings/OpenAIKeyForm';
 
 export default async function SettingsPage() {
   const session = await auth();
+  if (session?.user?.isSuperAdmin) redirect('/admin');
   const tenantId = session?.user?.tenantId;
   if (!tenantId) return null;
 
