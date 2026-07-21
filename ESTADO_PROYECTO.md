@@ -29,7 +29,7 @@ de comentarios usando inteligencia artificial.
 - FACEBOOK_CLIENT_ID → mismo que FACEBOOK_APP_ID
 - FACEBOOK_APP_SECRET → App Secret de Meta (usado por NextAuth)
 - FACEBOOK_CLIENT_SECRET → mismo que FACEBOOK_APP_SECRET
-- FACEBOOK_LOGIN_SCOPES → Scopes del LOGIN con Facebook (solo identidad: public_profile,email)
+- FACEBOOK_LOGIN_SCOPES → Scopes del LOGIN con Facebook (solo public_profile — "email" no existe en apps tipo Business)
 - FACEBOOK_SCOPES → Scopes al CONECTAR páginas (incluye pages_manage_engagement para responder/borrar/ocultar comentarios; hasta que Meta lo apruebe solo se concede a usuarios con rol en la Meta app)
 - FACEBOOK_PAGES_APP_ID → App ID para el flujo de conexión de páginas (mismo valor que FACEBOOK_APP_ID)
 - FACEBOOK_PAGES_APP_SECRET → App Secret para el flujo de conexión de páginas (mismo valor que FACEBOOK_APP_SECRET)

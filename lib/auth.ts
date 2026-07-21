@@ -175,7 +175,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // Login only needs identity. Page permissions (FACEBOOK_SCOPES) are
           // requested later, in the "Connect account" OAuth flow — Meta App
           // Review expects permissions to be requested in context, not at login.
-          scope: process.env.FACEBOOK_LOGIN_SCOPES || 'public_profile,email',
+          // Note: "email" is NOT available in this Meta app (Business type /
+          // Facebook Login for Business) — requesting it throws Invalid Scopes.
+          scope: process.env.FACEBOOK_LOGIN_SCOPES || 'public_profile',
         },
       },
       // Facebook has its own internal CSRF protection and does not work
