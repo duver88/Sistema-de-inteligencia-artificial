@@ -189,9 +189,11 @@ export async function processComment(
     return;
   }
 
-  const pageToken = decrypt(bot.account.pageToken);
-
   try {
+    // Decrypt inside the try so a corrupt token is logged as ERROR instead of
+    // throwing and dropping the comment with no CommentLog trail.
+    const pageToken = decrypt(bot.account.pageToken);
+
     // ── STEP 1: Keyword Delete Check ─────────────────────────────────────────
     if (bot.deleteNegative) {
       const deletePatterns = bot.deleteKeywords as string[];

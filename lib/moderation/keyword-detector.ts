@@ -82,9 +82,16 @@ export function buildRegex(patterns: string[]): RegExp | null {
  */
 export function matchesKeywords(text: string, patterns: string[]): boolean {
   if (patterns.length === 0) return false;
-  const regex = buildRegex(patterns);
-  if (!regex) return false;
-  return regex.test(text);
+  // Test each pattern independently and skip invalid ones — a single bad regex
+  // saved by the user must not throw and fail EVERY comment with ERROR.
+  for (const pattern of patterns) {
+    try {
+      if (new RegExp(pattern, 'i').test(text)) return true;
+    } catch {
+      // Invalid regex — ignore this pattern
+    }
+  }
+  return false;
 }
 
 /**
