@@ -172,8 +172,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
       authorization: {
         params: {
-          scope: process.env.FACEBOOK_SCOPES ||
-            'pages_show_list,pages_read_engagement,pages_manage_metadata',
+          // Login only needs identity. Page permissions (FACEBOOK_SCOPES) are
+          // requested later, in the "Connect account" OAuth flow — Meta App
+          // Review expects permissions to be requested in context, not at login.
+          scope: process.env.FACEBOOK_LOGIN_SCOPES || 'public_profile,email',
         },
       },
       // Facebook has its own internal CSRF protection and does not work
@@ -236,7 +238,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
           });
 
-          // 4. Fetch pages and create SocialAccounts + default Bots
+          // 4. Fetch pages and create SocialAccounts + default Bots.
+          // With identity-only login scopes (FACEBOOK_LOGIN_SCOPES) /me/accounts
+          // returns no pages, so this is a no-op: pages are connected via
+          // /accounts "Connect account", which also subscribes webhooks —
+          // pages created here never got webhookSubscribed.
           await fetchAndStoreSocialAccounts(longLivedToken, userId, tenantId);
         } catch (err) {
           console.error('Error during Facebook sign-in flow:', err);

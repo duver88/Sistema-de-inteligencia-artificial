@@ -41,22 +41,15 @@ Todo ocurre únicamente sobre páginas que el usuario administra y ha conectado 
 
 1. El revisor pulsa **"Continuar con Facebook"**.
 2. Código relevante: `app/(auth)/login/page.tsx` → `signIn('facebook', { callbackUrl: '/' })`.
-3. NextAuth v5 redirige a `https://www.facebook.com/v21.0/dialog/oauth` con los scopes definidos en `FACEBOOK_SCOPES`:
+3. NextAuth v5 redirige a `https://www.facebook.com/v21.0/dialog/oauth` con los scopes de LOGIN definidos en `FACEBOOK_LOGIN_SCOPES` (solo identidad — los permisos de páginas se piden después, en contexto, al conectar una página):
    - `public_profile`
    - `email`
-   - `pages_show_list`
-   - `pages_read_engagement`
-   - `pages_read_user_content`
-   - `pages_manage_metadata`
-   - `pages_manage_engagement` *(solicitado en esta revisión)*
-   - `business_management`
 4. El revisor aprueba los permisos. Facebook redirige a `https://sia.lionscore.ai/api/auth/callback/facebook`.
 5. En el callback (`lib/auth.ts`, hook `signIn`):
    - Se intercambia el token de corta duración por un **long-lived token de 60 días** vía `GET /v21.0/oauth/access_token?grant_type=fb_exchange_token`.
    - El token se cifra con **AES-256-GCM** (`lib/crypto.ts`) antes de persistirse.
    - Se crea (o reutiliza) un `Tenant` para el usuario y se le asigna rol `OWNER`.
-   - Se consulta `GET /me/accounts?fields=id,name,picture,access_token,instagram_business_account{...}` para obtener las páginas que el usuario administra.
-   - Por cada página se hace `upsert` en `SocialAccount` y se crea un `Bot` por defecto (inactivo).
+   - Las páginas NO se descubren en el login: se conectan desde `/accounts` con el botón "Connect account" (ver Paso 3), que es donde se solicitan los permisos de páginas (`FACEBOOK_SCOPES`, incluido `pages_manage_engagement`).
 
 ### Paso 3 — Conectar páginas manualmente desde el dashboard
 

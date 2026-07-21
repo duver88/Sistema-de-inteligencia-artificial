@@ -29,7 +29,8 @@ de comentarios usando inteligencia artificial.
 - FACEBOOK_CLIENT_ID → mismo que FACEBOOK_APP_ID
 - FACEBOOK_APP_SECRET → App Secret de Meta (usado por NextAuth)
 - FACEBOOK_CLIENT_SECRET → mismo que FACEBOOK_APP_SECRET
-- FACEBOOK_SCOPES → Scopes de Facebook OAuth (login Y conexión de páginas)
+- FACEBOOK_LOGIN_SCOPES → Scopes del LOGIN con Facebook (solo identidad: public_profile,email)
+- FACEBOOK_SCOPES → Scopes al CONECTAR páginas (incluye pages_manage_engagement para responder/borrar/ocultar comentarios; hasta que Meta lo apruebe solo se concede a usuarios con rol en la Meta app)
 - FACEBOOK_PAGES_APP_ID → App ID para el flujo de conexión de páginas (mismo valor que FACEBOOK_APP_ID)
 - FACEBOOK_PAGES_APP_SECRET → App Secret para el flujo de conexión de páginas (mismo valor que FACEBOOK_APP_SECRET)
 - FACEBOOK_PAGES_REDIRECT_URI → URL callback de cuentas ({NEXTAUTH_URL}/api/accounts/callback)
@@ -41,11 +42,18 @@ de comentarios usando inteligencia artificial.
 
 ## App Meta (LionsCore Pages)
 - App ID: 1693982431760040
-- Estado: Development mode — pendiente aprobación de Meta
+- Estado: LIVE mode (desde jun 2026) — webhooks llegan en tiempo real
 - Webhook URL: https://sia.lionscore.ai/api/webhooks/meta
 - Webhook Token: META_WEBHOOK_VERIFY_TOKEN del .env
 - Webhook campo suscrito: feed
-- Modo: Development (webhooks NO llegan en este modo)
+
+## Resultado App Review (solicitud 14 jun 2026, resuelta 4 jul 2026)
+- ✅ Aprobado: pages_manage_metadata
+- ✅ Renovado: pages_read_user_content, pages_show_list, business_management, pages_read_engagement, public_profile
+- ❌ Rechazado: pages_manage_engagement — "la captura de video no coincide con el caso de uso"
+  * Causa 1: el texto decía "create, edit, and delete comments" pero la app NO tiene función de editar (solo reply/delete/hide) y el video no mostró editar.
+  * Causa 2: video sin cumplir el checklist de Meta (login completo, UI/subtítulos en inglés, experiencia completa).
+- Re-submission pendiente: corregir texto (quitar "edit", mencionar reply/delete/hide), regrabar video en inglés mostrando login OAuth completo + los 3 flujos verificados en Facebook.
 
 ## OAuth Redirect URIs registradas en Meta
 - {NEXTAUTH_URL}/api/auth/callback/facebook
