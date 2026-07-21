@@ -7,12 +7,12 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
   Bot,
-  Shield,
   Link as LinkIcon,
   Settings,
   MessageSquare,
 } from 'lucide-react';
 import { LionsCoreIcon } from '@/components/icons/LionsCoreIcon';
+import { ADMIN_SECTIONS } from '@/components/admin/sections';
 
 const navigation = [
   { name: 'Overview', href: '/overview', icon: LayoutDashboard },
@@ -22,9 +22,8 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
-const bottomNavigation = [
-  { name: 'Admin', href: '/admin', icon: Shield },
-];
+// Admins see every admin section directly in the sidebar (not tabs).
+const adminNav = ADMIN_SECTIONS.map((s) => ({ name: s.label, href: s.href, icon: s.icon }));
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -40,9 +39,9 @@ export function Sidebar() {
   const isSuperAdmin = session?.user?.isSuperAdmin === true;
 
   // Superadmins are administrators only: hide the tenant navigation and
-  // show just the Admin link. Normal users never see the Admin link.
+  // show the admin sections. Normal users never see the admin nav.
   const mainNavigation = isSuperAdmin ? [] : navigation;
-  const adminNavigation = isSuperAdmin ? bottomNavigation : [];
+  const adminNavigation = isSuperAdmin ? adminNav : [];
 
   return (
     <div className="w-64 flex flex-col flex-shrink-0" style={{ background: '#021130' }}>
@@ -85,8 +84,11 @@ export function Sidebar() {
           <div className="pt-2">
             <SectionLabel>Administration</SectionLabel>
             {adminNavigation.map((item) => {
-              const isActive =
-                pathname === item.href || pathname.startsWith(item.href + '/');
+              // '/admin' (Overview) must match exactly — otherwise it would
+              // stay active on every /admin/* sub-route.
+              const isActive = item.href === '/admin'
+                ? pathname === '/admin'
+                : pathname === item.href || pathname.startsWith(item.href + '/');
               return (
                 <Link
                   key={item.name}

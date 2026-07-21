@@ -1,19 +1,16 @@
-import { auth } from '@/lib/auth';
-import { redirect } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { AdminPanel } from '@/components/admin/AdminPanel';
+import { AdminOverview } from '@/components/admin/AdminOverview';
+import { requireAdminSession } from './adminGate';
 
-export default async function AdminPage() {
-  const session = await auth();
-  if (!session?.user?.isSuperAdmin) redirect('/');
-
+export default async function AdminOverviewPage() {
+  await requireAdminSession();
   return (
     <div>
       <PageHeader
-        title="Admin Panel"
-        description="Platform overview, user management and AI configuration."
+        title="Overview"
+        description="Platform activity, users, pages and AI usage at a glance."
       />
-      <AdminPanel currentUserId={session.user.id} />
+      <AdminOverview />
     </div>
   );
 }
