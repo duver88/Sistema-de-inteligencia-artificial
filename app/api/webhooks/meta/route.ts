@@ -55,16 +55,17 @@ async function processWebhookAsync(rawBody: Buffer): Promise<void> {
     const body = JSON.parse(rawBody.toString()) as WebhookBody;
     console.log(`[Webhook] 📥 Evento Meta: object=${body.object} · entradas=${body.entry?.length ?? 0}`);
 
-    // Diagnóstico compacto: forma de cada change (para ver por qué se acepta/descarta)
+    // Compact diagnostic: shape of each change (why it's accepted/discarded).
+    // Does NOT log the commenter's name/message — end-user PII must not sit in
+    // plaintext server logs.
     type RawChange = { field?: string; value?: Record<string, unknown> };
     type RawEntry = { id?: string; changes?: RawChange[] };
     for (const entry of ((body.entry ?? []) as unknown as RawEntry[])) {
       for (const ch of entry.changes ?? []) {
         const v = ch.value ?? {};
-        const from = v.from as { name?: string } | undefined;
         console.log(
           `[Webhook] 🔬 change: field=${ch.field ?? '-'} · item=${v.item ?? '-'} · verb=${v.verb ?? '-'} · ` +
-          `parent_id=${v.parent_id ?? '-'} · post_id=${v.post_id ?? '-'} · comment_id=${v.comment_id ?? '-'} · from=${from?.name ?? '-'}`
+          `parent_id=${v.parent_id ?? '-'} · post_id=${v.post_id ?? '-'} · comment_id=${v.comment_id ?? '-'}`
         );
       }
     }

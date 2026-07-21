@@ -19,16 +19,18 @@ export async function GET(request: NextRequest) {
         .map(s => s.trim())
         .filter((s): s is CommentActionValue => (VALID_ACTIONS as readonly string[]).includes(s))
     : undefined;
-  const platform = searchParams.get('platform') ?? undefined;
+  const rawPlatform = searchParams.get('platform') ?? undefined;
+  const platform = rawPlatform === 'FACEBOOK' || rawPlatform === 'INSTAGRAM' ? rawPlatform : undefined;
   const search = searchParams.get('search') ?? undefined;
-  const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10));
+  const parsedPage = parseInt(searchParams.get('page') ?? '1', 10);
+  const page = Number.isFinite(parsedPage) ? Math.max(1, parsedPage) : 1;
   const limit = 50;
 
   const where: Prisma.CommentLogWhereInput = {
     tenantId: ctx.tenantId,
     ...(botId ? { botId } : {}),
     ...(actions?.length ? { action: { in: actions } } : {}),
-    ...(platform ? { platform: { equals: platform as 'FACEBOOK' | 'INSTAGRAM' } } : {}),
+    ...(platform ? { platform: { equals: platform } } : {}),
     ...(search
       ? {
           OR: [

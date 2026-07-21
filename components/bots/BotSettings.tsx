@@ -145,7 +145,7 @@ export function BotSettings({ bot }: BotSettingsProps) {
 
   // ── Toggles (instant save) ────────────────────────────────────────────────
 
-  async function patchField(field: string, value: unknown) {
+  async function patchField(field: string, value: unknown): Promise<boolean> {
     setSavingToggle(field);
     try {
       const res = await fetch(`/api/bots/${bot.id}`, {
@@ -154,16 +154,22 @@ export function BotSettings({ bot }: BotSettingsProps) {
         body: JSON.stringify({ [field]: value }),
       });
       if (!res.ok) throw new Error();
+      return true;
     } catch {
       toast.error('Failed to save. Please try again.');
+      return false;
     } finally {
       setSavingToggle(null);
     }
   }
 
   async function handleToggle(field: string, value: boolean) {
+    const previous = data[field as keyof typeof data];
     setData(d => ({ ...d, [field]: value }));
-    await patchField(field, value);
+    const ok = await patchField(field, value);
+    // Revert the optimistic update if the server rejected it, so the switch
+    // never contradicts the real bot state.
+    if (!ok) setData(d => ({ ...d, [field]: previous }));
   }
 
   // ── Name blur-save (still instant — it's a unique single field) ──────────

@@ -37,18 +37,24 @@ export async function POST(request: NextRequest, { params }: Params) {
   });
   if (!bot) return NextResponse.json({ error: 'Bot not found' }, { status: 404 });
 
-  const body = await request.json() as {
-    key: string;
-    value: string;
+  const body = (await request.json().catch(() => null)) as {
+    key?: string;
+    value?: string;
     category?: string;
     projectId?: string;
     order?: number;
-  };
+  } | null;
+
+  const key = typeof body?.key === 'string' ? body.key.trim() : '';
+  const value = typeof body?.value === 'string' ? body.value.trim() : '';
+  if (!key || !value) {
+    return NextResponse.json({ error: 'key and value are required' }, { status: 400 });
+  }
 
   // Referential integrity: a provided projectId must belong to THIS bot
   // (which is already verified to belong to this tenant). Otherwise a tenant
   // could attach entries to another tenant's Project.
-  if (body.projectId) {
+  if (body?.projectId) {
     const project = await prisma.project.findFirst({
       where: { id: body.projectId, botId },
       select: { id: true },
@@ -64,11 +70,11 @@ export async function POST(request: NextRequest, { params }: Params) {
   const entry = await prisma.knowledgeEntry.create({
     data: {
       botId,
-      key: body.key,
-      value: body.value,
-      category: body.category,
-      projectId: body.projectId,
-      order: body.order ?? 0,
+      key,
+      value,
+      category: body?.category,
+      projectId: body?.projectId,
+      order: body?.order ?? 0,
     },
   });
 

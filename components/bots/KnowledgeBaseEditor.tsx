@@ -164,8 +164,9 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
         </div>
       )}
 
-      {/* Document importer */}
-      {showImporter && (
+      {/* Document importer (shown above an existing list; the empty-state
+          importer below handles the entries.length === 0 case) */}
+      {entries.length > 0 && showImporter && (
         <DocumentImporter botId={botId} onImported={() => void handleImported()} />
       )}
 

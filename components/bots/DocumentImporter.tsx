@@ -153,6 +153,7 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
 
     setPhase('importing');
     let imported = 0;
+    let failed = 0;
 
     for (const entry of selected) {
       try {
@@ -166,12 +167,18 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
           }),
         });
         if (res.ok) imported++;
+        else failed++;
       } catch {
-        // continue importing the rest
+        failed++;
       }
     }
 
-    toast.success(`${imported} ${imported !== 1 ? 'entries' : 'entry'} imported successfully`);
+    if (imported > 0) {
+      toast.success(`${imported} ${imported !== 1 ? 'entries' : 'entry'} imported successfully`);
+    }
+    if (failed > 0) {
+      toast.error(`${failed} ${failed !== 1 ? 'entries' : 'entry'} could not be imported`);
+    }
     setPhase('idle');
     setEntries([]);
     setFileName('');

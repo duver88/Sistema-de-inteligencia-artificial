@@ -38,7 +38,7 @@ export function ResetPasswordDialog({ user, onOpenChange, onReset }: ResetPasswo
     }
   }, [user]);
 
-  const canSubmit = password.length >= 8;
+  const canSubmit = password.length >= 10;
 
   async function handleSubmit() {
     if (!user || !canSubmit || submitting) return;

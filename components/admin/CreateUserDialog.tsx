@@ -63,7 +63,7 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: CreateUserDi
     }
   }, [open]);
 
-  const canSubmit = name.trim().length > 0 && email.trim().length > 0 && password.length >= 8;
+  const canSubmit = name.trim().length > 0 && email.trim().length > 0 && password.length >= 10;
 
   async function handleSubmit() {
     if (!canSubmit || submitting) return;

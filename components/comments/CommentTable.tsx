@@ -167,6 +167,18 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
             Waiting for new comments… they will appear here automatically.
           </p>
         </div>
+        {/* If we're past the last page (e.g. rows were deleted), let the user
+            step back instead of being stranded on an empty page. */}
+        {currentPage > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-6">
+            <Link
+              href={buildPageUrl(currentPage - 1)}
+              className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              Previous
+            </Link>
+          </div>
+        )}
       </div>
     );
   }

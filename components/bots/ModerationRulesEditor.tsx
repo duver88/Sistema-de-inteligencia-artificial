@@ -239,7 +239,7 @@ export function ModerationRulesEditor({
     return () => { if (savedTimerRef.current) clearTimeout(savedTimerRef.current); };
   }, []);
 
-  async function patchKeywords(field: 'deleteKeywords' | 'spamKeywords', value: string[]) {
+  async function patchKeywords(field: 'deleteKeywords' | 'spamKeywords', value: string[]): Promise<boolean> {
     setSaving(true);
     try {
       const res = await fetch(`/api/bots/${botId}`, {
@@ -248,8 +248,10 @@ export function ModerationRulesEditor({
         body: JSON.stringify({ [field]: value }),
       });
       if (!res.ok) throw new Error();
+      return true;
     } catch {
       toast.error('Failed to save changes');
+      return false;
     } finally {
       setSaving(false);
     }
@@ -278,45 +280,53 @@ export function ModerationRulesEditor({
   }
 
   async function addDelete(pattern: string) {
+    const prev = deleteKeywords;
     const next = [...deleteKeywords, pattern];
     setDeleteKeywords(next);
-    await patchKeywords('deleteKeywords', next);
-    toast.success('Pattern added');
+    if (await patchKeywords('deleteKeywords', next)) toast.success('Pattern added');
+    else setDeleteKeywords(prev);
   }
 
   async function removeDelete(pattern: string) {
+    const prev = deleteKeywords;
     const next = deleteKeywords.filter(p => p !== pattern);
     setDeleteKeywords(next);
-    await patchKeywords('deleteKeywords', next);
-    toast.success('Pattern removed');
+    if (await patchKeywords('deleteKeywords', next)) toast.success('Pattern removed');
+    else setDeleteKeywords(prev);
   }
 
   async function loadDeleteDefaults() {
+    const prev = deleteKeywords;
     const missing = DEFAULT_DELETE_KEYWORDS.filter(d => !deleteKeywords.includes(d));
     const next = [...deleteKeywords, ...missing];
     setDeleteKeywords(next);
-    await patchKeywords('deleteKeywords', next);
+    if (await patchKeywords('deleteKeywords', next)) toast.success(`${missing.length} default patterns loaded`);
+    else setDeleteKeywords(prev);
   }
 
   async function addSpam(pattern: string) {
+    const prev = spamKeywords;
     const next = [...spamKeywords, pattern];
     setSpamKeywords(next);
-    await patchKeywords('spamKeywords', next);
-    toast.success('Pattern added');
+    if (await patchKeywords('spamKeywords', next)) toast.success('Pattern added');
+    else setSpamKeywords(prev);
   }
 
   async function removeSpam(pattern: string) {
+    const prev = spamKeywords;
     const next = spamKeywords.filter(p => p !== pattern);
     setSpamKeywords(next);
-    await patchKeywords('spamKeywords', next);
-    toast.success('Pattern removed');
+    if (await patchKeywords('spamKeywords', next)) toast.success('Pattern removed');
+    else setSpamKeywords(prev);
   }
 
   async function loadSpamDefaults() {
+    const prev = spamKeywords;
     const missing = DEFAULT_SPAM_KEYWORDS.filter(d => !spamKeywords.includes(d));
     const next = [...spamKeywords, ...missing];
     setSpamKeywords(next);
-    await patchKeywords('spamKeywords', next);
+    if (await patchKeywords('spamKeywords', next)) toast.success(`${missing.length} default patterns loaded`);
+    else setSpamKeywords(prev);
   }
 
   return (

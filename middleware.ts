@@ -29,8 +29,15 @@ export function middleware(req: NextRequest) {
     req.cookies.get('authjs.session-token');
 
   if (!sessionCookie) {
+    // API routes must get a JSON 401, not an HTML redirect — a 307 to /login
+    // would replay the original method (e.g. POST) against a page route and
+    // surface as a misleading error to the client fetch.
+    if (pathname.startsWith('/api')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const loginUrl = new URL('/login', req.url);
-    loginUrl.searchParams.set('callbackUrl', pathname);
+    // Preserve the query string so deep links survive the login round-trip.
+    loginUrl.searchParams.set('callbackUrl', pathname + req.nextUrl.search);
     return NextResponse.redirect(loginUrl);
   }
 

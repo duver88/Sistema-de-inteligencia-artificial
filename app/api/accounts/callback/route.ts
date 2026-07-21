@@ -221,7 +221,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.redirect(`${appUrl}/accounts?success=true`);
+    // Report how many pages were actually connected so the UI doesn't claim
+    // success when the user deselected every page (or manages none).
+    if (pages.length === 0) {
+      return NextResponse.redirect(`${appUrl}/accounts?error=no_pages`);
+    }
+    return NextResponse.redirect(`${appUrl}/accounts?success=true&count=${pages.length}`);
   } catch (err) {
     console.error('[callback] Unexpected error:', err);
     return NextResponse.redirect(`${appUrl}/accounts?error=unexpected`);

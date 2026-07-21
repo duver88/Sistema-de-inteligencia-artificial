@@ -26,6 +26,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid_state: 'Security error. Please try again.',
   token_exchange: 'Failed to retrieve the Facebook token.',
   server_config: 'Server configuration error.',
+  no_pages: 'No pages were connected. Make sure you selected a Facebook Page you administer.',
   unexpected: 'An unexpected error occurred. Please try again.',
 };
 
@@ -39,7 +40,12 @@ export function AccountsClient({ initialAccounts }: { initialAccounts: Account[]
     const error = searchParams.get('error');
 
     if (success === 'true') {
-      toast.success('Account connected successfully. Webhook subscribed.');
+      const count = parseInt(searchParams.get('count') ?? '0', 10) || 0;
+      toast.success(
+        count === 1
+          ? '1 page connected successfully.'
+          : `${count} pages connected successfully.`
+      );
       router.replace('/accounts');
     } else if (error) {
       const msg = ERROR_MESSAGES[error] ?? 'Failed to connect the account.';

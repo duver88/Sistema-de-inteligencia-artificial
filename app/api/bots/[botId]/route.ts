@@ -39,29 +39,61 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   });
   if (!bot) return NextResponse.json({ error: 'Bot not found' }, { status: 404 });
 
-  const body = await request.json() as Partial<{
-    name: string;
-    isActive: boolean;
-    autoReply: boolean;
-    deleteNegative: boolean;
-    hideSpam: boolean;
-    aiEnabled: boolean;
-    replyMaxChars: number;
-    replyTone: string;
-    language: string;
-    systemInstructions: string;
-    deleteKeywords: string[];
-    spamKeywords: string[];
-    deleteInstructions: string;
-    spamInstructions: string;
-  }>;
+  const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+  if (!body || typeof body !== 'object') {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
 
-  // The OpenAI API key is managed exclusively by the platform admin via /api/admin/openai — never via bot PATCH
-  const { ...safeBody } = body;
+  // Strict allowlist. Only these fields may be updated via PATCH — never
+  // aiModel (billed against the platform key), tenantId or accountId (would
+  // break tenant isolation). Each is type-checked before it reaches Prisma.
+  const data: Record<string, unknown> = {};
+  const asBool = (v: unknown) => (typeof v === 'boolean' ? v : undefined);
+  const asStr = (v: unknown) => (typeof v === 'string' ? v : undefined);
+  const asStrArr = (v: unknown) =>
+    Array.isArray(v) && v.every((x) => typeof x === 'string') ? v : undefined;
+
+  if ('name' in body) {
+    const name = asStr(body.name)?.trim();
+    if (!name) return NextResponse.json({ error: 'Name cannot be empty' }, { status: 400 });
+    data.name = name;
+  }
+  for (const key of ['isActive', 'autoReply', 'deleteNegative', 'hideSpam', 'aiEnabled'] as const) {
+    if (key in body) {
+      const v = asBool(body[key]);
+      if (v === undefined) return NextResponse.json({ error: `${key} must be a boolean` }, { status: 400 });
+      data[key] = v;
+    }
+  }
+  for (const key of ['replyTone', 'language', 'systemInstructions', 'deleteInstructions', 'spamInstructions'] as const) {
+    if (key in body) {
+      const v = asStr(body[key]);
+      if (v === undefined) return NextResponse.json({ error: `${key} must be a string` }, { status: 400 });
+      data[key] = v;
+    }
+  }
+  if ('replyMaxChars' in body) {
+    const n = body.replyMaxChars;
+    if (typeof n !== 'number' || !Number.isInteger(n) || n < 1 || n > 2000) {
+      return NextResponse.json({ error: 'replyMaxChars must be an integer between 1 and 2000' }, { status: 400 });
+    }
+    data.replyMaxChars = n;
+  }
+  for (const key of ['deleteKeywords', 'spamKeywords'] as const) {
+    if (key in body) {
+      const v = asStrArr(body[key]);
+      if (v === undefined) return NextResponse.json({ error: `${key} must be an array of strings` }, { status: 400 });
+      data[key] = v;
+    }
+  }
+
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
+  }
 
   const updated = await prisma.bot.update({
     where: { id: botId },
-    data: safeBody,
+    data,
   });
 
   return NextResponse.json({ bot: updated });

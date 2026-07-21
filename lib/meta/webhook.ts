@@ -79,10 +79,7 @@ interface FacebookWebhookEntry {
   changes: FacebookWebhookChange[];
 }
 
-export function parseFacebookWebhookEvent(entry: FacebookWebhookEntry): ParsedComment | null {
-  if (!entry.changes?.length) return null;
-
-  const change = entry.changes[0];
+function parseFacebookChange(change: FacebookWebhookChange, pageId: string): ParsedComment | null {
   const value = change.value;
 
   // Only process new top-level comments on posts
@@ -91,17 +88,29 @@ export function parseFacebookWebhookEvent(entry: FacebookWebhookEntry): ParsedCo
   // Skip replies, but NOT top-level comments. On Facebook a top-level comment's
   // parent_id equals the post_id; a reply's parent_id is the parent comment's id.
   if (value.parent_id && value.parent_id !== value.post_id) return null;
+  // Ignore the page's own comments — otherwise the bot moderates/replies to
+  // comments the page itself posted (including its own bot replies).
+  if (value.from?.id && value.from.id === pageId) return null;
 
   return {
     commentId: value.comment_id,
     postId: value.post_id,
-    pageId: entry.id,
+    pageId,
     authorName: value.from?.name ?? 'Unknown',
     authorId: value.from?.id ?? '',
     commentText: value.message ?? '',
     isReply: false,
     platform: 'FACEBOOK',
   };
+}
+
+// Parse ALL comment changes from a Facebook entry (Meta batches several
+// changes per entry during bursts of activity).
+export function parseFacebookWebhookEntry(entry: FacebookWebhookEntry): ParsedComment[] {
+  if (!entry.changes?.length) return [];
+  return entry.changes
+    .map((change) => parseFacebookChange(change, entry.id))
+    .filter((c): c is ParsedComment => c !== null);
 }
 
 // ── Instagram Event Parsing ───────────────────────────────────────────────────
@@ -124,25 +133,31 @@ interface InstagramWebhookEntry {
   changes: InstagramWebhookChange[];
 }
 
-export function parseInstagramWebhookEvent(entry: InstagramWebhookEntry): ParsedComment | null {
-  if (!entry.changes?.length) return null;
-
-  const change = entry.changes[0];
+function parseInstagramChange(change: InstagramWebhookChange, accountId: string): ParsedComment | null {
   const value = change.value;
 
   if (change.field !== 'comments') return null;
   if (value.parent_id) return null; // Skip replies
+  // Ignore the IG account's own comments.
+  if (value.from?.id && value.from.id === accountId) return null;
 
   return {
     commentId: value.id,
     postId: value.media?.id ?? '',
-    pageId: entry.id,
+    pageId: accountId,
     authorName: value.from?.username ?? 'Unknown',
     authorId: value.from?.id ?? '',
     commentText: value.text ?? '',
     isReply: false,
     platform: 'INSTAGRAM',
   };
+}
+
+export function parseInstagramWebhookEntry(entry: InstagramWebhookEntry): ParsedComment[] {
+  if (!entry.changes?.length) return [];
+  return entry.changes
+    .map((change) => parseInstagramChange(change, entry.id))
+    .filter((c): c is ParsedComment => c !== null);
 }
 
 // ── Unified Event Parser ──────────────────────────────────────────────────────
@@ -162,13 +177,11 @@ export function parseWebhookComments(body: WebhookBody): ParsedComment[] {
 
   if (body.object === 'page') {
     for (const entry of body.entry as FacebookWebhookEntry[]) {
-      const comment = parseFacebookWebhookEvent(entry);
-      if (comment) comments.push(comment);
+      comments.push(...parseFacebookWebhookEntry(entry));
     }
   } else if (body.object === 'instagram') {
     for (const entry of body.entry as InstagramWebhookEntry[]) {
-      const comment = parseInstagramWebhookEvent(entry);
-      if (comment) comments.push(comment);
+      comments.push(...parseInstagramWebhookEntry(entry));
     }
   }
 

@@ -131,6 +131,22 @@ export async function processComment(
     return;
   }
 
+  // Idempotency guard: if this comment already produced an action (reply,
+  // delete or hide), a redelivered webhook must NOT run the pipeline again —
+  // otherwise the bot posts a second public reply for the same comment.
+  const alreadyProcessed = await prisma.commentLog.findFirst({
+    where: {
+      platform: comment.platform,
+      commentId: comment.commentId,
+      action: { in: ['REPLIED', 'DELETED', 'HIDDEN', 'MANUAL_REPLY', 'MANUAL_DELETE'] },
+    },
+    select: { id: true },
+  });
+  if (alreadyProcessed) {
+    console.warn(`[Pipeline] Comment ${comment.commentId} already processed — skipping duplicate delivery`);
+    return;
+  }
+
   // Resolve the OpenAI API key before doing any AI work:
   // platform-wide AppSetting first, legacy tenant key as fallback.
   let openaiApiKey: string | null = null;

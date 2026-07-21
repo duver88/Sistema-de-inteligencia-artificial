@@ -42,6 +42,9 @@ export function CommentRow({ comment, onActionComplete, onReplyEdited }: Comment
 
   async function handleReply() {
     if (!replyText.trim()) return;
+    // Guard against double-submit (Enter pressed twice, or Enter while a click
+    // is in flight) — otherwise the reply is published twice on Meta.
+    if (loading === 'reply') return;
     setLoading('reply');
     try {
       const res = await fetch(`/api/comments/${comment.id}/reply`, {
