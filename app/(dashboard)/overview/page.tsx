@@ -15,8 +15,8 @@ export default async function OverviewPage() {
 
   const [totalBots, activeBots, commentsToday, repliesToday, deletedToday, totalComments, accountCount] =
     await Promise.all([
-      prisma.bot.count({ where: { tenantId } }),
-      prisma.bot.count({ where: { tenantId, isActive: true } }),
+      prisma.bot.count({ where: { tenantId, account: { isActive: true } } }),
+      prisma.bot.count({ where: { tenantId, isActive: true, account: { isActive: true } } }),
       prisma.commentLog.count({ where: { tenantId, createdAt: { gte: today } } }),
       prisma.commentLog.count({ where: { tenantId, action: 'REPLIED', createdAt: { gte: today } } }),
       prisma.commentLog.count({ where: { tenantId, action: 'DELETED', createdAt: { gte: today } } }),

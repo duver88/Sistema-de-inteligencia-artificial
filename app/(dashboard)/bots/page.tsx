@@ -15,8 +15,11 @@ export default async function BotsPage() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  // Only show bots whose account is still connected. Disconnecting a page
+  // deactivates its bot but keeps it in the DB (so reconnecting restores the
+  // config) — those bots must not appear here, matching the Accounts page.
   const bots = await prisma.bot.findMany({
-    where: { tenantId },
+    where: { tenantId, account: { isActive: true } },
     include: {
       account: {
         select: { platform: true, pageName: true, pictureUrl: true },

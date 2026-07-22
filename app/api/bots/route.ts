@@ -11,7 +11,9 @@ export async function GET() {
   today.setHours(0, 0, 0, 0);
 
   const bots = await prisma.bot.findMany({
-    where: { tenantId: ctx.tenantId },
+    // Only bots of still-connected accounts (a disconnected page's bot is kept
+    // in the DB for reconnection but must not be listed).
+    where: { tenantId: ctx.tenantId, account: { isActive: true } },
     include: {
       account: {
         select: { platform: true, pageName: true, pictureUrl: true },
