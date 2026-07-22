@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { CreditCard, Loader2, RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { CreditCard, Loader2, RefreshCw, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -89,30 +89,44 @@ function UsageMeter({ current, limit }: { current: number; limit: number | null 
 
 export function PlansPanel() {
   const [tenants, setTenants] = useState<TenantRow[]>([]);
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<PendingChange | null>(null);
   const [saving, setSaving] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
-
-  const fetchTenants = useCallback(async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      const res = await fetch('/api/admin/tenants', { cache: 'no-store' });
-      if (!res.ok) throw new Error();
-      const data = (await res.json()) as { tenants?: TenantRow[] };
-      setTenants(Array.isArray(data.tenants) ? data.tenants : []);
-    } catch {
-      setError('Failed to load tenants. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    void fetchTenants();
-  }, [fetchTenants]);
+    const t = setTimeout(() => { setSearch(searchInput.trim()); setPage(1); }, 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  useEffect(() => {
+    let active = true;
+    setError(null);
+    setLoading(true);
+    const params = new URLSearchParams({ page: String(page) });
+    if (search) params.set('search', search);
+    fetch(`/api/admin/tenants?${params.toString()}`, { cache: 'no-store' })
+      .then(async (res) => {
+        if (!res.ok) throw new Error();
+        const data = (await res.json()) as { tenants?: TenantRow[]; total?: number; totalPages?: number };
+        if (!active) return;
+        setTenants(Array.isArray(data.tenants) ? data.tenants : []);
+        setTotal(data.total ?? 0);
+        setTotalPages(Math.max(1, data.totalPages ?? 1));
+      })
+      .catch(() => { if (active) setError('Failed to load tenants. Please try again.'); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [search, page, reloadKey]);
+
+  const refreshTenants = () => setReloadKey((k) => k + 1);
 
   function requestChange(tenant: TenantRow, nextPlan: Plan) {
     if (nextPlan === tenant.plan) return;
@@ -138,7 +152,7 @@ export function PlansPanel() {
       toast.success(`${tenant.name} moved to ${PLAN_LABELS[nextPlan]}`);
       setPending(null);
       // Refresh so usage-vs-limit reflects the new plan's ceilings.
-      await fetchTenants();
+      refreshTenants();
     } catch {
       toast.error('Failed to update plan');
     } finally {
@@ -164,7 +178,7 @@ export function PlansPanel() {
         </div>
         <button
           type="button"
-          onClick={() => void fetchTenants()}
+          onClick={refreshTenants}
           disabled={loading}
           className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
         >
@@ -174,6 +188,23 @@ export function PlansPanel() {
       </div>
 
       <div className="p-6">
+        {/* Search */}
+        <div className="relative mb-5">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search a workspace by name…"
+            className="w-full pl-9 pr-9 py-2 text-sm border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent"
+          />
+          {searchInput && (
+            <button type="button" onClick={() => setSearchInput('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" title="Clear">
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16">
             <Loader2 className="h-6 w-6 text-slate-400 animate-spin mb-3" />
@@ -185,7 +216,7 @@ export function PlansPanel() {
             <p className="text-xs text-slate-500 mb-4">{error}</p>
             <button
               type="button"
-              onClick={() => void fetchTenants()}
+              onClick={refreshTenants}
               className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
             >
               <RefreshCw className="h-3.5 w-3.5" />
@@ -269,6 +300,20 @@ export function PlansPanel() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && !error && totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4">
+            <span className="text-xs text-slate-400">{total} total</span>
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1}
+                className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-30">Previous</button>
+              <span className="text-xs text-slate-500">Page {page} of {totalPages}</span>
+              <button type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page >= totalPages}
+                className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-30">Next</button>
             </div>
           </div>
         )}

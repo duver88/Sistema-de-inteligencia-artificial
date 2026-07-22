@@ -1,24 +1,42 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { requireSuperAdmin } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
 import { getPlanLimits, serializeLimit } from '@/lib/plans';
+import type { Prisma } from '@/lib/generated/prisma/client';
 
-// GET /api/admin/tenants — list every tenant with its plan, resource usage,
-// plan limits and user count (super admin only). Contract C.
-// Limits serialize Infinity (ENTERPRISE) to null so they survive JSON.
-export async function GET() {
+const PAGE_SIZE = 20;
+
+// GET /api/admin/tenants — list tenants (workspaces) with plan, usage, limits
+// and user count (super admin only). Paginated + searchable by name so it
+// scales to many workspaces. Query: ?search= &page=. Contract C (paginated).
+export async function GET(request: NextRequest) {
   const ctx = await requireSuperAdmin();
   if (ctx instanceof NextResponse) return ctx;
 
-  const tenants = await prisma.tenant.findMany({
-    select: {
-      id: true,
-      name: true,
-      plan: true,
-      _count: { select: { accounts: true, bots: true, users: true } },
-    },
-    orderBy: { createdAt: 'asc' },
-  });
+  const { searchParams } = new URL(request.url);
+  const search = searchParams.get('search')?.trim() || undefined;
+  const parsedPage = parseInt(searchParams.get('page') ?? '1', 10);
+  const page = Number.isFinite(parsedPage) ? Math.max(1, parsedPage) : 1;
+
+  const where: Prisma.TenantWhereInput = search
+    ? { name: { contains: search, mode: 'insensitive' } }
+    : {};
+
+  const [total, tenants] = await Promise.all([
+    prisma.tenant.count({ where }),
+    prisma.tenant.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        plan: true,
+        _count: { select: { accounts: true, bots: true, users: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    }),
+  ]);
 
   return NextResponse.json({
     tenants: tenants.map((tenant) => {
@@ -35,5 +53,8 @@ export async function GET() {
         userCount: tenant._count.users,
       };
     }),
+    total,
+    page,
+    totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
   });
 }
