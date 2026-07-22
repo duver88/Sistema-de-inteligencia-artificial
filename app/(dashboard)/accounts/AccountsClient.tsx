@@ -5,8 +5,17 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { AccountListItem } from '@/components/accounts/AccountListItem';
 import { ConnectAccountCard } from '@/components/accounts/ConnectAccountCard';
-import { Link as LinkIcon } from 'lucide-react';
+import { Link as LinkIcon, Loader2, Link2Off } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Account {
   id: string;
@@ -33,6 +42,8 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 export function AccountsClient({ initialAccounts }: { initialAccounts: Account[] }) {
   const [accounts, setAccounts] = useState<Account[]>(initialAccounts);
+  const [confirmDisconnectAll, setConfirmDisconnectAll] = useState(false);
+  const [disconnectingAll, setDisconnectingAll] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -63,12 +74,50 @@ export function AccountsClient({ initialAccounts }: { initialAccounts: Account[]
     window.location.reload();
   }
 
+  async function handleDisconnectAll() {
+    setDisconnectingAll(true);
+    try {
+      const res = await fetch('/api/accounts/disconnect-all', { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.error ?? 'Failed to disconnect accounts');
+        return;
+      }
+      setAccounts([]);
+      setConfirmDisconnectAll(false);
+      toast.success(
+        data.disconnected === 1
+          ? '1 page disconnected'
+          : `${data.disconnected ?? 0} pages disconnected`,
+      );
+    } catch {
+      toast.error('Failed to disconnect accounts');
+    } finally {
+      setDisconnectingAll(false);
+    }
+  }
+
   return (
     <div>
       <PageHeader
         title="Connected Accounts"
         description="Manage your Facebook pages and Instagram accounts."
-        action={<ConnectAccountCard onConnected={handleConnected} />}
+        action={
+          <div className="flex items-center gap-2">
+            {accounts.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setConfirmDisconnectAll(true)}
+                disabled={disconnectingAll}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50"
+              >
+                {disconnectingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2Off className="h-4 w-4" />}
+                Disconnect all
+              </button>
+            )}
+            <ConnectAccountCard onConnected={handleConnected} />
+          </div>
+        }
       />
 
       {accounts.length === 0 ? (
@@ -117,6 +166,31 @@ export function AccountsClient({ initialAccounts }: { initialAccounts: Account[]
           </table>
         </div>
       )}
+
+      {/* Disconnect-all confirmation */}
+      <AlertDialog open={confirmDisconnectAll} onOpenChange={(open) => { if (!open && !disconnectingAll) setConfirmDisconnectAll(false); }}>
+        <AlertDialogContent className="bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Disconnect all pages?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This disconnects every connected page at once, stops their webhooks and pauses all bots.
+              Your bot configuration and comment history are kept, and you can reconnect any page later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={disconnectingAll}>Cancel</AlertDialogCancel>
+            <button
+              type="button"
+              onClick={() => void handleDisconnectAll()}
+              disabled={disconnectingAll}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {disconnectingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2Off className="h-4 w-4" />}
+              Disconnect all
+            </button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -176,6 +176,18 @@ async function subscribePageToWebhooks(
   return data.success === true;
 }
 
+/** Unsubscribe the app from a Facebook Page's webhooks (stops event delivery). */
+async function unsubscribePageFromWebhooks(
+  pageId: string,
+  pageAccessToken: string
+): Promise<boolean> {
+  // DELETE with the token as a query param (DELETE bodies are unreliable).
+  const url = `${META_BASE_URL}/${pageId}/subscribed_apps?access_token=${encodeURIComponent(pageAccessToken)}`;
+  const res = await fetch(url, { method: 'DELETE' });
+  const data = await handleResponse<{ success: boolean }>(res);
+  return data.success === true;
+}
+
 /** Get all Facebook Pages managed by the user, including linked Instagram accounts. */
 async function getManagedPages(longLivedUserToken: string): Promise<Array<{
   id: string;
@@ -215,6 +227,7 @@ export const metaClient = {
   getFacebookPostMessage,
   getInstagramMediaCaption,
   subscribePageToWebhooks,
+  unsubscribePageFromWebhooks,
   getManagedPages,
 };
 
