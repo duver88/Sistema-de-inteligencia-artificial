@@ -88,6 +88,30 @@ export async function GET(request: NextRequest) {
 
     const longLivedToken = llData.access_token;
 
+    // Update the connecting user's profile with their Facebook name + photo,
+    // so the app shows their real identity in the top bar and admin. Best
+    // effort — never block the connection if this fails.
+    try {
+      const meUrl = new URL(`${META_BASE_URL}/me`);
+      meUrl.searchParams.set('fields', 'id,name,picture.width(200).height(200)');
+      meUrl.searchParams.set('access_token', longLivedToken);
+      const meRes = await fetch(meUrl.toString());
+      if (meRes.ok) {
+        const me = (await meRes.json()) as {
+          name?: string;
+          picture?: { data?: { url?: string } };
+        };
+        const profile: { name?: string; image?: string } = {};
+        if (me.name) profile.name = me.name;
+        if (me.picture?.data?.url) profile.image = me.picture.data.url;
+        if (Object.keys(profile).length > 0) {
+          await prisma.user.update({ where: { id: ctx.userId }, data: profile });
+        }
+      }
+    } catch (err) {
+      console.error('[callback] Failed to fetch Facebook profile:', err instanceof Error ? err.message : err);
+    }
+
     // 3. Fetch managed pages (with linked Instagram accounts)
     const pages = await metaClient.getManagedPages(longLivedToken);
 

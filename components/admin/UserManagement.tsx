@@ -28,6 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 import { CreateUserDialog } from './CreateUserDialog';
 import { EditUserDialog } from './EditUserDialog';
 import { ResetPasswordDialog } from './ResetPasswordDialog';
@@ -282,9 +283,7 @@ export function UserManagement({ currentUserId }: UserManagementProps) {
                     <tr key={user.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/80 transition-colors">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-cyan-100 to-cyan-200 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-cyan-700">
-                            {(user.name ?? user.email ?? '?')[0].toUpperCase()}
-                          </div>
+                          <UserAvatar name={user.name ?? user.email ?? 'User'} image={user.image} size={36} />
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
                               <p className="text-sm font-medium text-slate-900 truncate">

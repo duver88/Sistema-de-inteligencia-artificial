@@ -11,13 +11,9 @@ export function TopBar() {
   const [open, setOpen] = useState(false);
 
   const userName = session?.user?.name ?? 'User';
-  // /api/me/avatar proxies the Facebook profile picture and only has one for
-  // tenant users who connected Facebook. Super admins can never connect
-  // Facebook, so skip the request entirely for them; for everyone else
-  // UserAvatar falls back to an initials circle if the proxy has no photo.
-  const avatarSrc = session?.user && !session.user.isSuperAdmin
-    ? '/api/me/avatar'
-    : undefined;
+  // Facebook profile photo (stored on the user when they connect a Page).
+  // UserAvatar falls back to an initials circle when there is none.
+  const avatarSrc = session?.user?.image ?? undefined;
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">

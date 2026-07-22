@@ -213,6 +213,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           status: true,
           name: true,
           email: true,
+          image: true,
           passwordChangedAt: true,
           accessExpiresAt: true,
         },
@@ -247,6 +248,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.status = dbUser.status;
       session.user.name = dbUser.name;
       session.user.email = dbUser.email ?? session.user.email;
+      session.user.image = dbUser.image ?? null;
       return session;
     },
   },
