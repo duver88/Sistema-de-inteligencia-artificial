@@ -5,8 +5,9 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { AccountListItem } from '@/components/accounts/AccountListItem';
 import { ConnectAccountCard } from '@/components/accounts/ConnectAccountCard';
-import { Link as LinkIcon, Loader2, Link2Off } from 'lucide-react';
+import { Loader2, Link2Off } from 'lucide-react';
 import { toast } from 'sonner';
+import { FacebookIcon } from '@/components/icons/FacebookIcon';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -121,18 +122,55 @@ export function AccountsClient({ initialAccounts }: { initialAccounts: Account[]
       />
 
       {accounts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 bg-white border border-slate-200 rounded-2xl shadow-sm">
-          <div className="h-16 w-16 bg-cyan-50 rounded-2xl flex items-center justify-center mb-5">
-            <LinkIcon className="h-8 w-8 text-cyan-500" />
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-8 sm:p-10 max-w-2xl mx-auto">
+          <div className="text-center">
+            <div className="h-14 w-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#1877F2' }}>
+              <FacebookIcon className="h-7 w-7 text-white" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900 mb-1.5">Connect a Facebook Page</h3>
+            <p className="text-sm text-slate-500 max-w-md mx-auto">
+              Link a Page you manage so LionsCore can reply to and moderate its comments with AI.
+            </p>
           </div>
-          <h3 className="text-base font-semibold text-slate-900 mb-2">
-            No connected accounts
-          </h3>
-          <p className="text-sm text-slate-500 text-center max-w-xs mb-7">
-            Connect your Facebook and Instagram pages to start managing
-            comments with AI.
+
+          {/* Steps */}
+          <ol className="mt-7 space-y-3 max-w-md mx-auto">
+            {[
+              'Click "Continue with Facebook" and choose the Page(s) you manage.',
+              'Approve the permissions so LionsCore can read and reply to comments.',
+              'Your Page appears here and the AI starts moderating based on your rules.',
+            ].map((step, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span className="flex-shrink-0 h-6 w-6 rounded-full bg-cyan-50 text-cyan-700 text-xs font-bold flex items-center justify-center border border-cyan-200">
+                  {i + 1}
+                </span>
+                <span className="text-sm text-slate-600 pt-0.5">{step}</span>
+              </li>
+            ))}
+          </ol>
+
+          {/* Permission disclosure — "explain why" (Meta guidance) */}
+          <div className="mt-6 rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 max-w-md mx-auto">
+            <p className="text-xs text-slate-500 leading-relaxed">
+              LionsCore requests permission to read and manage comments on the Pages you connect, so it
+              can reply to questions and remove spam on your behalf. <span className="font-semibold text-slate-600">You must be an admin of the Page.</span>{' '}
+              We never post anything outside the rules you configure, and you can disconnect a Page at any time.
+            </p>
+          </div>
+
+          <div className="mt-6 flex justify-center">
+            <ConnectAccountCard onConnected={handleConnected} />
+          </div>
+
+          {/* Legal links (Meta requirement) */}
+          <p className="mt-5 text-center text-xs text-slate-400">
+            By connecting, you agree to our{' '}
+            <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-cyan-600 underline">Terms</a>{' '}
+            and{' '}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-cyan-600 underline">Privacy Policy</a>.
+            {' '}Learn how to{' '}
+            <a href="/data-deletion" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-cyan-600 underline">delete your data</a>.
           </p>
-          <ConnectAccountCard onConnected={handleConnected} />
         </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">

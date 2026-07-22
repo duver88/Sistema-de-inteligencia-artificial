@@ -1,13 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, Plus } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { FacebookIcon } from '@/components/icons/FacebookIcon';
 
 interface ConnectAccountCardProps {
   onConnected: () => void;
 }
 
+// Facebook-brand "Continue with Facebook" button (Meta brand guidelines: the
+// official "f" mark before the label, Facebook blue #1877F2, white text).
 export function ConnectAccountCard({ onConnected: _onConnected }: ConnectAccountCardProps) {
   const [loading, setLoading] = useState(false);
 
@@ -31,15 +34,15 @@ export function ConnectAccountCard({ onConnected: _onConnected }: ConnectAccount
     <button
       onClick={handleConnect}
       disabled={loading}
-      className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-      style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
+      className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-all shadow-md hover:shadow-lg hover:brightness-95 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+      style={{ backgroundColor: '#1877F2' }}
     >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
-        <Plus className="h-4 w-4" />
+        <FacebookIcon className="h-4 w-4" />
       )}
-      {loading ? 'Redirecting…' : 'Connect Account'}
+      {loading ? 'Redirecting…' : 'Continue with Facebook'}
     </button>
   );
 }
