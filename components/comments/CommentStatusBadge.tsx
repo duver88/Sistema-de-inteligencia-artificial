@@ -1,4 +1,4 @@
-type Action = 'REPLIED' | 'DELETED' | 'HIDDEN' | 'IGNORED' | 'MANUAL_REPLY' | 'MANUAL_DELETE' | 'ERROR';
+type Action = 'REPLIED' | 'DELETED' | 'HIDDEN' | 'IGNORED' | 'MANUAL_REPLY' | 'MANUAL_DELETE' | 'REPLY_DELETED' | 'ERROR';
 
 const ACTION_CONFIG: Record<Action, { label: string; className: string }> = {
   REPLIED:       { label: 'Replied',          className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
@@ -7,6 +7,7 @@ const ACTION_CONFIG: Record<Action, { label: string; className: string }> = {
   IGNORED:       { label: 'Ignored',          className: 'bg-slate-100 text-slate-600 border-slate-200' },
   MANUAL_REPLY:  { label: 'Manual reply',     className: 'bg-blue-50 text-blue-700 border-blue-200' },
   MANUAL_DELETE: { label: 'Manual delete',    className: 'bg-red-50 text-red-700 border-red-200' },
+  REPLY_DELETED: { label: 'Reply deleted',    className: 'bg-orange-50 text-orange-700 border-orange-200' },
   ERROR:         { label: 'Error',            className: 'bg-red-50 text-red-700 border-red-200' },
 };
 

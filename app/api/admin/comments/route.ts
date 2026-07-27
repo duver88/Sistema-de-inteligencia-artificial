@@ -12,6 +12,7 @@ const VALID_ACTIONS: CommentAction[] = [
   'IGNORED',
   'MANUAL_REPLY',
   'MANUAL_DELETE',
+  'REPLY_DELETED',
   'ERROR',
 ];
 

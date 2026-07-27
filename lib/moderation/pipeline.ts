@@ -132,13 +132,15 @@ export async function processComment(
   }
 
   // Idempotency guard: if this comment already produced an action (reply,
-  // delete or hide), a redelivered webhook must NOT run the pipeline again —
-  // otherwise the bot posts a second public reply for the same comment.
+  // delete, hide, or a reply that was later deleted by hand), a redelivered
+  // webhook must NOT run the pipeline again — otherwise the bot posts a second
+  // public reply for the same comment, including on comments whose reply the
+  // user deliberately removed.
   const alreadyProcessed = await prisma.commentLog.findFirst({
     where: {
       platform: comment.platform,
       commentId: comment.commentId,
-      action: { in: ['REPLIED', 'DELETED', 'HIDDEN', 'MANUAL_REPLY', 'MANUAL_DELETE'] },
+      action: { in: ['REPLIED', 'DELETED', 'HIDDEN', 'MANUAL_REPLY', 'MANUAL_DELETE', 'REPLY_DELETED'] },
     },
     select: { id: true },
   });

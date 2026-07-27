@@ -85,6 +85,7 @@ export function CommentFilters({ bots }: CommentFiltersProps) {
           <SelectItem value="IGNORED">Ignored</SelectItem>
           <SelectItem value="MANUAL_REPLY">Manual reply</SelectItem>
           <SelectItem value="MANUAL_DELETE">Manual delete</SelectItem>
+          <SelectItem value="REPLY_DELETED">Reply deleted</SelectItem>
           <SelectItem value="ERROR">Error</SelectItem>
         </SelectContent>
       </Select>

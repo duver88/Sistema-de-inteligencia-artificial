@@ -94,9 +94,20 @@ export function BotRepliesList({ botId, initialReplies, initialTotalPages }: Bot
     );
   }
 
+  // An empty newReply means the published reply is gone (deleted from Meta),
+  // so the row must also drop its aiReplyId — that is what hides the
+  // "Edit reply" / "Delete reply" actions.
   function handleReplyEdited(id: string, newReply: string) {
     setReplies(prev =>
-      prev ? prev.map(c => c.id === id ? { ...c, aiReply: newReply } : c) : prev
+      prev
+        ? prev.map(c =>
+            c.id === id
+              ? newReply
+                ? { ...c, aiReply: newReply }
+                : { ...c, aiReply: null, aiReplyId: null }
+              : c
+          )
+        : prev
     );
   }
 

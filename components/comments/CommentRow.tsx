@@ -3,9 +3,20 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { enUS } from 'date-fns/locale';
-import { MessageSquare, Trash2, Loader2, ChevronUp, Pencil } from 'lucide-react';
+import { MessageSquare, MessageSquareX, Trash2, Loader2, ChevronUp, Pencil } from 'lucide-react';
 import { CommentStatusBadge } from './CommentStatusBadge';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface CommentRowProps {
   comment: {
@@ -31,7 +42,7 @@ export function CommentRow({ comment, onActionComplete, onReplyEdited }: Comment
   const [editing, setEditing] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [editText, setEditText] = useState('');
-  const [loading, setLoading] = useState<'reply' | 'delete' | 'edit' | null>(null);
+  const [loading, setLoading] = useState<'reply' | 'delete' | 'edit' | 'deleteReply' | null>(null);
 
   const canReply = !['DELETED', 'MANUAL_DELETE'].includes(comment.action);
   const canDelete = !['DELETED', 'MANUAL_DELETE'].includes(comment.action);
@@ -39,6 +50,12 @@ export function CommentRow({ comment, onActionComplete, onReplyEdited }: Comment
     comment.platform === 'FACEBOOK' &&
     !!comment.aiReplyId &&
     ['REPLIED', 'MANUAL_REPLY'].includes(comment.action);
+  // Deleting a published reply works on both Facebook and Instagram.
+  const canDeleteReply =
+    !!comment.aiReplyId && ['REPLIED', 'MANUAL_REPLY'].includes(comment.action);
+  // Both delete dialogs are shown for Instagram rows too, so the copy has to
+  // name the right network instead of always saying "Facebook".
+  const network = comment.platform === 'INSTAGRAM' ? 'Instagram' : 'Facebook';
 
   async function handleReply() {
     if (!replyText.trim()) return;
@@ -84,7 +101,32 @@ export function CommentRow({ comment, onActionComplete, onReplyEdited }: Comment
     }
   }
 
+  async function handleDeleteReply() {
+    // The confirm button does not close the dialog, so guard against a second
+    // click while the first request is in flight — otherwise the retry hits a
+    // log with no aiReplyId and reports a spurious failure.
+    if (loading === 'deleteReply') return;
+    setLoading('deleteReply');
+    try {
+      const res = await fetch(`/api/comments/${comment.id}/delete-reply`, { method: 'POST' });
+      if (!res.ok) throw new Error();
+      toast.success('Reply deleted');
+      setEditing(false);
+      // Clear the stored reply as well — an empty reply tells the parent the
+      // published reply is gone, so the row stops offering edit/delete reply.
+      onReplyEdited?.(comment.id, '');
+      onActionComplete(comment.id, 'REPLY_DELETED');
+    } catch {
+      toast.error('Failed to delete reply');
+    } finally {
+      setLoading(null);
+    }
+  }
+
   async function handleDelete() {
+    // Same double-submit guard as handleDeleteReply — a second delete of an
+    // already deleted comment fails on Meta and shows a false error toast.
+    if (loading === 'delete') return;
     setLoading('delete');
     try {
       const res = await fetch(`/api/comments/${comment.id}/delete`, { method: 'POST' });
@@ -160,19 +202,80 @@ export function CommentRow({ comment, onActionComplete, onReplyEdited }: Comment
             </button>
           )}
 
+          {canDeleteReply && (
+            <AlertDialog>
+              <AlertDialogTrigger
+                disabled={loading === 'deleteReply'}
+                className="p-1.5 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-colors disabled:opacity-50"
+                title="Delete the reply published by your Page"
+              >
+                {loading === 'deleteReply' ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MessageSquareX className="h-4 w-4" />
+                )}
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete the reply?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This removes only the reply your Page published on {network}. The original
+                    comment from the user stays visible.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => void handleDeleteReply()}
+                    disabled={loading === 'deleteReply'}
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    {loading === 'deleteReply' ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : null}
+                    Delete reply
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
           {canDelete && (
-            <button
-              onClick={() => void handleDelete()}
-              disabled={loading === 'delete'}
-              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-50"
-              title="Delete"
-            >
-              {loading === 'delete' ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Trash2 className="h-4 w-4" />
-              )}
-            </button>
+            <AlertDialog>
+              <AlertDialogTrigger
+                disabled={loading === 'delete'}
+                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-50"
+                title="Delete"
+              >
+                {loading === 'delete' ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete this comment?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This deletes the user&apos;s comment on {network}. {network} also removes any
+                    reply your Page published underneath it. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => void handleDelete()}
+                    disabled={loading === 'delete'}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    {loading === 'delete' ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : null}
+                    Delete comment
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </div>

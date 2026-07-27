@@ -27,7 +27,7 @@ export default async function CommentsPage({
 
   // Only pass through valid enum values — an arbitrary ?action= / ?platform=
   // would make Prisma throw an enum validation error and 500 the page.
-  const VALID_ACTIONS = ['REPLIED', 'DELETED', 'HIDDEN', 'IGNORED', 'MANUAL_REPLY', 'MANUAL_DELETE', 'ERROR'];
+  const VALID_ACTIONS = ['REPLIED', 'DELETED', 'HIDDEN', 'IGNORED', 'MANUAL_REPLY', 'MANUAL_DELETE', 'REPLY_DELETED', 'ERROR'];
   const VALID_PLATFORMS = ['FACEBOOK', 'INSTAGRAM'];
   const action = filters.action && VALID_ACTIONS.includes(filters.action) ? filters.action : undefined;
   const platform = filters.platform && VALID_PLATFORMS.includes(filters.platform) ? filters.platform : undefined;
@@ -35,7 +35,7 @@ export default async function CommentsPage({
   const where: Prisma.CommentLogWhereInput = {
     tenantId,
     ...(filters.botId ? { botId: filters.botId } : {}),
-    ...(action ? { action: { equals: action as 'REPLIED' | 'DELETED' | 'HIDDEN' | 'IGNORED' | 'MANUAL_REPLY' | 'MANUAL_DELETE' | 'ERROR' } } : {}),
+    ...(action ? { action: { equals: action as 'REPLIED' | 'DELETED' | 'HIDDEN' | 'IGNORED' | 'MANUAL_REPLY' | 'MANUAL_DELETE' | 'REPLY_DELETED' | 'ERROR' } } : {}),
     ...(platform ? { platform: { equals: platform as 'FACEBOOK' | 'INSTAGRAM' } } : {}),
     ...(filters.search
       ? {

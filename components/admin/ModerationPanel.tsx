@@ -20,6 +20,7 @@ type CommentAction =
   | 'IGNORED'
   | 'MANUAL_REPLY'
   | 'MANUAL_DELETE'
+  | 'REPLY_DELETED'
   | 'ERROR';
 
 interface ModerationComment {
@@ -48,6 +49,7 @@ const ACTION_CONFIG: Record<CommentAction, { label: string; className: string }>
   IGNORED:       { label: 'Ignored',       className: 'bg-slate-100 text-slate-600 border-slate-200' },
   MANUAL_REPLY:  { label: 'Manual reply',  className: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
   MANUAL_DELETE: { label: 'Manual delete', className: 'bg-rose-50 text-rose-700 border-rose-200' },
+  REPLY_DELETED: { label: 'Reply deleted', className: 'bg-orange-50 text-orange-700 border-orange-200' },
   ERROR:         { label: 'Error',         className: 'bg-red-100 text-red-800 border-red-300' },
 };
 
@@ -59,6 +61,7 @@ const ACTION_FILTERS: { value: string; label: string }[] = [
   { value: 'IGNORED', label: 'Ignored' },
   { value: 'MANUAL_REPLY', label: 'Manual reply' },
   { value: 'MANUAL_DELETE', label: 'Manual delete' },
+  { value: 'REPLY_DELETED', label: 'Reply deleted' },
   { value: 'ERROR', label: 'Error' },
 ];
 

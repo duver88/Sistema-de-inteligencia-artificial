@@ -324,5 +324,6 @@ enum CommentAction {
   IGNORED // Comment was processed but no action taken
   MANUAL_REPLY // User manually replied through the dashboard
   MANUAL_DELETE // User manually deleted through the dashboard
+  REPLY_DELETED // The reply published by the Page was deleted; the user's original comment is still live
   ERROR // Processing failed
 }

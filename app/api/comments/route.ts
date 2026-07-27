@@ -3,7 +3,7 @@ import { requireTenant } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
 import type { Prisma } from '@/lib/generated/prisma/client';
 
-const VALID_ACTIONS = ['REPLIED', 'DELETED', 'HIDDEN', 'IGNORED', 'MANUAL_REPLY', 'MANUAL_DELETE', 'ERROR'] as const;
+const VALID_ACTIONS = ['REPLIED', 'DELETED', 'HIDDEN', 'IGNORED', 'MANUAL_REPLY', 'MANUAL_DELETE', 'REPLY_DELETED', 'ERROR'] as const;
 type CommentActionValue = (typeof VALID_ACTIONS)[number];
 
 export async function GET(request: NextRequest) {
