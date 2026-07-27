@@ -32,17 +32,10 @@ export default async function CommentsPage({
   const action = filters.action && VALID_ACTIONS.includes(filters.action) ? filters.action : undefined;
   const platform = filters.platform && VALID_PLATFORMS.includes(filters.platform) ? filters.platform : undefined;
 
-  const where: Prisma.CommentLogWhereInput = {
+  // Filters the user actually picked, without the implicit hiding rule below.
+  const baseWhere: Prisma.CommentLogWhereInput = {
     tenantId,
     ...(filters.botId ? { botId: filters.botId } : {}),
-    // With no explicit action filter, comments the user deleted by hand are
-    // hidden: once you delete a comment it disappears from the working list.
-    // The row is NEVER removed from the database — it stays in the audit trail
-    // and is still reachable by picking "Manual delete" in the action filter.
-    // Comments the bot removed on its own (DELETED / HIDDEN) keep showing.
-    ...(action
-      ? { action: { equals: action as 'REPLIED' | 'DELETED' | 'HIDDEN' | 'IGNORED' | 'MANUAL_REPLY' | 'MANUAL_DELETE' | 'REPLY_DELETED' | 'ERROR' } }
-      : { action: { not: 'MANUAL_DELETE' as const } }),
     ...(platform ? { platform: { equals: platform as 'FACEBOOK' | 'INSTAGRAM' } } : {}),
     ...(filters.search
       ? {
@@ -54,7 +47,33 @@ export default async function CommentsPage({
       : {}),
   };
 
-  const [total, comments, bots] = await Promise.all([
+  // What the header counts. A comment the user deleted by hand was still
+  // processed by the platform, so it keeps counting towards the total even
+  // though it no longer shows up in the list.
+  const countWhere: Prisma.CommentLogWhereInput = {
+    ...baseWhere,
+    ...(action
+      ? { action: { equals: action as 'REPLIED' | 'DELETED' | 'HIDDEN' | 'IGNORED' | 'MANUAL_REPLY' | 'MANUAL_DELETE' | 'REPLY_DELETED' | 'ERROR' } }
+      : {}),
+  };
+
+  // What the list shows. With no explicit action filter, comments the user
+  // deleted by hand are hidden: once you delete a comment it disappears from
+  // the working list. The row is NEVER removed from the database — it stays in
+  // the audit trail and is still reachable by picking "Manual delete" in the
+  // action filter. Comments the bot removed on its own (DELETED / HIDDEN) keep
+  // showing.
+  const where: Prisma.CommentLogWhereInput = {
+    ...baseWhere,
+    ...(action
+      ? { action: { equals: action as 'REPLIED' | 'DELETED' | 'HIDDEN' | 'IGNORED' | 'MANUAL_REPLY' | 'MANUAL_DELETE' | 'REPLY_DELETED' | 'ERROR' } }
+      : { action: { not: 'MANUAL_DELETE' as const } }),
+  };
+
+  const [total, listTotal, comments, bots] = await Promise.all([
+    prisma.commentLog.count({ where: countWhere }),
+    // Pagination must follow the LIST, not the header count — otherwise the
+    // hidden rows would produce trailing empty pages.
     prisma.commentLog.count({ where }),
     prisma.commentLog.findMany({
       where,
@@ -77,7 +96,7 @@ export default async function CommentsPage({
     }),
   ]);
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalPages = Math.ceil(listTotal / PAGE_SIZE);
 
   const serialized = comments.map(c => ({
     id: c.id,
