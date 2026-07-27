@@ -29,7 +29,12 @@ export async function GET(request: NextRequest) {
   const where: Prisma.CommentLogWhereInput = {
     tenantId: ctx.tenantId,
     ...(botId ? { botId } : {}),
-    ...(actions?.length ? { action: { in: actions } } : {}),
+    // Same rule as the server-rendered /comments page: with no explicit action
+    // filter, hand-deleted comments are hidden from the list. The rows stay in
+    // the database and come back when the caller asks for MANUAL_DELETE.
+    ...(actions?.length
+      ? { action: { in: actions } }
+      : { action: { not: 'MANUAL_DELETE' as const } }),
     ...(platform ? { platform: { equals: platform } } : {}),
     ...(search
       ? {

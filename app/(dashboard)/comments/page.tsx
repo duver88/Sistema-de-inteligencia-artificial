@@ -35,7 +35,14 @@ export default async function CommentsPage({
   const where: Prisma.CommentLogWhereInput = {
     tenantId,
     ...(filters.botId ? { botId: filters.botId } : {}),
-    ...(action ? { action: { equals: action as 'REPLIED' | 'DELETED' | 'HIDDEN' | 'IGNORED' | 'MANUAL_REPLY' | 'MANUAL_DELETE' | 'REPLY_DELETED' | 'ERROR' } } : {}),
+    // With no explicit action filter, comments the user deleted by hand are
+    // hidden: once you delete a comment it disappears from the working list.
+    // The row is NEVER removed from the database — it stays in the audit trail
+    // and is still reachable by picking "Manual delete" in the action filter.
+    // Comments the bot removed on its own (DELETED / HIDDEN) keep showing.
+    ...(action
+      ? { action: { equals: action as 'REPLIED' | 'DELETED' | 'HIDDEN' | 'IGNORED' | 'MANUAL_REPLY' | 'MANUAL_DELETE' | 'REPLY_DELETED' | 'ERROR' } }
+      : { action: { not: 'MANUAL_DELETE' as const } }),
     ...(platform ? { platform: { equals: platform as 'FACEBOOK' | 'INSTAGRAM' } } : {}),
     ...(filters.search
       ? {

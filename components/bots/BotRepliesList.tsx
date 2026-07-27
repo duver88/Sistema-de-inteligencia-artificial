@@ -89,6 +89,13 @@ export function BotRepliesList({ botId, initialReplies, initialTotalPages }: Bot
   }, [botId, page]);
 
   function handleActionComplete(id: string, newAction: string) {
+    // This list only ever shows REPLIED / MANUAL_REPLY rows, so a comment the
+    // user just deleted no longer belongs here — drop it immediately instead of
+    // waiting for the next refetch.
+    if (newAction === 'MANUAL_DELETE') {
+      setReplies(prev => (prev ? prev.filter(c => c.id !== id) : prev));
+      return;
+    }
     setReplies(prev =>
       prev ? prev.map(c => c.id === id ? { ...c, action: newAction } : c) : prev
     );

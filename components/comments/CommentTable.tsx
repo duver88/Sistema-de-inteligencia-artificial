@@ -46,6 +46,14 @@ export function CommentTable({ initialComments, totalPages, currentPage }: Comme
   }, [initialComments, totalPages]);
 
   function handleActionComplete(id: string, newAction: string) {
+    // Deleting a comment makes the whole row disappear from the list straight
+    // away, matching what the next refetch will return (the API hides
+    // MANUAL_DELETE unless it is asked for explicitly). The row is still in the
+    // database — pick "Manual delete" in the action filter to see it.
+    if (newAction === 'MANUAL_DELETE' && searchParams.get('action') !== 'MANUAL_DELETE') {
+      setComments(prev => prev.filter(c => c.id !== id));
+      return;
+    }
     setComments(prev =>
       prev.map(c => c.id === id ? { ...c, action: newAction } : c)
     );
