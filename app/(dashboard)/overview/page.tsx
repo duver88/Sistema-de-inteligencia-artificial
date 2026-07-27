@@ -18,8 +18,16 @@ export default async function OverviewPage() {
       prisma.bot.count({ where: { tenantId, account: { isActive: true } } }),
       prisma.bot.count({ where: { tenantId, isActive: true, account: { isActive: true } } }),
       prisma.commentLog.count({ where: { tenantId, createdAt: { gte: today } } }),
-      prisma.commentLog.count({ where: { tenantId, action: 'REPLIED', createdAt: { gte: today } } }),
-      prisma.commentLog.count({ where: { tenantId, action: 'DELETED', createdAt: { gte: today } } }),
+      // Count replies and deletions by their timestamps, not by `action`.
+      // `action` only holds the LAST state of a comment: manually deleting a
+      // comment the bot had already replied to turns REPLIED into
+      // MANUAL_DELETE, which used to drop it from the "Replied" card while
+      // never reaching the "Deleted" one (that only matched the bot's own
+      // DELETED). repliedAt / deletedAt are set once and never overwritten, so
+      // they stay true whatever happens to the comment afterwards, and they
+      // cover the manual actions taken from the dashboard too.
+      prisma.commentLog.count({ where: { tenantId, repliedAt: { gte: today } } }),
+      prisma.commentLog.count({ where: { tenantId, deletedAt: { gte: today } } }),
       prisma.commentLog.count({ where: { tenantId } }),
       prisma.socialAccount.count({ where: { tenantId, isActive: true } }),
     ]);
@@ -105,7 +113,7 @@ export default async function OverviewPage() {
             </div>
           </div>
           <p className="text-4xl font-bold text-white">{repliesToday}</p>
-          <p className="text-emerald-200 text-xs mt-1">by AI today</p>
+          <p className="text-emerald-200 text-xs mt-1">published today</p>
         </div>
 
         {/* Eliminados */}

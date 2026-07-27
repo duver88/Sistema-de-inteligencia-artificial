@@ -31,11 +31,13 @@ export async function GET() {
   const botStats = await Promise.all(
     bots.map(async (bot) => {
       const [repliesToday, deletedToday] = await Promise.all([
+        // Count by repliedAt / deletedAt rather than by `action`, which only
+        // holds the comment's LAST state (see app/(dashboard)/overview/page.tsx).
         prisma.commentLog.count({
-          where: { botId: bot.id, action: 'REPLIED', createdAt: { gte: today } },
+          where: { botId: bot.id, repliedAt: { gte: today } },
         }),
         prisma.commentLog.count({
-          where: { botId: bot.id, action: 'DELETED', createdAt: { gte: today } },
+          where: { botId: bot.id, deletedAt: { gte: today } },
         }),
       ]);
       return {

@@ -32,8 +32,11 @@ export default async function BotsPage() {
     bots.map(async (bot) => {
       const [commentsToday, repliesToday, deletedToday] = await Promise.all([
         prisma.commentLog.count({ where: { botId: bot.id, createdAt: { gte: today } } }),
-        prisma.commentLog.count({ where: { botId: bot.id, action: 'REPLIED', createdAt: { gte: today } } }),
-        prisma.commentLog.count({ where: { botId: bot.id, action: 'DELETED', createdAt: { gte: today } } }),
+        // Same rule as the Overview cards: count by repliedAt / deletedAt, not
+        // by `action`. `action` only holds the comment's LAST state, so a reply
+        // that was later deleted by hand would silently stop counting.
+        prisma.commentLog.count({ where: { botId: bot.id, repliedAt: { gte: today } } }),
+        prisma.commentLog.count({ where: { botId: bot.id, deletedAt: { gte: today } } }),
       ]);
       return {
         ...bot,
