@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, DragEvent, ChangeEvent } from 'react';
-import { Upload, FileText, X, Loader2, CheckSquare, Square, Cloud, Edit3 } from 'lucide-react';
+import { Upload, FileText, X, Loader2, CheckSquare, Square, Cloud, Edit3, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -11,18 +11,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 
 interface ExtractedEntry {
   key: string;
   value: string;
   category: string;
+  /** Project name — only ever set by a LionsCore export. */
+  project?: string;
   selected: boolean;
   editing: boolean;
 }
 
+/**
+ * 'export' — the file is a LionsCore knowledge export, read back exactly as it
+ * was written (no AI). 'ai' — an arbitrary document the AI extracted pairs from.
+ */
+type ImportSource = 'export' | 'ai';
+
+/** 'replace' wipes the knowledge base first; 'append' adds to what is there. */
+type ImportMode = 'replace' | 'append';
+
 interface DocumentImporterProps {
   botId: string;
+  /** How many entries the bot has right now — shown in the replace warning. */
+  currentCount?: number;
   onImported: () => void;
 }
 
@@ -53,11 +77,13 @@ const ACCEPTED_MIME = [
   'application/csv',
 ];
 
-export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
+export function DocumentImporter({ botId, currentCount = 0, onImported }: DocumentImporterProps) {
   const [phase, setPhase] = useState<'idle' | 'processing' | 'review' | 'importing'>('idle');
   const [entries, setEntries] = useState<ExtractedEntry[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [fileName, setFileName] = useState('');
+  const [source, setSource] = useState<ImportSource>('ai');
+  const [mode, setMode] = useState<ImportMode>('append');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processFile = useCallback(
@@ -83,7 +109,11 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
           method: 'POST',
           body: formData,
         });
-        const data = await res.json() as { entries?: ExtractedEntry[]; error?: string };
+        const data = await res.json() as {
+          entries?: ExtractedEntry[];
+          source?: ImportSource;
+          error?: string;
+        };
         if (!res.ok) throw new Error(data.error ?? 'Unknown error');
 
         if (!data.entries || data.entries.length === 0) {
@@ -91,6 +121,13 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
           setPhase('idle');
           return;
         }
+
+        const detected: ImportSource = data.source === 'export' ? 'export' : 'ai';
+        setSource(detected);
+        // Restoring an export defaults to replacing, which is what makes the
+        // round-trip land on an identical knowledge base. Extracting from an
+        // arbitrary document defaults to adding, so nothing is lost by mistake.
+        setMode(detected === 'export' ? 'replace' : 'append');
 
         setEntries(
           data.entries.map((e) => ({
@@ -152,43 +189,52 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
     }
 
     setPhase('importing');
-    let imported = 0;
-    let failed = 0;
 
-    for (const entry of selected) {
-      try {
-        const res = await fetch(`/api/bots/${botId}/knowledge`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            key: entry.key,
-            value: entry.value,
-            category: entry.category,
-          }),
-        });
-        if (res.ok) imported++;
-        else failed++;
-      } catch {
-        failed++;
-      }
-    }
+    // One request, one transaction: a failed import can never leave the bot
+    // with a half-replaced knowledge base.
+    try {
+      const res = await fetch(`/api/bots/${botId}/knowledge/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode,
+          entries: selected.map((e) => ({
+            key: e.key,
+            value: e.value,
+            category: e.category,
+            project: e.project ?? '',
+          })),
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        imported?: number;
+        error?: string;
+      };
+      if (!res.ok) throw new Error(data.error ?? 'Failed to import the entries');
 
-    if (imported > 0) {
-      toast.success(`${imported} ${imported !== 1 ? 'entries' : 'entry'} imported successfully`);
+      const imported = data.imported ?? 0;
+      toast.success(
+        mode === 'replace'
+          ? `Knowledge base replaced with ${imported} ${imported !== 1 ? 'entries' : 'entry'}`
+          : `${imported} ${imported !== 1 ? 'entries' : 'entry'} imported successfully`
+      );
+      setPhase('idle');
+      setEntries([]);
+      setFileName('');
+      onImported();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to import the entries');
+      // Stay in review so the user can retry without re-uploading the file.
+      setPhase('review');
     }
-    if (failed > 0) {
-      toast.error(`${failed} ${failed !== 1 ? 'entries' : 'entry'} could not be imported`);
-    }
-    setPhase('idle');
-    setEntries([]);
-    setFileName('');
-    onImported();
   }
 
   function handleCancel() {
     setPhase('idle');
     setEntries([]);
     setFileName('');
+    setSource('ai');
+    setMode('append');
   }
 
   const selectedCount = entries.filter((e) => e.selected).length;
@@ -227,6 +273,9 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
             </p>
             <p className="text-xs text-slate-500 mt-1">
               PDF, Word (DOCX), Excel (XLSX), CSV, TXT · Max 10MB
+            </p>
+            <p className="text-xs text-slate-400 mt-1">
+              Drop a file exported with the Export button to restore it exactly, without AI.
             </p>
           </div>
           <div className="flex items-center gap-4 mt-1">
@@ -284,11 +333,22 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
           style={{ background: 'linear-gradient(135deg, #ecfeff 0%, #cffafe 100%)' }}
         >
           <div>
-            <p className="text-sm font-bold text-slate-900">
-              {entries.length} {entries.length !== 1 ? 'entries' : 'entry'} extracted by AI
-            </p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm font-bold text-slate-900">
+                {entries.length} {entries.length !== 1 ? 'entries' : 'entry'}{' '}
+                {source === 'export' ? 'read from your export' : 'extracted by AI'}
+              </p>
+              {source === 'export' && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+                  <ShieldCheck className="h-3 w-3" />
+                  Exact copy
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Review and edit before importing · {fileName}
+              {source === 'export'
+                ? `LionsCore export — restored exactly as saved, no AI involved · ${fileName}`
+                : `Review and edit before importing · ${fileName}`}
             </p>
           </div>
           <button
@@ -398,6 +458,53 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
           ))}
         </div>
 
+        {/* Import mode */}
+        <div className="px-5 py-4 border-t border-slate-100">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2.5">
+            How to import
+          </p>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {([
+              {
+                key: 'replace' as const,
+                label: 'Replace the knowledge base',
+                hint: currentCount > 0
+                  ? `Deletes the current ${currentCount} ${currentCount !== 1 ? 'entries' : 'entry'} first`
+                  : 'Leaves only the entries in this file',
+              },
+              {
+                key: 'append' as const,
+                label: 'Add to the existing entries',
+                hint: 'Keeps what is already there',
+              },
+            ]).map(option => (
+              <button
+                key={option.key}
+                type="button"
+                onClick={() => setMode(option.key)}
+                className={`text-left px-4 py-3 rounded-xl border transition-colors ${
+                  mode === option.key
+                    ? 'border-cyan-300 bg-cyan-50'
+                    : 'border-slate-200 bg-white hover:bg-slate-50'
+                }`}
+              >
+                <p className={`text-sm font-semibold ${mode === option.key ? 'text-cyan-900' : 'text-slate-700'}`}>
+                  {option.label}
+                </p>
+                <p className={`text-xs mt-0.5 ${mode === option.key ? 'text-cyan-600' : 'text-slate-500'}`}>
+                  {option.hint}
+                </p>
+              </button>
+            ))}
+          </div>
+          {source === 'export' && mode === 'append' && (
+            <p className="text-xs text-amber-600 mt-2.5">
+              Adding an export on top of the current entries duplicates them. Pick
+              &quot;Replace&quot; to end up with exactly what you exported.
+            </p>
+          )}
+        </div>
+
         {/* Footer actions */}
         <div className="px-5 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
           <button
@@ -406,14 +513,47 @@ export function DocumentImporter({ botId, onImported }: DocumentImporterProps) {
           >
             Cancel
           </button>
-          <button
-            onClick={() => void handleConfirm()}
-            disabled={selectedCount === 0}
-            className="flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
-          >
-            Confirm and import {selectedCount > 0 ? `(${selectedCount})` : ''}
-          </button>
+          {mode === 'replace' && currentCount > 0 ? (
+            <AlertDialog>
+              <AlertDialogTrigger
+                disabled={selectedCount === 0}
+                className="flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
+              >
+                Replace knowledge base {selectedCount > 0 ? `(${selectedCount})` : ''}
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Replace the knowledge base?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    The {currentCount} {currentCount !== 1 ? 'entries' : 'entry'} this bot
+                    has now will be deleted and replaced by the {selectedCount}{' '}
+                    {selectedCount !== 1 ? 'entries' : 'entry'} from{' '}
+                    {fileName}. This cannot be undone — export the current knowledge
+                    base first if you want a copy of it.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => void handleConfirm()}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    Replace
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <button
+              onClick={() => void handleConfirm()}
+              disabled={selectedCount === 0}
+              className="flex items-center gap-2 px-5 py-2 text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' }}
+            >
+              Confirm and import {selectedCount > 0 ? `(${selectedCount})` : ''}
+            </button>
+          )}
         </div>
       </div>
     );

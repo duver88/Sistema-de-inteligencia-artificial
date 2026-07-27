@@ -3,6 +3,7 @@ import { requireTenant } from '@/lib/tenant';
 import { prisma } from '@/lib/prisma';
 import { getOpenAiApiKey } from '@/lib/ai/key';
 import { recordAiUsage } from '@/lib/ai/usage';
+import { isKnowledgeExportHeader, parseCsv, rowsToKnowledge } from '@/lib/knowledge/csv';
 import OpenAI from 'openai';
 
 type Params = { params: Promise<{ botId: string }> };
@@ -21,19 +22,6 @@ export async function POST(request: NextRequest, { params }: Params) {
     where: { id: botId, tenantId: ctx.tenantId },
   });
   if (!bot) return NextResponse.json({ error: 'Bot not found' }, { status: 404 });
-
-  // Require OpenAI key (platform-wide setting, with legacy tenant-key fallback)
-  const tenant = await prisma.tenant.findUnique({
-    where: { id: ctx.tenantId },
-    select: { openaiApiKey: true },
-  });
-  const apiKey = await getOpenAiApiKey(tenant?.openaiApiKey ?? null);
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: 'AI service is not configured — contact your administrator' },
-      { status: 400 }
-    );
-  }
 
   // Parse multipart form data
   let formData: FormData;
@@ -72,13 +60,37 @@ export async function POST(request: NextRequest, { params }: Params) {
       const mammoth = await import('mammoth');
       const result = await mammoth.extractRawText({ buffer });
       text = result.value;
-    } else if (
-      filename.endsWith('.xlsx') ||
-      filename.endsWith('.xls') ||
-      filename.endsWith('.csv')
-    ) {
+    } else if (filename.endsWith('.csv')) {
+      const raw = buffer.toString('utf-8');
+      // Round-trip path: a file produced by the Export button is parsed
+      // deterministically and handed back verbatim. No AI is involved — it is
+      // lossy, costs tokens and would reword the entries — and no OpenAI key is
+      // required, so restoring a backup works even when AI is not configured.
+      const rows = parseCsv(raw);
+      if (isKnowledgeExportHeader(rows[0])) {
+        return NextResponse.json({ entries: rowsToKnowledge(rows), source: 'export' });
+      }
+      text = raw;
+    } else if (filename.endsWith('.xlsx') || filename.endsWith('.xls')) {
       const XLSX = await import('xlsx');
       const workbook = XLSX.read(buffer, { type: 'buffer' });
+
+      // Same round-trip path when someone opens the export in Excel and saves
+      // it as a spreadsheet. `raw: false` keeps the cells as formatted strings.
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      if (firstSheet) {
+        const grid = XLSX.utils.sheet_to_json<string[]>(firstSheet, {
+          header: 1,
+          raw: false,
+          defval: '',
+        });
+        const header = grid[0]?.map(c => String(c ?? ''));
+        if (isKnowledgeExportHeader(header)) {
+          const rows = grid.map(r => r.map(c => String(c ?? '')));
+          return NextResponse.json({ entries: rowsToKnowledge(rows), source: 'export' });
+        }
+      }
+
       const sheets: string[] = [];
       for (const name of workbook.SheetNames) {
         const sheet = workbook.Sheets[name];
@@ -99,6 +111,20 @@ export async function POST(request: NextRequest, { params }: Params) {
   if (!text.trim()) {
     return NextResponse.json(
       { error: 'Could not extract text from the document. Make sure it is not a scanned image.' },
+      { status: 400 }
+    );
+  }
+
+  // From here on the document is arbitrary content, so the AI extracts the
+  // knowledge pairs. Only this path needs an OpenAI key.
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: ctx.tenantId },
+    select: { openaiApiKey: true },
+  });
+  const apiKey = await getOpenAiApiKey(tenant?.openaiApiKey ?? null);
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: 'AI service is not configured — contact your administrator' },
       { status: 400 }
     );
   }
@@ -175,7 +201,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         category: typeof e.category === 'string' ? e.category.trim() : 'general',
       }));
 
-    return NextResponse.json({ entries: sanitized });
+    return NextResponse.json({ entries: sanitized, source: 'ai' });
   } catch (err) {
     console.error('[import] OpenAI error:', err);
     return NextResponse.json({ error: 'Failed to process the document with AI' }, { status: 500 });

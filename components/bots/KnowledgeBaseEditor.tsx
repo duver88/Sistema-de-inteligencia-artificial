@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash2, Loader2, BookOpen, FileUp, Check, X, Edit3 } from 'lucide-react';
+import { Trash2, Loader2, BookOpen, FileUp, Check, X, Edit3, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -149,25 +149,37 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
           <p className="text-sm text-slate-500">
             {entries.length} {entries.length !== 1 ? 'entries' : 'entry'} in the knowledge base
           </p>
-          <button
-            onClick={() => setShowImporter(v => !v)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all shadow-sm ${
-              showImporter
-                ? 'shadow-md'
-                : 'bg-white border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 text-slate-700'
-            }`}
-            style={showImporter ? { background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' } : undefined}
-          >
-            <FileUp className="h-4 w-4" />
-            Import document
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Plain link: the route answers with a file attachment, so the
+                browser downloads it without any client-side blob handling. */}
+            <a
+              href={`/api/bots/${botId}/knowledge/export`}
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all shadow-sm bg-white border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 text-slate-700"
+              title="Download the knowledge base as CSV — import it back to restore it exactly"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </a>
+            <button
+              onClick={() => setShowImporter(v => !v)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all shadow-sm ${
+                showImporter
+                  ? 'shadow-md'
+                  : 'bg-white border border-slate-200 hover:border-cyan-300 hover:bg-cyan-50 text-slate-700'
+              }`}
+              style={showImporter ? { background: 'linear-gradient(135deg, #00C4D4, #00E5FF)', color: '#0a1628' } : undefined}
+            >
+              <FileUp className="h-4 w-4" />
+              Import
+            </button>
+          </div>
         </div>
       )}
 
       {/* Document importer (shown above an existing list; the empty-state
           importer below handles the entries.length === 0 case) */}
       {entries.length > 0 && showImporter && (
-        <DocumentImporter botId={botId} onImported={() => void handleImported()} />
+        <DocumentImporter botId={botId} currentCount={entries.length} onImported={() => void handleImported()} />
       )}
 
       {/* Empty state */}
@@ -196,7 +208,7 @@ export function KnowledgeBaseEditor({ botId, initialEntries }: KnowledgeBaseEdit
 
       {/* Empty state when importer is open */}
       {entries.length === 0 && showImporter && (
-        <DocumentImporter botId={botId} onImported={() => void handleImported()} />
+        <DocumentImporter botId={botId} currentCount={entries.length} onImported={() => void handleImported()} />
       )}
 
       {/* Entries table */}
