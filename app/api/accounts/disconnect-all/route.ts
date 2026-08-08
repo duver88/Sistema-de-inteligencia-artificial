@@ -15,7 +15,7 @@ export async function POST() {
 
   const accounts = await prisma.socialAccount.findMany({
     where: { tenantId: ctx.tenantId, isActive: true },
-    select: { id: true, pageId: true, pageToken: true, webhookSubscribed: true },
+    select: { id: true, pageId: true, pageToken: true, webhookSubscribed: true, platform: true },
   });
 
   if (accounts.length === 0) {
@@ -29,10 +29,15 @@ export async function POST() {
       if (!account.webhookSubscribed) return;
       try {
         const token = decrypt(account.pageToken);
-        await metaClient.unsubscribePageFromWebhooks(account.pageId, token);
+        // Instagram subscriptions live on the IG user, not the linked Page.
+        if (account.platform === 'INSTAGRAM') {
+          await metaClient.unsubscribeInstagramFromWebhooks(account.pageId, token);
+        } else {
+          await metaClient.unsubscribePageFromWebhooks(account.pageId, token);
+        }
       } catch (err) {
         console.error(
-          `[disconnect-all] Failed to unsubscribe page ${account.pageId}:`,
+          `[disconnect-all] Failed to unsubscribe ${account.platform} ${account.pageId}:`,
           err instanceof Error ? err.message : err,
         );
       }

@@ -240,7 +240,7 @@ export async function GET(request: NextRequest) {
 
         const encryptedIgToken = encrypt(page.access_token);
 
-        await prisma.$transaction(async (tx) => {
+        const igAccount = await prisma.$transaction(async (tx) => {
           const igAccount = await tx.socialAccount.upsert({
             where: { platform_pageId: { platform: 'INSTAGRAM', pageId: ig.id } },
             update: {
@@ -287,7 +287,30 @@ export async function GET(request: NextRequest) {
               },
             });
           }
+
+          return igAccount;
         });
+
+        // Subscribe the Instagram account to comment webhooks. Instagram events
+        // are delivered per IG user and are NOT covered by the Page's `feed`
+        // subscription above — without this no Instagram comment ever arrives.
+        // Uses the linked Page's token, which is what the IG Graph API expects.
+        if (!igAccount.webhookSubscribed) {
+          try {
+            const subscribed = await metaClient.subscribeInstagramToWebhooks(
+              ig.id,
+              page.access_token
+            );
+            if (subscribed) {
+              await prisma.socialAccount.update({
+                where: { id: igAccount.id },
+                data: { webhookSubscribed: true },
+              });
+            }
+          } catch (err) {
+            console.error(`[callback] Instagram webhook subscription failed for ${ig.id}:`, err);
+          }
+        }
       }
     }
 

@@ -103,7 +103,7 @@ async function editFacebookComment(
   await handleResponse<{ success: boolean }>(res);
 }
 
-/** Hide a Facebook comment. Instagram does NOT support this — delete instead. */
+/** Hide a Facebook comment (`is_hidden`). Instagram uses `hide` — see hideInstagramComment. */
 async function hideComment(
   commentId: string,
   pageAccessToken: string
@@ -113,6 +113,26 @@ async function hideComment(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ is_hidden: true, access_token: pageAccessToken }),
+  });
+  const data = await handleResponse<{ success: boolean }>(res);
+  return data.success === true;
+}
+
+/**
+ * Hide an Instagram comment. Instagram DOES support hiding, but through a
+ * different field than Facebook: `hide` instead of `is_hidden`. Requires
+ * instagram_manage_comments. Never fall back to deleting — hiding and
+ * deleting are different moderation decisions and deleting is irreversible.
+ */
+async function hideInstagramComment(
+  commentId: string,
+  pageAccessToken: string
+): Promise<boolean> {
+  const url = `${META_BASE_URL}/${commentId}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hide: true, access_token: pageAccessToken }),
   });
   const data = await handleResponse<{ success: boolean }>(res);
   return data.success === true;
@@ -188,6 +208,40 @@ async function unsubscribePageFromWebhooks(
   return data.success === true;
 }
 
+/**
+ * Subscribe an Instagram Business Account to comment webhooks.
+ * Instagram events are delivered per IG user, NOT through the linked Page's
+ * `feed` subscription — without this call no Instagram comment ever arrives.
+ * Uses the linked Page's access token, which is what the IG Graph API expects.
+ */
+async function subscribeInstagramToWebhooks(
+  igUserId: string,
+  pageAccessToken: string
+): Promise<boolean> {
+  const url = `${META_BASE_URL}/${igUserId}/subscribed_apps`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      subscribed_fields: ['comments'],
+      access_token: pageAccessToken,
+    }),
+  });
+  const data = await handleResponse<{ success: boolean }>(res);
+  return data.success === true;
+}
+
+/** Unsubscribe the app from an Instagram Business Account's webhooks. */
+async function unsubscribeInstagramFromWebhooks(
+  igUserId: string,
+  pageAccessToken: string
+): Promise<boolean> {
+  const url = `${META_BASE_URL}/${igUserId}/subscribed_apps?access_token=${encodeURIComponent(pageAccessToken)}`;
+  const res = await fetch(url, { method: 'DELETE' });
+  const data = await handleResponse<{ success: boolean }>(res);
+  return data.success === true;
+}
+
 /** Get all Facebook Pages managed by the user, including linked Instagram accounts. */
 async function getManagedPages(longLivedUserToken: string): Promise<Array<{
   id: string;
@@ -224,10 +278,13 @@ export const metaClient = {
   deleteComment,
   editFacebookComment,
   hideComment,
+  hideInstagramComment,
   getFacebookPostMessage,
   getInstagramMediaCaption,
   subscribePageToWebhooks,
   unsubscribePageFromWebhooks,
+  subscribeInstagramToWebhooks,
+  unsubscribeInstagramFromWebhooks,
   getManagedPages,
 };
 

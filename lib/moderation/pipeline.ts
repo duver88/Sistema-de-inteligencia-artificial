@@ -217,8 +217,7 @@ export async function processComment(
         if (comment.platform === 'FACEBOOK') {
           await metaClient.hideComment(comment.commentId, pageToken);
         } else {
-          // Instagram does not support hiding — delete spam instead
-          await metaClient.deleteComment(comment.commentId, pageToken);
+          await metaClient.hideInstagramComment(comment.commentId, pageToken);
         }
         action = 'HIDDEN';
         await logComment({
@@ -258,7 +257,7 @@ export async function processComment(
         if (comment.platform === 'FACEBOOK') {
           await metaClient.hideComment(comment.commentId, pageToken);
         } else {
-          await metaClient.deleteComment(comment.commentId, pageToken);
+          await metaClient.hideInstagramComment(comment.commentId, pageToken);
         }
         action = 'HIDDEN';
         await logComment({

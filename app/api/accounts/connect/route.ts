@@ -31,7 +31,7 @@ export async function GET() {
   });
 
   const scope = process.env.FACEBOOK_SCOPES ??
-    'pages_show_list,pages_read_engagement,pages_manage_metadata,pages_read_user_content,pages_manage_engagement,business_management';
+    'pages_show_list,pages_read_engagement,pages_manage_metadata,pages_read_user_content,pages_manage_engagement,business_management,instagram_basic,instagram_manage_comments';
 
   const authUrl = new URL('https://www.facebook.com/dialog/oauth');
   authUrl.searchParams.set('client_id', appId);
