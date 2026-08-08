@@ -1,7 +1,9 @@
 /**
  * Typed wrapper around the Meta Graph API v21.0.
- * All comment operations use Page Access Tokens — never User tokens.
- * Instagram does not support hiding comments; delete spam instead.
+ * All comment operations use Page Access Tokens — never User tokens; for
+ * Instagram accounts the token is the linked Facebook Page's token.
+ * Platform differences: Instagram cannot edit comments, and hides them with
+ * `hide` rather than Facebook's `is_hidden`.
  */
 
 const META_API_VERSION = 'v21.0';
