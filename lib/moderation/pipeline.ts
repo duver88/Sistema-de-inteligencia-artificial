@@ -269,6 +269,10 @@ export async function processComment(
         {
           deleteInstructions: bot.deleteInstructions,
           spamInstructions: bot.spamInstructions,
+          // The owner's own description of the account, so the classifier
+          // judges a dental clinic, a news page or a developer by what they
+          // actually are instead of a hardcoded industry.
+          businessContext: bot.systemInstructions,
         }
       );
 
