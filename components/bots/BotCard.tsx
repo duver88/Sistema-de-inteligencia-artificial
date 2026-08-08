@@ -13,10 +13,13 @@ interface BotCardProps {
     id: string;
     name: string;
     isActive: boolean;
+    facebookEnabled: boolean;
+    instagramEnabled: boolean;
     account: {
       platform: 'FACEBOOK' | 'INSTAGRAM';
       pageName: string;
       pictureUrl: string | null;
+      igAccounts: { pageName: string }[];
     };
     stats: {
       commentsToday: number;
@@ -33,6 +36,30 @@ export function BotCard({ bot }: BotCardProps) {
   const PlatformIcon = bot.account.platform === 'FACEBOOK' ? FacebookIcon : InstagramIcon;
   const platformColor = bot.account.platform === 'FACEBOOK' ? 'text-blue-600' : 'text-pink-600';
   const platformBg = bot.account.platform === 'FACEBOOK' ? 'bg-blue-50' : 'bg-pink-50';
+
+  // Channels this single bot answers on. Instagram only shows up when an
+  // Instagram account is actually linked to the Page.
+  const igAccount = bot.account.igAccounts[0];
+  const channels = [
+    {
+      key: 'facebook',
+      label: 'Facebook',
+      Icon: FacebookIcon,
+      on: bot.facebookEnabled,
+      onClasses: 'bg-blue-50 text-blue-700',
+      iconOn: 'text-blue-600',
+    },
+    ...(igAccount
+      ? [{
+          key: 'instagram',
+          label: 'Instagram',
+          Icon: InstagramIcon,
+          on: bot.instagramEnabled,
+          onClasses: 'bg-pink-50 text-pink-700',
+          iconOn: 'text-pink-600',
+        }]
+      : []),
+  ];
 
   async function handleToggle(value: boolean) {
     setToggling(true);
@@ -78,10 +105,7 @@ export function BotCard({ bot }: BotCardProps) {
             )}
             <div>
               <p className="text-sm font-bold text-slate-900 leading-tight">{bot.name}</p>
-              <div className="flex items-center gap-1 mt-0.5">
-                <PlatformIcon className={`h-3 w-3 ${platformColor}`} />
-                <p className="text-xs text-slate-500">{bot.account.pageName}</p>
-              </div>
+              <p className="text-xs text-slate-500 mt-0.5">{bot.account.pageName}</p>
             </div>
           </div>
           <Switch
@@ -90,6 +114,23 @@ export function BotCard({ bot }: BotCardProps) {
             disabled={toggling}
             className="data-[state=checked]:bg-cyan-500 flex-shrink-0"
           />
+        </div>
+
+        {/* Channels this bot answers on — one config, both networks */}
+        <div className="flex flex-wrap items-center gap-1.5 mb-5">
+          {channels.map(({ key, label, Icon, on, onClasses, iconOn }) => (
+            <span
+              key={key}
+              title={on ? `${label} channel enabled` : `${label} channel disabled`}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                on ? onClasses : 'bg-slate-100 text-slate-400'
+              }`}
+            >
+              <Icon className={`h-3 w-3 ${on ? iconOn : 'text-slate-400'}`} />
+              {label}
+              {!on && <span className="text-[10px] font-bold uppercase">off</span>}
+            </span>
+          ))}
         </div>
 
         {/* Stats */}

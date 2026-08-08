@@ -15,6 +15,8 @@ import {
 import {
   MessageSquare, Trash2, EyeOff, Zap, Loader2, CheckCircle2,
 } from 'lucide-react';
+import { FacebookIcon } from '@/components/icons/FacebookIcon';
+import { InstagramIcon } from '@/components/icons/InstagramIcon';
 import { toast } from 'sonner';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -23,6 +25,8 @@ interface Bot {
   id: string;
   name: string;
   isActive: boolean;
+  facebookEnabled: boolean;
+  instagramEnabled: boolean;
   autoReply: boolean;
   deleteNegative: boolean;
   hideSpam: boolean;
@@ -34,6 +38,7 @@ interface Bot {
   account: {
     platform: string;
     pageName: string;
+    igAccounts: { pageName: string }[];
   };
 }
 
@@ -136,6 +141,9 @@ export function BotSettings({ bot }: BotSettingsProps) {
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const aiDirty = isDraftDirty(aiDraft, savedAi);
+
+  // Second channel of this bot: the Instagram account linked to the Page, if any.
+  const igAccount = data.account.igAccounts[0];
 
   useEffect(() => {
     return () => {
@@ -275,10 +283,66 @@ export function BotSettings({ bot }: BotSettingsProps) {
               className="data-[state=checked]:bg-cyan-500"
             />
           </div>
-          <div className="text-sm text-slate-500 bg-slate-50 rounded-xl px-4 py-3 border border-slate-200">
-            Connected to{' '}
-            <span className="font-medium text-slate-700">{data.account.pageName}</span>{' '}
-            ({data.account.platform === 'FACEBOOK' ? 'Facebook' : data.account.platform === 'INSTAGRAM' ? 'Instagram' : data.account.platform.toLowerCase()})
+          {/* ── Channels ── */}
+          <div>
+            <Label className="text-sm font-medium text-slate-700 mb-1.5 block">Channels</Label>
+            <p className="text-xs text-slate-500 mb-3 max-w-lg">
+              This bot answers on both networks using the same configuration,
+              knowledge base and moderation rules. Turn a channel off to stop
+              replying there without changing anything else.
+            </p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <FacebookIcon className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Facebook</p>
+                    <p className="text-xs text-slate-500">{data.account.pageName}</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={data.facebookEnabled}
+                  onCheckedChange={v => handleToggle('facebookEnabled', v)}
+                  disabled={savingToggle === 'facebookEnabled'}
+                  className="ml-4 flex-shrink-0 data-[state=checked]:bg-cyan-500"
+                />
+              </div>
+
+              {igAccount ? (
+                <div className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-xl bg-pink-50 flex items-center justify-center flex-shrink-0">
+                      <InstagramIcon className="h-4 w-4 text-pink-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">Instagram</p>
+                      <p className="text-xs text-slate-500">{igAccount.pageName}</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={data.instagramEnabled}
+                    onCheckedChange={v => handleToggle('instagramEnabled', v)}
+                    disabled={savingToggle === 'instagramEnabled'}
+                    className="ml-4 flex-shrink-0 data-[state=checked]:bg-cyan-500"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 rounded-xl border border-dashed border-slate-200 px-4 py-3">
+                  <div className="h-9 w-9 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0">
+                    <InstagramIcon className="h-4 w-4 text-slate-300" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-400">Instagram</p>
+                    <p className="text-xs text-slate-400">
+                      No Instagram account is linked to this Page. Link it on Facebook,
+                      then reconnect the Page from Accounts.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

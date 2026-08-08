@@ -22,7 +22,17 @@ export default async function BotsPage() {
     where: { tenantId, account: { isActive: true } },
     include: {
       account: {
-        select: { platform: true, pageName: true, pictureUrl: true },
+        select: {
+          platform: true,
+          pageName: true,
+          pictureUrl: true,
+          // The Instagram account linked to this Page, when connected: the bot
+          // serves it as a second channel with the same configuration.
+          igAccounts: {
+            where: { isActive: true },
+            select: { pageName: true },
+          },
+        },
       },
     },
     orderBy: { createdAt: 'asc' },

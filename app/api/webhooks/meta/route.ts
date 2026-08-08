@@ -100,13 +100,27 @@ async function processWebhookAsync(rawBody: Buffer): Promise<void> {
         continue;
       }
 
-      // Resolve the bot for this account: it MUST belong to the same tenant as
-      // the account (never an orphan bot left behind by a previous tenant).
-      // If several match, prefer active bots and, among those, the oldest one
-      // (deterministic — no unordered "first row" selection).
+      // Resolve the bot. A bot is anchored to a Facebook Page and serves BOTH
+      // channels, so an Instagram comment is handled by the bot of the Page the
+      // Instagram account is linked to — same config, same knowledge base.
+      const botAccountId =
+        comment.platform === 'INSTAGRAM' ? account.linkedFacebookPageId : account.id;
+
+      if (!botAccountId) {
+        console.warn(
+          `[Webhook] ⚠️ La cuenta de Instagram "${account.pageName}" no está vinculada a ninguna página de Facebook ` +
+          '— comentario descartado (reconecta la página para reconstruir el vínculo).'
+        );
+        continue;
+      }
+
+      // The bot MUST belong to the same tenant as the account (never an orphan
+      // bot left behind by a previous tenant). If several match, prefer active
+      // bots and, among those, the oldest one (deterministic — no unordered
+      // "first row" selection).
       const bot = await prisma.bot.findFirst({
         where: {
-          accountId: account.id,
+          accountId: botAccountId,
           tenantId: account.tenantId,
         },
         orderBy: [
@@ -119,6 +133,17 @@ async function processWebhookAsync(rawBody: Buffer): Promise<void> {
         console.warn(
           `[Webhook] ⚠️ La página "${account.pageName}" no tiene BOT ACTIVO en su tenant — comentario descartado. ` +
           'Activa el bot para que el comentario llegue al pipeline y aparezca en /comments.'
+        );
+        continue;
+      }
+
+      // Per-channel switch, on top of the master switch: the owner can run the
+      // bot on one network and not the other without duplicating any config.
+      const channelEnabled =
+        comment.platform === 'INSTAGRAM' ? bot.instagramEnabled : bot.facebookEnabled;
+      if (!channelEnabled) {
+        console.warn(
+          `[Webhook] ⚠️ El bot "${bot.name}" tiene el canal ${comment.platform} desactivado — comentario descartado.`
         );
         continue;
       }

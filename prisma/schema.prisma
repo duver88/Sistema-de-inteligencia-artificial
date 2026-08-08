@@ -161,12 +161,22 @@ model Bot {
   id        String        @id @default(cuid())
   tenantId  String
   tenant    Tenant        @relation(fields: [tenantId], references: [id])
+  // The Facebook Page this bot is anchored to. One bot serves BOTH channels:
+  // the Page itself and the Instagram Business account linked to that Page
+  // (SocialAccount.linkedFacebookPageId), sharing one configuration, one
+  // knowledge base and one set of rules.
   accountId String
   account   SocialAccount @relation(fields: [accountId], references: [id])
-  name      String // e.g. "Bot Instagram UrbaMares"
+  name      String // e.g. "Bot UrbaMares"
 
   // Master switch
   isActive Boolean @default(false)
+
+  // Per-channel switches, applied on top of the master switch. Let the owner
+  // run the bot on Facebook but not Instagram (or the other way round) without
+  // duplicating any configuration.
+  facebookEnabled  Boolean @default(true)
+  instagramEnabled Boolean @default(true)
 
   // Feature toggles
   autoReply      Boolean @default(true)

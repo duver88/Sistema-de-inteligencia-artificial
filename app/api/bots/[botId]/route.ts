@@ -58,7 +58,15 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     if (!name) return NextResponse.json({ error: 'Name cannot be empty' }, { status: 400 });
     data.name = name;
   }
-  for (const key of ['isActive', 'autoReply', 'deleteNegative', 'hideSpam', 'aiEnabled'] as const) {
+  for (const key of [
+    'isActive',
+    'autoReply',
+    'deleteNegative',
+    'hideSpam',
+    'aiEnabled',
+    'facebookEnabled',
+    'instagramEnabled',
+  ] as const) {
     if (key in body) {
       const v = asBool(body[key]);
       if (v === undefined) return NextResponse.json({ error: `${key} must be a boolean` }, { status: 400 });

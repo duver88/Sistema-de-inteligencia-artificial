@@ -42,17 +42,31 @@ export async function DELETE(
     }
   }
 
+  // Disconnecting a Facebook Page also disconnects the Instagram account linked
+  // to it: they are a single Meta connection (same page token, one shared bot),
+  // so leaving Instagram behind would show it as connected while its bot is off
+  // and no event can reach it.
+  const linkedIgIds =
+    account.platform === 'FACEBOOK'
+      ? (
+          await prisma.socialAccount.findMany({
+            where: { linkedFacebookPageId: accountId },
+            select: { id: true },
+          })
+        ).map((a) => a.id)
+      : [];
+
   // Deactivate the account and ALL of its bots — including any orphaned bots
   // left under a previous tenant, so they can never be picked up again by the
   // webhook if the page is later reconnected. Ownership of the account itself
   // was already verified against ctx.tenantId above.
   await prisma.$transaction([
-    prisma.socialAccount.update({
-      where: { id: accountId },
+    prisma.socialAccount.updateMany({
+      where: { id: { in: [accountId, ...linkedIgIds] } },
       data: { isActive: false, webhookSubscribed: false },
     }),
     prisma.bot.updateMany({
-      where: { accountId },
+      where: { accountId: { in: [accountId, ...linkedIgIds] } },
       data: { isActive: false },
     }),
   ]);

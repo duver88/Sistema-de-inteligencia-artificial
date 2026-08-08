@@ -21,7 +21,19 @@ export default async function BotDetailPage({
   const bot = await prisma.bot.findFirst({
     where: { id: botId, tenantId },
     include: {
-      account: { select: { platform: true, pageName: true, pictureUrl: true } },
+      account: {
+        select: {
+          platform: true,
+          pageName: true,
+          pictureUrl: true,
+          // Second channel of the same bot, when an Instagram account is linked
+          // to this Page.
+          igAccounts: {
+            where: { isActive: true },
+            select: { pageName: true },
+          },
+        },
+      },
     },
   });
 

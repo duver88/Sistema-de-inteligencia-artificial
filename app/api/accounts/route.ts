@@ -146,8 +146,10 @@ export async function POST(request: NextRequest) {
         where: { botId: { in: botIds } },
         data: { tenantId: ctx.tenantId },
       });
-    } else {
-      // Account has no bot at all — create the default one
+    } else if (platform === 'FACEBOOK') {
+      // Account has no bot at all — create the default one. Only Facebook Pages
+      // get a bot: an Instagram account is served as a second channel by the bot
+      // of the Page it is linked to, sharing one configuration.
       await tx.bot.create({
         data: {
           tenantId: ctx.tenantId,

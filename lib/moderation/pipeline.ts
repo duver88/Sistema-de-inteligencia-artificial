@@ -102,7 +102,6 @@ export async function processComment(
   const bot = await prisma.bot.findUnique({
     where: { id: botId },
     include: {
-      account: true,
       tenant: { select: { openaiApiKey: true } },
       projects: {
         orderBy: { createdAt: 'asc' },
@@ -118,16 +117,50 @@ export async function processComment(
     return;
   }
 
-  // Tenant integrity guard: the bot must belong to the same tenant as its
-  // account. An orphan bot (left behind when the account moved to another
-  // tenant) must never process comments — it would moderate with the old
-  // tenant's config, bill the old tenant's OpenAI key and write the
-  // CommentLog into the wrong tenant.
-  if (bot.tenantId !== bot.account.tenantId) {
+  // The account the comment actually came from. A bot is anchored to a Facebook
+  // Page but also serves the Instagram account linked to it, so the bot's own
+  // account is not necessarily the source. Resolving by the comment's platform
+  // + pageId gives the right page token and the right tenant to verify.
+  const sourceAccount = await prisma.socialAccount.findUnique({
+    where: {
+      platform_pageId: { platform: comment.platform, pageId: comment.pageId },
+    },
+  });
+
+  if (!sourceAccount) {
     console.warn(
-      `[Pipeline] ⚠️ Bot ${botId} (tenant ${bot.tenantId}) does not match its account's tenant ` +
-      `(${bot.account.tenantId}) — comment ${comment.commentId} skipped`
+      `[Pipeline] ⚠️ Sin SocialAccount para ${comment.platform} ${comment.pageId} — ` +
+      `comentario ${comment.commentId} descartado`
     );
+    return;
+  }
+
+  // Tenant integrity guard: the bot must belong to the same tenant as the
+  // account the comment came from. An orphan bot (left behind when the account
+  // moved to another tenant) must never process comments — it would moderate
+  // with the old tenant's config, bill the old tenant's OpenAI key and write
+  // the CommentLog into the wrong tenant.
+  if (bot.tenantId !== sourceAccount.tenantId) {
+    console.warn(
+      `[Pipeline] ⚠️ Bot ${botId} (tenant ${bot.tenantId}) does not match the comment's account tenant ` +
+      `(${sourceAccount.tenantId}) — comment ${comment.commentId} skipped`
+    );
+    return;
+  }
+
+  // Per-channel switch. Re-checked here and not only at the webhook: a job
+  // enqueued before the owner turned the channel off must not still act on it.
+  const channelEnabled =
+    comment.platform === 'INSTAGRAM' ? bot.instagramEnabled : bot.facebookEnabled;
+  if (!channelEnabled) {
+    await logComment({
+      tenantId: bot.tenantId,
+      botId,
+      comment,
+      action: 'IGNORED',
+      processingMs: Date.now() - startTime,
+      errorMessage: `${comment.platform} channel is disabled for this bot`,
+    });
     return;
   }
 
@@ -194,7 +227,7 @@ export async function processComment(
   try {
     // Decrypt inside the try so a corrupt token is logged as ERROR instead of
     // throwing and dropping the comment with no CommentLog trail.
-    const pageToken = decrypt(bot.account.pageToken);
+    const pageToken = decrypt(sourceAccount.pageToken);
 
     // ── STEP 1: Keyword Delete Check ─────────────────────────────────────────
     if (bot.deleteNegative) {

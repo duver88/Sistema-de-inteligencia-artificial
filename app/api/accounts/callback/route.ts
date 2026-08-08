@@ -206,10 +206,12 @@ export async function GET(request: NextRequest) {
       });
 
       // Subscribe Facebook page to webhooks
-      if (!fbAccount.webhookSubscribed) {
+      let pageSubscribed = fbAccount.webhookSubscribed;
+      if (!pageSubscribed) {
         try {
           const subscribed = await metaClient.subscribePageToWebhooks(page.id, page.access_token);
           if (subscribed) {
+            pageSubscribed = true;
             await prisma.socialAccount.update({
               where: { id: fbAccount.id },
               data: { webhookSubscribed: true },
@@ -240,7 +242,11 @@ export async function GET(request: NextRequest) {
 
         const encryptedIgToken = encrypt(page.access_token);
 
-        const igAccount = await prisma.$transaction(async (tx) => {
+        // Instagram comments are delivered through the app's subscription to the
+        // `instagram` object plus the LINKED PAGE's subscription — there is no
+        // per-Instagram-account subscription in the Facebook Login flow. So the
+        // Instagram account is reachable exactly when its Page is.
+        await prisma.$transaction(async (tx) => {
           const igAccount = await tx.socialAccount.upsert({
             where: { platform_pageId: { platform: 'INSTAGRAM', pageId: ig.id } },
             update: {
@@ -250,6 +256,7 @@ export async function GET(request: NextRequest) {
               pictureUrl: ig.profile_picture_url,
               isActive: true,
               linkedFacebookPageId: fbAccount.id,
+              webhookSubscribed: pageSubscribed,
             },
             create: {
               tenantId: ctx.tenantId,
@@ -259,6 +266,7 @@ export async function GET(request: NextRequest) {
               pageToken: encryptedIgToken,
               pictureUrl: ig.profile_picture_url,
               linkedFacebookPageId: fbAccount.id,
+              webhookSubscribed: pageSubscribed,
             },
           });
 
@@ -273,44 +281,9 @@ export async function GET(request: NextRequest) {
             data: { tenantId: ctx.tenantId },
           });
 
-          // Create a default Bot ONLY if the account has no bot at all
-          const existingIgBot = await tx.bot.findFirst({
-            where: { accountId: igAccount.id },
-          });
-          if (!existingIgBot) {
-            await tx.bot.create({
-              data: {
-                tenantId: ctx.tenantId,
-                accountId: igAccount.id,
-                name: `Bot Instagram ${ig.name}`,
-                isActive: false,
-              },
-            });
-          }
-
-          return igAccount;
+          // No bot is created for the Instagram account: the Page's bot serves
+          // both channels with one shared configuration (see Bot.accountId).
         });
-
-        // Subscribe the Instagram account to comment webhooks. Instagram events
-        // are delivered per IG user and are NOT covered by the Page's `feed`
-        // subscription above — without this no Instagram comment ever arrives.
-        // Uses the linked Page's token, which is what the IG Graph API expects.
-        if (!igAccount.webhookSubscribed) {
-          try {
-            const subscribed = await metaClient.subscribeInstagramToWebhooks(
-              ig.id,
-              page.access_token
-            );
-            if (subscribed) {
-              await prisma.socialAccount.update({
-                where: { id: igAccount.id },
-                data: { webhookSubscribed: true },
-              });
-            }
-          } catch (err) {
-            console.error(`[callback] Instagram webhook subscription failed for ${ig.id}:`, err);
-          }
-        }
       }
     }
 
