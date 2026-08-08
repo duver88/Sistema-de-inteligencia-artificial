@@ -30,7 +30,16 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         plan: true,
-        _count: { select: { accounts: true, bots: true, users: true } },
+        _count: {
+          select: {
+            // Only Facebook Pages count against the plan — an Instagram
+            // account is a second channel of the Page's bot, not a resource
+            // of its own (see lib/plans.ts).
+            accounts: { where: { platform: 'FACEBOOK' } },
+            bots: true,
+            users: true,
+          },
+        },
       },
       orderBy: { createdAt: 'asc' },
       skip: (page - 1) * PAGE_SIZE,

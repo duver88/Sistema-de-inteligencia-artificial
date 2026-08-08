@@ -43,7 +43,14 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       id: true,
       name: true,
       plan: true,
-      _count: { select: { accounts: true, bots: true, users: true } },
+      _count: {
+        // Only Facebook Pages count against the plan (see lib/plans.ts).
+        select: {
+          accounts: { where: { platform: 'FACEBOOK' } },
+          bots: true,
+          users: true,
+        },
+      },
     },
   });
 

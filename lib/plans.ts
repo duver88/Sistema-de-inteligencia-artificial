@@ -2,7 +2,15 @@ import { Plan } from '@/lib/generated/prisma/client';
 import { prisma } from '@/lib/prisma';
 
 export interface PlanLimits {
-  /** Max connected SocialAccounts (pages). Infinity for unlimited plans. */
+  /**
+   * Max connected Facebook Pages. Infinity for unlimited plans.
+   *
+   * Only Facebook Pages count. An Instagram account is not a separate
+   * resource: it is linked to a Page and served by that Page's bot as a second
+   * channel, sharing one configuration. Charging a slot for it would make a
+   * single business consume two, and would block Instagram entirely on a FREE
+   * plan (1 page) even though the user connected only one business.
+   */
   maxPages: number;
   /** Max bots. Infinity for unlimited plans. */
   maxBots: number;
@@ -49,13 +57,14 @@ export function getPlanLimits(plan: Plan): PlanLimits {
 }
 
 /**
- * Current resource usage for a tenant: number of SocialAccounts (pages) and
- * Bots. Counts every row owned by the tenant regardless of active state — the
- * ceiling is on provisioned resources, not just enabled ones.
+ * Current resource usage for a tenant: number of Facebook Pages and Bots.
+ * Counts every row owned by the tenant regardless of active state — the ceiling
+ * is on provisioned resources, not just enabled ones. Instagram accounts are
+ * excluded on purpose (see PlanLimits.maxPages).
  */
 export async function getTenantUsage(tenantId: string): Promise<TenantUsage> {
   const [pages, bots] = await Promise.all([
-    prisma.socialAccount.count({ where: { tenantId } }),
+    prisma.socialAccount.count({ where: { tenantId, platform: 'FACEBOOK' } }),
     prisma.bot.count({ where: { tenantId } }),
   ]);
   return { pages, bots };
@@ -68,9 +77,9 @@ export interface PlanCheck {
 }
 
 /**
- * Whether the tenant can add another page without exceeding its plan.
+ * Whether the tenant can add another Facebook Page without exceeding its plan.
  * Pass `additionalPages` when checking a batch (defaults to 1). Unlimited
- * plans always allow.
+ * plans always allow. Instagram accounts do not count (see PlanLimits.maxPages).
  */
 export async function canAddPage(
   tenantId: string,
@@ -81,7 +90,9 @@ export async function canAddPage(
     select: { plan: true },
   });
   const limit = getPlanLimits(tenant?.plan ?? 'FREE').maxPages;
-  const current = await prisma.socialAccount.count({ where: { tenantId } });
+  const current = await prisma.socialAccount.count({
+    where: { tenantId, platform: 'FACEBOOK' },
+  });
   return {
     allowed: isUnlimited(limit) || current + additionalPages <= limit,
     limit,

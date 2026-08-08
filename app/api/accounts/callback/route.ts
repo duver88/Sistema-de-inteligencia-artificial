@@ -116,10 +116,15 @@ export async function GET(request: NextRequest) {
     const pages = await metaClient.getManagedPages(longLivedToken);
 
     // Enforce the tenant's plan page limit before creating any new
-    // SocialAccount. A page (or Instagram account) already owned by THIS tenant
-    // is a reconnection and does not count; a brand-new page — or one being
-    // pulled in from another tenant — does. `projectedPages` tracks the running
-    // owned count so a single OAuth batch can't blow past the ceiling.
+    // SocialAccount. A page already owned by THIS tenant is a reconnection and
+    // does not count; a brand-new page — or one being pulled in from another
+    // tenant — does. `projectedPages` tracks the running owned count so a
+    // single OAuth batch can't blow past the ceiling.
+    //
+    // Only Facebook Pages are counted. The Instagram account linked to a Page
+    // is a second channel of that Page's bot, not a separate resource, so it
+    // never consumes a slot — otherwise one business would eat two, and a FREE
+    // plan (1 page) could never connect Instagram at all.
     const tenant = await prisma.tenant.findUnique({
       where: { id: ctx.tenantId },
       select: { plan: true },
@@ -127,7 +132,7 @@ export async function GET(request: NextRequest) {
     const maxPages = getPlanLimits(tenant?.plan ?? 'FREE').maxPages;
     const pagesUnlimited = isUnlimited(maxPages);
     let projectedPages = await prisma.socialAccount.count({
-      where: { tenantId: ctx.tenantId },
+      where: { tenantId: ctx.tenantId, platform: 'FACEBOOK' },
     });
     let planLimitHit = false;
 
@@ -227,19 +232,8 @@ export async function GET(request: NextRequest) {
       if (page.instagram_business_account) {
         const ig = page.instagram_business_account;
 
-        // An Instagram Business account is its own SocialAccount row, so it
-        // also consumes a page slot. Same reconnection exemption applies.
-        const existingIg = await prisma.socialAccount.findUnique({
-          where: { platform_pageId: { platform: 'INSTAGRAM', pageId: ig.id } },
-          select: { tenantId: true },
-        });
-        const igIsNewForTenant = existingIg?.tenantId !== ctx.tenantId;
-        if (!pagesUnlimited && igIsNewForTenant && projectedPages >= maxPages) {
-          planLimitHit = true;
-          continue;
-        }
-        if (igIsNewForTenant) projectedPages++;
-
+        // No plan check here: the Instagram account rides along with the Page
+        // that was just admitted above, as a second channel of the same bot.
         const encryptedIgToken = encrypt(page.access_token);
 
         // Instagram comments are delivered through the app's subscription to the
