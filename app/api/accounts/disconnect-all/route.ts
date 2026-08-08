@@ -26,18 +26,16 @@ export async function POST() {
   // token) is non-fatal — we still deactivate locally.
   await Promise.all(
     accounts.map(async (account) => {
-      if (!account.webhookSubscribed) return;
+      // Only Facebook Pages hold a subscription: an Instagram account has none
+      // of its own in the Facebook Login flow — its events flow through the
+      // linked Page, which is unsubscribed here as part of the same sweep.
+      if (!account.webhookSubscribed || account.platform !== 'FACEBOOK') return;
       try {
         const token = decrypt(account.pageToken);
-        // Instagram subscriptions live on the IG user, not the linked Page.
-        if (account.platform === 'INSTAGRAM') {
-          await metaClient.unsubscribeInstagramFromWebhooks(account.pageId, token);
-        } else {
-          await metaClient.unsubscribePageFromWebhooks(account.pageId, token);
-        }
+        await metaClient.unsubscribePageFromWebhooks(account.pageId, token);
       } catch (err) {
         console.error(
-          `[disconnect-all] Failed to unsubscribe ${account.platform} ${account.pageId}:`,
+          `[disconnect-all] Failed to unsubscribe page ${account.pageId}:`,
           err instanceof Error ? err.message : err,
         );
       }

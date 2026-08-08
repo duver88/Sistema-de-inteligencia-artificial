@@ -210,39 +210,13 @@ async function unsubscribePageFromWebhooks(
   return data.success === true;
 }
 
-/**
- * Subscribe an Instagram Business Account to comment webhooks.
- * Instagram events are delivered per IG user, NOT through the linked Page's
- * `feed` subscription — without this call no Instagram comment ever arrives.
- * Uses the linked Page's access token, which is what the IG Graph API expects.
- */
-async function subscribeInstagramToWebhooks(
-  igUserId: string,
-  pageAccessToken: string
-): Promise<boolean> {
-  const url = `${META_BASE_URL}/${igUserId}/subscribed_apps`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      subscribed_fields: ['comments'],
-      access_token: pageAccessToken,
-    }),
-  });
-  const data = await handleResponse<{ success: boolean }>(res);
-  return data.success === true;
-}
-
-/** Unsubscribe the app from an Instagram Business Account's webhooks. */
-async function unsubscribeInstagramFromWebhooks(
-  igUserId: string,
-  pageAccessToken: string
-): Promise<boolean> {
-  const url = `${META_BASE_URL}/${igUserId}/subscribed_apps?access_token=${encodeURIComponent(pageAccessToken)}`;
-  const res = await fetch(url, { method: 'DELETE' });
-  const data = await handleResponse<{ success: boolean }>(res);
-  return data.success === true;
-}
+// NOTE: there is deliberately no per-Instagram-account subscription helper.
+// `POST /{ig-user-id}/subscribed_apps` belongs to the Instagram API with
+// Instagram Login and answers "(#3) Application does not have the capability to
+// make this API call" for an app using Facebook Login, as ours does. In this
+// flow Instagram comments are delivered through the app's App-Dashboard
+// subscription to the `instagram` object plus the subscription of the LINKED
+// PAGE (subscribePageToWebhooks above) — nothing else is needed or possible.
 
 /** Get all Facebook Pages managed by the user, including linked Instagram accounts. */
 async function getManagedPages(longLivedUserToken: string): Promise<Array<{
@@ -285,8 +259,6 @@ export const metaClient = {
   getInstagramMediaCaption,
   subscribePageToWebhooks,
   unsubscribePageFromWebhooks,
-  subscribeInstagramToWebhooks,
-  unsubscribeInstagramFromWebhooks,
   getManagedPages,
 };
 

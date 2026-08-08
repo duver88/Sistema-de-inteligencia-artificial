@@ -24,19 +24,18 @@ export async function DELETE(
 
   // Stop webhook delivery at Meta before deactivating locally — otherwise Meta
   // keeps sending events for a page the user has disconnected. Best effort: an
-  // expired or downgraded token must not block the disconnection. Instagram
-  // subscriptions live on the IG user, so they need their own endpoint.
-  if (account.webhookSubscribed) {
+  // expired or downgraded token must not block the disconnection.
+  //
+  // Only Facebook Pages are unsubscribed: an Instagram account has no
+  // subscription of its own in the Facebook Login flow (its events flow through
+  // the linked Page), so unsubscribing the Page below covers it too.
+  if (account.webhookSubscribed && account.platform === 'FACEBOOK') {
     try {
       const token = decrypt(account.pageToken);
-      if (account.platform === 'INSTAGRAM') {
-        await metaClient.unsubscribeInstagramFromWebhooks(account.pageId, token);
-      } else {
-        await metaClient.unsubscribePageFromWebhooks(account.pageId, token);
-      }
+      await metaClient.unsubscribePageFromWebhooks(account.pageId, token);
     } catch (err) {
       console.error(
-        `[accounts] Failed to unsubscribe ${account.platform} ${account.pageId}:`,
+        `[accounts] Failed to unsubscribe page ${account.pageId}:`,
         err instanceof Error ? err.message : err,
       );
     }
