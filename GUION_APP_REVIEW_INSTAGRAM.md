@@ -6,20 +6,32 @@ Segunda solicitud, después de que Meta aprobara `pages_manage_engagement` el **
 
 ---
 
-## A. Texto del caso de uso (pégalo en el formulario, en INGLÉS)
+## A. Textos del caso de uso (en INGLÉS)
 
-**Tell us how you're using these permissions:**
+⚠️ **Cada permiso se solicita en su propio diálogo**, con su propia caja de descripción y su propia subida de vídeo. No hay un texto conjunto: hay que rellenar los dos. **El mismo archivo de vídeo se sube a ambos** — no hace falta grabar dos.
 
-> LionsCore helps a business moderate the comments on the Instagram Business account linked to a Facebook Page it administers. The admin connects the Page, configures one bot with a knowledge base and moderation rules, and the app then moderates incoming Instagram comments. Both permissions are used server-to-server on our backend, triggered by the `instagram` webhook (`comments` field).
+### A.1 — `instagram_basic`
+
+> LionsCore is a comment-moderation tool for businesses. The admin signs in with email and password, then connects a Facebook Page they administer; we use `instagram_basic` to work with the Instagram Business account linked to that Page.
 >
-> **`instagram_basic`** — after the admin authorizes the Page, we read the Instagram Business account linked to it (`GET /me/accounts`, field `instagram_business_account`) so the admin can see and select it in the dashboard, and we read the caption of the media a comment belongs to (`GET /{ig-media-id}?fields=caption`) so the AI answers with the context of that specific post instead of a generic reply.
+> We use it for exactly two things:
 >
-> **`instagram_manage_comments`** — this is the core of the product. Once a comment arrives we act on it in one of three ways, all shown end-to-end in the video:
+> 1. **Identify the Instagram account to manage.** Right after the admin authorizes the Page, we read `GET /me/accounts` with the field `instagram_business_account` to obtain the linked account's id, username and profile picture. Without this the admin could not see which Instagram account is connected, and the app would have no account to moderate. The connected account is displayed in the dashboard on the "Accounts" screen, shown in the video.
+> 2. **Read the caption of the post a comment belongs to.** When a comment arrives, we read `GET /{ig-media-id}?fields=caption` to give the AI the context of that specific post, so the published answer is relevant to what the post is about instead of a generic reply.
+>
+> The value for the person using the app is that they configure one business once and the app answers their Instagram audience accurately, with the context of each post. We do not read profile data beyond the account's basic metadata, and we do not use it for advertising or profiling.
+
+### A.2 — `instagram_manage_comments`
+
+> LionsCore uses `instagram_manage_comments` to moderate the comments on the Instagram Business account the admin has connected. This is the core function of the product: after connecting the account the admin configures a bot with a knowledge base and moderation rules, and the app then acts on incoming comments in one of three ways, all shown end-to-end in the video:
+>
 > 1. **Reply** — when a user asks a genuine question on an Instagram post, the AI composes an answer from the admin's configured knowledge base and publishes it as a reply (`POST /{ig-comment-id}/replies`). The reviewer can then see the reply live on Instagram.
-> 2. **Hide** — a comment matching the admin's spam rules is hidden (`POST /{ig-comment-id}` with `hide=true`), so it stops being visible to other users without destroying it.
+> 2. **Hide** — a comment matching the admin's spam rules is hidden (`POST /{ig-comment-id}` with `hide=true`), so it stops being visible to others without being destroyed.
 > 3. **Delete** — a comment matching the admin's banned-keyword rules, or classified as abusive, is deleted (`DELETE /{ig-comment-id}`). The reviewer can confirm it is gone from the post.
 >
-> Without `instagram_manage_comments` the app could read Instagram comments but could not act on them, which is the entire purpose of the product. Every action is recorded in an auditable log the admin reviews in the dashboard.
+> The value for the person using the app is that questions from potential customers get answered within seconds instead of hours, and abusive or spam comments are removed without anyone watching the account full time. Without this permission the app could read Instagram comments but could not act on them, which is the entire purpose of the product.
+>
+> Incoming comments arrive via the `instagram` webhook (`comments` field) and are processed server-to-server on our backend through a message queue. Every action is recorded in an auditable log the admin reviews in the dashboard.
 
 ---
 
@@ -82,10 +94,39 @@ Cada punto de esta lista es un fallo que ya ocurrió alguna vez y que **no da er
 
 ---
 
-## E. Checklist de envío
+## E. Cómo es el formulario de envío (y el requisito que bloquea)
 
-- [ ] Pegar el **texto A** en el caso de uso de cada uno de los dos permisos.
+Al pulsar "Solicitar" en cada permiso se abre un diálogo **independiente** — uno para `instagram_basic` y otro para `instagram_manage_comments` — con cuatro partes:
+
+1. Una **descripción detallada** ("cómo usa la app el permiso, qué valor aporta y por qué es necesario") → usa los textos A.1 y A.2.
+2. Una **grabación de pantalla** → el mismo archivo en los dos.
+3. El contador de **llamadas de prueba a la API**.
+4. Una **casilla de confirmación** de que la información recibida se usará conforme al uso permitido.
+
+### ⚠️ El bloqueante: 1 llamada de prueba por permiso
+
+Ambos diálogos muestran hoy:
+
+```
+instagram_basic            ● 0 de 1 llamadas de prueba a la API necesarias
+instagram_manage_comments  ● 0 de 1 llamadas de prueba a la API necesarias
+```
+
+Meta no deja completar el envío hasta que ese contador llegue a 1, y **avisa de que los datos tardan hasta 24 horas en aparecer**. Es decir: no es algo que se resuelva el mismo día que envías.
+
+**La buena noticia**: no hay que fabricar nada. La app ya hace esas llamadas de verdad. El 8 ago 2026 el bot de Odontología Daza Ramírez respondió comentarios reales en Instagram, lo que ejecuta `POST /{ig-comment-id}/replies` (`instagram_manage_comments`) y, en la misma sesión, la conexión de la página leyó `instagram_business_account` y el caption del post (`instagram_basic`). Así que lo más probable es que el contador se ponga solo en 1/1.
+
+**Qué hacer**: entra al día siguiente, comprueba que ambos marcan `1 de 1`, y solo entonces completa el envío. Si alguno siguiera en 0, fuerza la llamada desde el **Graph API Explorer** con el token de página, o simplemente vuelve a usar el bot en Instagram y espera otras 24 h.
+
+Guarda el texto de las descripciones antes de irte del diálogo: Meta recomienda pulsar "Guardar" y volver luego, porque si sales sin guardar se pierde lo escrito.
+
+---
+
+## F. Checklist de envío
+
+- [ ] Pegar el **texto A.1** en el diálogo de `instagram_basic` y el **A.2** en el de `instagram_manage_comments`. Son cajas distintas.
+- [ ] Subir **el mismo vídeo** en los dos diálogos.
+- [ ] Marcar la **casilla de confirmación** de uso permitido en cada uno.
+- [ ] Comprobar que ambos contadores marcan **`1 de 1` llamadas de prueba** (ver sección E — tarda hasta 24 h).
 - [ ] Pegar la **nota B** en las instrucciones para revisores, con credenciales reales rellenadas.
-- [ ] Subir el vídeo.
 - [ ] **No** solicitar `instagram_manage_contents` (es para publicaciones, no comentarios), `instagram_manage_messages` (mensajes directos) ni ningún otro permiso que la app no use: pedir permisos sin usar es causa habitual de rechazo.
-- [ ] Verificar que las llamadas de prueba aparecen registradas (el contador de uso del permiso deja de estar en 0 cuando la app hace llamadas reales).
