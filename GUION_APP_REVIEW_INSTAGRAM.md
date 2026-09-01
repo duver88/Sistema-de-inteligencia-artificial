@@ -12,13 +12,13 @@ Comprobado contra el código, la base de datos de producción y la Graph API rea
 
 | Lo que se le dice a Meta | Dónde está en el código | Probado |
 |---|---|---|
-| `GET /me/accounts` … `instagram_business_account{id,name,profile_picture_url}` | `lib/meta/client.ts:237` | ✅ 6 cuentas IG conectadas |
+| `GET /me/accounts` … `instagram_business_account{id,name,profile_picture_url}` | `lib/meta/client.ts:237` | ✅ 6 cuentas IG resueltas al conectar |
 | `GET /{ig-media-id}?fields=caption` | `client.ts:164` ← `pipeline.ts:326` | ✅ HTTP 200 con caption real |
 | `POST /{ig-comment-id}/replies` | `client.ts:63` ← `pipeline.ts:372`, `comments.ts:34` | ✅ 3 respuestas reales el 8 ago |
 | `POST /{ig-comment-id}` `{hide:true}` | `client.ts:129` ← `pipeline.ts:253,297` | ✅ implementado |
 | `DELETE /{ig-comment-id}` | `client.ts:78` ← `pipeline.ts:236,284`, `comments.ts:118,161` | ✅ implementado |
 
-Infraestructura lista: suscripción `instagram → comments (v26.0)` **activa** en la app; los 6 tokens de IG **válidos, sin caducidad, con `instagram_basic` e `instagram_manage_comments`**; `AppSetting.openai_api_key` puesta; webhook recibiendo comentarios de Instagram en tiempo real con firma válida.
+Infraestructura lista: suscripción `instagram → comments (v26.0)` **activa** en la app (no se tocó al vaciar la cuenta); los tokens de IG comprobados **válidos, sin caducidad y con `instagram_basic` e `instagram_manage_comments`**; `AppSetting.openai_api_key` puesta; webhook recibiendo comentarios de Instagram en tiempo real con firma válida.
 
 **Instagram NO permite editar comentarios.** El vídeo debe enseñar **crear (responder), ocultar y borrar** — nunca editar. El UI ya oculta el botón "Edit reply" en las filas de Instagram (`CommentRow.tsx:50`), así que no hay riesgo de que salga un botón roto en cámara.
 
@@ -30,47 +30,68 @@ Infraestructura lista: suscripción `instagram → comments (v26.0)` **activa** 
 |---|---|
 | Cuenta de Instagram | **@urbamares_** — "Urbanizadora Martinez Esparza" (`17841405787641542`) |
 | Página de Facebook vinculada | **UrbaMares** (`224830611012407`) |
-| Bot | **Bot UrbaMares** |
+| Bot | se crea solo al conectar la página, en cámara |
 | Usuario de la app | `duver20000@gmail.com` (tenant "Duberney", ENTERPRISE) |
 | Seguidores / posts | 8.486 / 662, publica a diario |
 
-**Por qué esta y no otra**: es el único bot ya configurado **en inglés** (`language='en'`), con **46 entradas de Knowledge Base**, keyword de borrado `scam` e instrucciones de moderación en lenguaje natural en inglés. Es además el bot que aparece en la nota a revisores del envío ya aprobado, así que hay continuidad. Los otros cinco bots con Instagram vinculado están en español y con la KB vacía.
+**Por qué esta y no otra**: era el único bot configurado **en inglés**, con **46 entradas de Knowledge Base**, keyword de borrado `scam` e instrucciones de moderación en inglés — todo eso está respaldado y se vuelve a cargar en cámara. Es además la cuenta que aparece en la nota a revisores del envío ya aprobado, así que hay continuidad con lo que Meta ya revisó.
 
-### ⚠️ Antes de encender nada, léete esto
+### Estado de la cuenta: VACÍA a propósito (1 sep 2026, 22:50)
 
-**@urbamares_ es una cuenta real de un negocio real con 8.486 seguidores que publica todos los días.** Encender el bot significa que la IA va a empezar a **responder públicamente, en inglés, a clientes reales** — no solo a tus comentarios de prueba. El post del 1 sep ya tiene 7 comentarios.
+El tenant de `duver20000@gmail.com` **se ha vaciado deliberadamente** para poder grabar el flujo completo desde cero: entrar, ver que no hay nada, conectar en cámara y ver cómo aparece todo. Borrado: 15 cuentas sociales (9 FB + 6 IG), 9 bots, 46 entradas de Knowledge Base, 8 CommentLog y 2 filas de AiUsage.
 
-Opciones:
+**Se conservan**: el usuario, el tenant, el plan ENTERPRISE, el acceso hasta 2028, la key de OpenAI y **todas las suscripciones de webhook en Meta** (app-level `instagram→comments` y `page→feed`). El resto de la plataforma (los 22 bots del tenant "Hernesto José Ariza") no se tocó.
 
-- **Grabar y apagar** — enciendes, grabas los ~10 minutos, apagas. Es lo que menos expone.
-- **Dejarlo encendido** — Meta valora el uso real y el contador de llamadas de prueba se alimenta solo, pero asume respuestas automáticas en inglés a tu audiencia hispanohablante.
-- **Cambiar `language` a `es`** — el bot respondería bien a la audiencia real, pero **rompe el vídeo**: Meta exige inglés. Si eliges esto, cámbialo a `en` solo durante la grabación.
+**Respaldos** por si hay que volver atrás:
 
-Mi recomendación: **encender, grabar, apagar**, y volver a encender solo cuando decidas conscientemente poner el producto en marcha en esa cuenta.
+| Qué | Dónde |
+|---|---|
+| Backup completo de la BD previo al borrado | `/root/lionscore-pre-wipe-duberney-2026-09-01-2249.sql.gz` (servidor) |
+| Knowledge Base, 46 entradas, reimportable | `urbamares-knowledge-base-2026-09-01.csv` (tu PC + `/root/`) |
+| Config del bot e instrucciones de moderación | `urbamares-bot-config-2026-09-01.txt` (tu PC) |
+
+### ⚠️ @urbamares_ es una cuenta real
+
+**8.486 seguidores, 662 posts, publica todos los días.** Cuando enciendas el bot en el vídeo, la IA empezará a **responder públicamente y en inglés a clientes reales**, no solo a tus comentarios de prueba. El post del 1 sep ya tiene 7 comentarios.
+
+Recomendación: **grabar y apagar el master switch al terminar**, y volver a encenderlo solo cuando decidas conscientemente poner el producto en marcha ahí.
 
 ---
 
 ## 2. Pre-flight OBLIGATORIO
 
-Cada punto es un fallo que **no da error visible** durante la grabación — te enteras al revisar el vídeo.
+Como se graba desde cero, casi toda la configuración se hace **dentro del vídeo**. Lo que queda por comprobar antes de darle a grabar:
 
-### 2.1 — Bloqueantes que he confirmado hoy que están mal
+### 2.1 — Lo que tiene que estar listo ANTES
 
-- [ ] **`Bot UrbaMares` está APAGADO** (`isActive = false`). Igual que los otros 30. Sin esto el webhook descarta el comentario en `route.ts:132` y no pasa absolutamente nada. → **Bots → Bot UrbaMares → Master switch ON.**
-- [ ] **`spamKeywords` está VACÍO** (`[]`). Sin una keyword de spam, el paso 2 del pipeline nunca dispara y **la escena de "ocultar" no ocurre de forma determinista** (quedaría a criterio del clasificador de IA, que puede decidir otra cosa en cámara). → **Moderation Rules → añade `followers`** (y si quieres `crypto`, `loan`, `giveaway`).
-
-### 2.2 — Verificar que siguen bien
-
-- [ ] **Channels: Facebook OFF, Instagram ON.** Es la jugada clave del vídeo: con Facebook apagado, ninguna acción que se vea puede confundirse con `pages_manage_engagement`.
-- [ ] **AI Configuration → Language = English.** Ya está en `en`. Confírmalo.
-- [ ] **Keyword de borrado `scam`.** Ya está.
-- [ ] **Knowledge Base con 46 entradas.** Ya está (todas globales, sin proyectos).
-- [ ] **Key de OpenAI** en `/admin` → AI & Usage. Ya está puesta.
-- [ ] La cuenta de Facebook que conecta debe tener **rol en la Meta app**. Mientras estos dos permisos no estén aprobados, Meta solo se los concede a esas cuentas.
-- [ ] **Navegador en inglés** y la app en inglés (ya lo está).
+- [ ] **Key de OpenAI** puesta en `/admin` → AI & Usage. Ya está. Sin ella el pipeline corta en `getOpenAiApiKey`, registra IGNORED con "OpenAI API key not configured" y **no hay respuesta de IA** — el fallo no se ve en pantalla.
+- [ ] La cuenta de Facebook que conecta debe tener **rol en la Meta app** (admin/desarrollador/tester). Mientras `instagram_basic` e `instagram_manage_comments` no estén aprobados, Meta solo se los concede a esas cuentas.
+- [ ] La cuenta **@urbamares_ debe seguir siendo Empresa/Creador y estar vinculada a la Página UrbaMares**. Si no, `/me/accounts` devuelve `instagram_business_account` vacío y la rama de IG del callback no se ejecuta.
+- [ ] **Navegador en inglés**, app en inglés (ya lo está).
 - [ ] **Prueba el modo incógnito antes de grabar**: abre el permalink de un post de @urbamares_ sin sesión y comprueba que se ven los comentarios. Lo necesitas para las escenas de ocultar y borrar.
+- [ ] Ten a mano el CSV de la Knowledge Base y el fichero de config — los vas a usar en cámara.
 
-### 2.3 — Preparación de la grabación
+### 2.2 — Lo que ocurre dentro del vídeo (no lo hagas antes)
+
+Al reconectar, el callback crea el bot automáticamente **con los valores por defecto del schema**. Es decir, el bot nace así y hay que arreglarlo en cámara:
+
+| Campo | Nace como | Hay que dejarlo en |
+|---|---|---|
+| `isActive` | `false` | **ON** (master switch) |
+| `language` | **`es`** | **English** ← si se olvida, la IA responde en español con la UI en inglés |
+| Knowledge Base | vacía | importar el CSV (46 entradas) |
+| `deleteKeywords` | `[]` | `scam` |
+| `spamKeywords` | `[]` | `followers` ← **sin esto la escena de OCULTAR no dispara** |
+| `systemInstructions` | vacío | el texto del fichero de config |
+| Channels | ambos ON | **Facebook OFF, Instagram ON** |
+
+### 2.3 — ⚠️ En el diálogo de Meta, selecciona SOLO la página UrbaMares
+
+El callback recorre **todas** las páginas que autorices (`route.ts:144`, `for (const page of pages)`) y crea una cuenta y un bot por cada una. Si dejas marcadas las 9 páginas, acabas con 9 cuentas y 9 bots en pantalla y el vídeo pierde el hilo.
+
+En la pantalla **"¿Qué páginas quieres usar?"** desmarca todo y deja **solo UrbaMares**. Así el resultado en `/accounts` son exactamente dos filas: la página de Facebook y @urbamares_.
+
+### 2.4 — Preparación de la grabación
 
 Vas a necesitar **tres contextos en pantalla**, igual que en el vídeo aprobado:
 
@@ -84,89 +105,92 @@ Elige **un post concreto** de @urbamares_ y quédate en él todo el vídeo. Suge
 
 ## 3. Guion del vídeo
 
-**Forma que exige Meta**: navegador y app en inglés, subtítulos en inglés describiendo cada clic, ritmo pausado, cada acción verificada en Instagram. Objetivo **6–7,5 min, 1080p** (el aprobado duró 6:47).
+**Forma que exige Meta**: navegador y app en inglés, subtítulos en inglés describiendo cada clic, ritmo pausado, cada acción verificada en Instagram. Objetivo **7–8 min, 1080p** (el aprobado duró 6:47).
 
 Graba **de una sola pasada**. No reaproveches metraje del vídeo de julio: el diálogo de OAuth ahora lista dos permisos más y mezclar tomas con estados distintos del UI se nota.
 
-### Bloque A — Acceso (0:00–0:30)
+> **Ventaja de grabar desde cero**: el revisor ve el ciclo entero — cuenta vacía → autorización → cuenta conectada → configuración → moderación real → revocación. Es el formato que más difícil se lo pone a un rechazo por "no se ve el caso de uso".
+
+### Bloque A — Acceso y estado vacío (0:00–0:45)
 
 | # | En pantalla | Subtítulo en inglés |
 |---|---|---|
 | 1 | `https://sia.lionscore.ai`, pantalla de login. | *This is LionsCore, a comment-moderation tool for businesses.* |
 | 2 | Escribes email y contraseña, entras. | *Users sign in with email and password. LionsCore does not use Facebook Login to sign in.* |
+| 3 | **Accounts, vacío.** Deja el plano 3 segundos. | *This account has no social accounts connected yet. We will connect one from scratch.* |
 
-### Bloque B — Conectar la cuenta · `instagram_basic` (0:30–1:45)
-
-| # | En pantalla | Subtítulo en inglés |
-|---|---|---|
-| 3 | Vas a **Accounts** y pulsas **Connect Account**. | *The Meta dialog appears here, at Connect Account — not at sign-in.* |
-| 4 | Diálogo de Facebook: selección de Página y de negocio. | *The admin selects the Facebook Page they administer.* |
-| 5 | **Pantalla de permisos. PÁRATE AQUÍ 4–5 segundos** y deja la lista legible. Si sale en español, no pasa nada — el subtítulo la traduce. | *Granting access to the Instagram account linked to the Page — instagram_basic and instagram_manage_comments.* |
-| 6 | Confirmación y vuelta a `/accounts`. | *Authorization complete.* |
-| 7 | **Plano fijo sobre la fila de Instagram**: icono de Instagram, nombre "Urbanizadora Martinez Esparza" y foto de perfil. | *instagram_basic — the app reads the Instagram Business account linked to the Page, and shows it here: name and profile picture. Without this the admin could not see which account is connected, and the app would have no account to moderate.* |
-
-> Esta escena 7 es **la prueba visual de `instagram_basic`**. No la pases rápido.
-
-### Bloque C — Configuración (1:45–3:00)
+### Bloque B — Conectar la cuenta · `instagram_basic` (0:45–2:10)
 
 | # | En pantalla | Subtítulo en inglés |
 |---|---|---|
-| 8 | Abres el bot → **Channels**. Apagas **Facebook**, dejas **Instagram** encendido. | *One bot serves this business on both networks. For this review we enable only the Instagram channel, so every action you will see is an Instagram action.* |
-| 9 | **Knowledge Base**: haces scroll por las 46 entradas (precios, áreas, ubicación). | *The Knowledge Base the admin configured. The AI may only answer from this.* |
-| 10 | **Moderation Rules**: keyword de borrado `scam`, keyword de spam `followers`, y las instrucciones en lenguaje natural. | *And the moderation rules: banned keywords, spam keywords, and instructions in plain English. The app never acts outside these rules.* |
-| 11 | Enciendes el **Master switch**. | *The bot is now active.* |
+| 4 | Pulsas **Connect Account**. | *The Meta dialog appears here, at Connect Account — not at sign-in.* |
+| 5 | Diálogo de Facebook: selección de negocio y de páginas. **Desmarca todo y deja solo UrbaMares.** | *The admin selects the Facebook Page they administer.* |
+| 6 | **Pantalla de permisos. PÁRATE 4–5 segundos** y deja la lista legible. Si sale en español no pasa nada, el subtítulo la traduce. | *Granting access to the Instagram account linked to the Page — instagram_basic and instagram_manage_comments.* |
+| 7 | Confirmación y vuelta a `/accounts`. | *Authorization complete.* |
+| 8 | **Plano fijo**: aparecen dos filas, la página de Facebook y **@urbamares_** con su icono de Instagram, su nombre y su foto de perfil. | *instagram_basic — the app read the Instagram Business account linked to the Page and shows it here: name and profile picture. Without this the admin could not see which account is connected, and the app would have no account to moderate.* |
 
-### Bloque D — RESPONDER · `instagram_manage_comments` + contexto del post (3:00–4:15)
+> La escena 8 es **la prueba visual de `instagram_basic`**. No la pases rápido. Que se vea que antes no había nada y ahora sí.
+
+### Bloque C — Configurar el bot desde cero (2:10–3:50)
 
 | # | En pantalla | Subtítulo en inglés |
 |---|---|---|
-| 12 | Abres el post de Instagram y **muestras su caption** ("...Torre 2 de Flora Club House, 96% de avance..."). | *This is the post. The app will read its caption to give the AI context.* |
-| 13 | Desde la cuenta personal, comentas de primer nivel: **"Hello! How much does an apartment cost, and what initial payment do you ask for?"** | *A real user asks a genuine question on the post.* |
-| 14 | Vuelves al panel `/comments`. En segundos aparece la fila con el comentario y la respuesta publicada. | *The comment arrives through the Instagram webhook and is processed on our server.* |
-| 15 | Lees en pantalla la respuesta generada. | *instagram_basic — the app read this post's caption for context. The AI then composed the answer from the Knowledge Base.* |
-| 16 | **En Instagram**: la respuesta publicada bajo el comentario, firmada por @urbamares_. | *instagram_manage_comments — CREATE. The reply is live on Instagram, published by the account.* |
+| 9 | Vas a **Bots**: se ha creado un bot para la página, apagado. Lo abres. | *Connecting the Page created a bot for this business. It starts switched off and unconfigured.* |
+| 10 | **Channels**: apagas **Facebook**, dejas **Instagram** encendido. | *One bot serves this business on both networks. For this review we enable only the Instagram channel, so every action you will see is an Instagram action.* |
+| 11 | **AI Configuration → Language = English.** | *The admin sets the language the bot answers in.* |
+| 12 | **Knowledge Base → Import**, subes el CSV. Aparecen las 46 entradas; haces scroll. | *The admin loads the business Knowledge Base. The AI may only answer from these facts.* |
+| 13 | **Moderation Rules**: keyword de borrado `scam`, keyword de spam `followers`, y pegas las instrucciones en lenguaje natural. | *And the moderation rules: banned keywords, spam keywords, and instructions in plain English. The app never acts outside these rules.* |
+| 14 | Enciendes el **Master switch**. | *The bot is now active.* |
 
-### Bloque E — Corregir la respuesta publicada (4:15–5:10)
+### Bloque D — RESPONDER · `instagram_manage_comments` + contexto del post (3:50–5:05)
+
+| # | En pantalla | Subtítulo en inglés |
+|---|---|---|
+| 15 | Abres el post de Instagram y **muestras su caption** ("...Torre 2 de Flora Club House, 96% de avance..."). | *This is the post. The app will read its caption to give the AI context.* |
+| 16 | Desde la cuenta personal, comentas de primer nivel: **"Hello! How much does an apartment cost, and what initial payment do you ask for?"** | *A real user asks a genuine question on the post.* |
+| 17 | Vuelves al panel `/comments`. En segundos aparece la fila con el comentario y la respuesta publicada. | *The comment arrives through the Instagram webhook and is processed on our server.* |
+| 18 | Lees en pantalla la respuesta generada. | *instagram_basic — the app read this post's caption for context. The AI then composed the answer from the Knowledge Base.* |
+| 19 | **En Instagram**: la respuesta publicada bajo el comentario, firmada por @urbamares_. | *instagram_manage_comments — CREATE. The reply is live on Instagram, published by the account.* |
+
+### Bloque E — Corregir la respuesta publicada (5:05–6:00)
 
 Este es el **equivalente honesto al "EDIT"** del vídeo de Facebook, que es la escena que convenció a los revisores en julio. Instagram no tiene endpoint para editar un comentario, así que la app lo resuelve en dos pasos: **borrar la respuesta publicada y publicar una nueva**. El comentario del usuario nunca se toca.
 
 | # | En pantalla | Subtítulo en inglés |
 |---|---|---|
-| 17 | En `/comments`, sobre la fila respondida, pulsas **Delete reply**. | *Instagram's API does not allow editing a published comment, so LionsCore corrects a reply in two steps. First, the admin deletes the reply the app published.* |
-| 18 | **En Instagram**: la respuesta ya no está; el comentario del usuario **sigue ahí**. | *instagram_manage_comments — DELETE, applied only to the reply the account published. The user's own comment is untouched.* |
-| 19 | De vuelta en `/comments`, la fila queda como **Reply deleted** y el botón **Reply** vuelve a estar disponible. Escribes una respuesta corregida y la publicas. | *The admin then publishes a corrected reply from the dashboard.* |
-| 20 | **En Instagram**: la nueva respuesta bajo el mismo comentario. | *instagram_manage_comments — CREATE, this time written by the admin instead of the AI. The admin keeps full control of what the account publishes.* |
+| 20 | En `/comments`, sobre la fila respondida, pulsas **Delete reply**. | *Instagram's API does not allow editing a published comment, so LionsCore corrects a reply in two steps. First, the admin deletes the reply the app published.* |
+| 21 | **En Instagram**: la respuesta ya no está; el comentario del usuario **sigue ahí**. | *instagram_manage_comments — DELETE, applied only to the reply the account published. The user's own comment is untouched.* |
+| 22 | De vuelta en `/comments`, la fila queda como **Reply deleted** y el botón **Reply** vuelve a estar disponible. Escribes una respuesta corregida y la publicas. | *The admin then publishes a corrected reply from the dashboard.* |
+| 23 | **En Instagram**: la nueva respuesta bajo el mismo comentario. | *instagram_manage_comments — CREATE, this time written by the admin instead of the AI. The admin keeps full control of what the account publishes.* |
 
-> **No intentes editar**: en Instagram no se puede, y el botón "Edit reply" ni siquiera aparece en las filas de Instagram — el UI lo oculta (`CommentRow.tsx:50`) y el servidor lo rechaza (`lib/meta/comments.ts:69`). Enseñar un botón que falla sería un motivo de rechazo.
+> **No intentes editar**: en Instagram no se puede, y el botón "Edit reply" ni siquiera aparece en las filas de Instagram — el UI lo oculta (`CommentRow.tsx:50`) y el servidor lo rechaza (`lib/meta/comments.ts:69`). Enseñar un botón que falla sería motivo de rechazo.
 
-### Bloque F — OCULTAR (5:10–6:00)
-
-| # | En pantalla | Subtítulo en inglés |
-|---|---|---|
-| 21 | Ventana **incógnito** con el post abierto. Se ven los comentarios. | *This is the public view of the post, signed out.* |
-| 22 | Desde la cuenta personal comentas: **"Get 10,000 followers fast, link in my bio!"** | *A user posts spam. It matches the spam keyword the admin configured.* |
-| 23 | `/comments` registra la acción como **HIDDEN**. | *The app hides it automatically.* |
-| 24 | **Refrescas la ventana incógnito**: el comentario ya no aparece. | *instagram_manage_comments — HIDE. The spam is no longer visible to the public.* |
-| 25 | En la ventana de la cuenta que comentó, el comentario **sigue existiendo**. | *Hiding does not destroy the comment — it stops being visible to others. The app hides, it does not delete, when the rule says hide.* |
-
-> La escena 23 es la que distingue OCULTAR de BORRAR. A Meta le importa que sepas la diferencia.
-
-### Bloque G — BORRAR (6:00–6:40)
+### Bloque F — OCULTAR (6:00–6:50)
 
 | # | En pantalla | Subtítulo en inglés |
 |---|---|---|
-| 26 | Desde la cuenta personal comentas: **"Don't buy here, this company is a scam"** | *A comment matching the banned keyword "scam" that the admin configured.* |
-| 27 | `/comments` lo registra como **DELETED**. | *The app deletes it automatically, according to the admin's rule.* |
-| 28 | **Refrescas incógnito**: no está. | *instagram_manage_comments — DELETE. The comment is gone from the post.* |
+| 24 | Ventana **incógnito** con el post abierto. Se ven los comentarios. | *This is the public view of the post, signed out.* |
+| 25 | Desde la cuenta personal comentas: **"Get 10,000 followers fast, link in my bio!"** | *A user posts spam. It matches the spam keyword the admin configured.* |
+| 26 | `/comments` registra la acción como **HIDDEN**. | *The app hides it automatically.* |
+| 27 | **Refrescas la ventana incógnito**: el comentario ya no aparece. | *instagram_manage_comments — HIDE. The spam is no longer visible to the public.* |
+| 28 | En la ventana de la cuenta que comentó, el comentario **sigue existiendo**. | *Hiding does not destroy the comment — it stops being visible to others. The app hides, it does not delete, when the rule says hide.* |
 
-### Bloque H — Auditoría y revocación (6:40–7:10)
+> La escena 28 es la que distingue OCULTAR de BORRAR. A Meta le importa que sepas la diferencia.
+
+### Bloque G — BORRAR (6:50–7:30)
 
 | # | En pantalla | Subtítulo en inglés |
 |---|---|---|
-| 29 | `/comments` con las cuatro acciones: Replied, Deleted (reply), Hidden, Deleted. | *Every action is recorded for the admin to audit: what the comment said, what the app did, and the reply it published.* |
-| 30 | `/accounts` → **Disconnect**, y lo cancelas (o lo haces de verdad al final). | *The admin can disconnect the account at any time, which revokes our access and stops the webhooks.* |
+| 29 | Desde la cuenta personal comentas: **"Don't buy here, this company is a scam"** | *A comment matching the banned keyword "scam" that the admin configured.* |
+| 30 | `/comments` lo registra como **DELETED**. | *The app deletes it automatically, according to the admin's rule.* |
+| 31 | **Refrescas incógnito**: no está. | *instagram_manage_comments — DELETE. The comment is gone from the post.* |
 
----
+### Bloque H — Auditoría y revocación (7:30–8:00)
+
+| # | En pantalla | Subtítulo en inglés |
+|---|---|---|
+| 32 | `/comments` con todas las acciones: Replied, Reply deleted, Replied, Hidden, Deleted. | *Every action is recorded for the admin to audit: what the comment said, what the app did, and the reply it published.* |
+| 33 | `/accounts` → **Disconnect**. | *The admin can disconnect the account at any time, which revokes our access and stops the webhooks.* |
 
 ## 4. Textos del caso de uso (en INGLÉS)
 
